@@ -60,7 +60,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
     window.print();
   };
 
-  const printHeaderTitle = localStorage.getItem('sams_custom_header_title_v2') || 'سنتر اللغة العربية للتعليم والتفوق';
+  const printHeaderTitle = localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية';
   const printHeaderSubtitle = localStorage.getItem('sams_custom_header_subtitle_v2') || 'التقرير الأكاديمي الشامل وكشف المتابعة المطبوع';
   const printHeaderContact = localStorage.getItem('sams_custom_header_contact_v2') || '';
   const printHeaderLogo = localStorage.getItem('sams_custom_app_logo_v2') || '';

@@ -51,6 +51,7 @@ import StudentBarcodes from './components/StudentBarcodes';
 import ExamsAndAssignments from './components/ExamsAndAssignments';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import ThemeToggle from './components/ThemeToggle';
+import InstallPWAButton from './components/InstallPWAButton';
 import { Settings, Search, ShieldCheck } from 'lucide-react';
 import { AdminNotification } from './types';
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
@@ -122,7 +123,7 @@ export default function App() {
   // Customized Branding state
   const [customAppName, setCustomAppName] = useState(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
   const [customAppLogo, setCustomAppLogo] = useState(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
-  const [customHeaderTitle, setCustomHeaderTitle] = useState(localStorage.getItem('sams_custom_header_title_v2') || 'المنصة التعليمية المتكاملة');
+  const [customHeaderTitle, setCustomHeaderTitle] = useState(localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية');
   const [customHeaderSubtitle, setCustomHeaderSubtitle] = useState(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
 
   // High-Contrast Dark Mode State
@@ -329,7 +330,7 @@ export default function App() {
   const handleSettingsSaved = () => {
     setCustomAppName(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
     setCustomAppLogo(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
-    setCustomHeaderTitle(localStorage.getItem('sams_custom_header_title_v2') || 'المنصة التعليمية المتكاملة للمعلم');
+    setCustomHeaderTitle(localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية');
     setCustomHeaderSubtitle(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
     forceRefresh();
   };
@@ -811,6 +812,9 @@ export default function App() {
           {/* Notifications & User Details */}
           <div className="flex items-center gap-3">
             
+            {/* Install PWA Button */}
+            <InstallPWAButton />
+
             {/* Khaled Sakr Style Animated Theme Switcher */}
             <ThemeToggle isDarkMode={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
 

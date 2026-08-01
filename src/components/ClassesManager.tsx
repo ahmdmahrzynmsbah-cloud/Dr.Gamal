@@ -88,7 +88,7 @@ export default function ClassesManager() {
 
   // PDF / Print Customization State
   const [printHeaderTitle, setPrintHeaderTitle] = useState(
-    localStorage.getItem('sams_custom_header_title_v2') || 'سنتر اللغة العربية للتعليم والتفوق'
+    localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية'
   );
   const [printHeaderSubtitle, setPrintHeaderSubtitle] = useState(
     localStorage.getItem('sams_custom_header_subtitle_v2') || 'سجل متابعة وكشوفات طلاب المجموعات التعليمية'

@@ -221,8 +221,8 @@ export default function StudentsList() {
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      samsDb.softDeleteStudent(studentToDelete.id);
-      setSuccessMessage('تمت أرشفة ونقل قيد الطالب بنجاح.');
+      samsDb.permanentlyDeleteStudent(studentToDelete.id);
+      setSuccessMessage('تم حذف الطالب نهائياً بنجاح.');
       setStudentToDelete(null);
       loadData();
       if (selectedProfile?.id === studentToDelete.id) {
@@ -261,10 +261,10 @@ export default function StudentsList() {
           <button 
             type="button"
             onClick={() => setShowArchiveModal(true)}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
             title="عرض أرشيف الطلاب والملفات الملغاة"
           >
-            <Archive className="w-4 h-4 text-slate-950" />
+            <Archive className="w-4 h-4 text-white" />
             <span>أرشيف الطلاب ({samsDb.getArchivedStudents().length})</span>
           </button>
 
@@ -475,8 +475,8 @@ export default function StudentsList() {
                         <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" title="تعديل">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer" title="أرشفة الطالب">
-                          <Archive className="w-4 h-4 text-amber-700" />
+                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="حذف الطالب">
+                          <Trash2 className="w-4 h-4 text-red-600" />
                         </button>
                       </div>
                     </td>
@@ -601,18 +601,18 @@ export default function StudentsList() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden space-y-4"
             >
-              <div className="flex items-center gap-3 text-amber-700">
-                <div className="p-3 bg-amber-100 rounded-2xl">
-                  <Archive className="w-6 h-6 text-amber-800" />
+              <div className="flex items-center gap-3 text-red-600">
+                <div className="p-3 bg-red-50 rounded-2xl">
+                  <Trash2 className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900">تأكيد أرشفة الطالب</h3>
-                  <p className="text-xs text-slate-500 font-sans">نقل سجل الطالب إلى أرشيف السنتر</p>
+                  <h3 className="text-base font-extrabold text-slate-900">تأكيد حذف الطالب</h3>
+                  <p className="text-xs text-slate-500 font-sans">حذف سجل الطالب نهائياً من السنتر</p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed font-sans bg-amber-50/50 p-3.5 rounded-xl border border-amber-100">
-                هل أنت متأكد من رغبتك في نقل الطالب <strong className="text-slate-900">"{studentToDelete.name}"</strong> إلى أرشيف الطلاب؟ يمكنك استعادته أو حذفه نهائياً من قسم الأرشيف في أي وقت.
+              <p className="text-xs text-slate-600 leading-relaxed font-sans bg-red-50/50 p-3.5 rounded-xl border border-red-100">
+                هل أنت متأكد من رغبتك في حذف الطالب <strong className="text-slate-900">"{studentToDelete.name}"</strong> نهائياً؟ سيتم مسح كافة بياناته ولن تتمكن من استعادتها.
               </p>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
@@ -626,9 +626,9 @@ export default function StudentsList() {
                 <button
                   type="button"
                   onClick={confirmDelete}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black transition-colors cursor-pointer"
                 >
-                  نقل إلى الأرشيف 📁
+                  تأكيد الحذف النهائي 🗑️
                 </button>
               </div>
             </motion.div>

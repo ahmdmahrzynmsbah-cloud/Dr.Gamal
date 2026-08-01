@@ -46,10 +46,6 @@ function loadFromStorage<T>(key: string, defaultVal: T): T {
   }
   try {
     const parsed = JSON.parse(data);
-    if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(defaultVal) && defaultVal.length > 0) {
-      localStorage.setItem(key, JSON.stringify(defaultVal));
-      return defaultVal as unknown as T;
-    }
     return parsed as T;
   } catch (e) {
     return defaultVal;

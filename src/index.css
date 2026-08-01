@@ -1,0 +1,423 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Alex+Brush&family=Caveat:wght@600&family=Mrs+Saint+Delafield&family=Herr+Von+Muellerhoff&family=Pinyon+Script&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base smooth transitions */
+body, div, header, aside, main, section, button, input, select, textarea {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Slide up and fade keyframes for subtle high craft transitions */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+@keyframes scanline {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+.animate-scanline {
+  animation: scanline 3s linear infinite;
+}
+
+/* Custom dark scrollbar for the scanner terminal log */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 0.8);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 1);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(51, 65, 85, 0.8) rgba(15, 23, 42, 0.5);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================
+   HIGH-COMFORT ULTRA-READABLE DARK MODE OVERRIDES
+   ========================================== */
+
+html.dark {
+  color-scheme: dark;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Main Canvas Background */
+.dark #sams_root_wrapper,
+.dark .bg-\[\#F4F6F8\] {
+  background-color: #0f172a !important;
+}
+
+/* Sidebar & Navigation in Dark Mode */
+.dark aside {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark header {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Primary Cards & Content Containers in Dark Mode */
+.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155;
+}
+
+/* Explicit Colored Borders in Dark Mode for Cards & Badges */
+.dark .border-\[\#0D5C8C\],
+.dark .border-sky-600,
+.dark .border-sky-500 {
+  border-color: #38bdf8 !important;
+}
+
+.dark .border-\[\#1A7FAA\],
+.dark .border-sky-400 {
+  border-color: #38bdf8 !important;
+}
+
+.dark .border-yellow-400,
+.dark .border-amber-400 {
+  border-color: #fbbf24 !important;
+}
+
+.dark .border-\[\#C0152A\],
+.dark .border-\[\#E8192C\],
+.dark .border-rose-500,
+.dark .border-rose-600 {
+  border-color: #f43f5e !important;
+}
+
+.dark .border-emerald-600,
+.dark .border-emerald-500,
+.dark .border-emerald-400 {
+  border-color: #34d399 !important;
+}
+
+/* Secondary Panels, Table Headers & Alternating Rows */
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark .bg-slate-50\/50,
+.dark .bg-gray-50\/50,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-50\/90 {
+  background-color: #162032 !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+/* Primary Brand Action Buttons (Vibrant & High Contrast in Dark Mode) */
+.dark button.bg-\[\#0D5C8C\],
+.dark a.bg-\[\#0D5C8C\],
+.dark div.bg-\[\#0D5C8C\]:not(aside),
+.dark button.bg-\[\#1A7FAA\],
+.dark button.bg-sky-600,
+.dark button.bg-blue-600 {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
+}
+
+.dark button.bg-\[\#0D5C8C\]:hover,
+.dark a.bg-\[\#0D5C8C\]:hover,
+.dark button.bg-\[\#1A7FAA\]:hover,
+.dark button.bg-sky-600:hover,
+.dark button.bg-blue-600:hover {
+  background-color: #0369a1 !important;
+}
+
+/* Secondary & Neutral Buttons in Dark Mode */
+.dark button.bg-slate-100,
+.dark button.bg-slate-200,
+.dark button.bg-gray-100,
+.dark button.bg-gray-200,
+.dark .bg-slate-100:not(#sams_root_wrapper),
+.dark .bg-slate-200 {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+.dark button.bg-slate-100:hover,
+.dark button.bg-slate-200:hover,
+.dark button.bg-gray-100:hover,
+.dark button.bg-gray-200:hover {
+  background-color: #475569 !important;
+}
+
+/* Solid Color Buttons (Emerald, Amber, Rose, Indigo) */
+.dark button.bg-emerald-600,
+.dark button.bg-emerald-500 {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+.dark button.bg-emerald-600:hover,
+.dark button.bg-emerald-500:hover {
+  background-color: #047857 !important;
+}
+
+.dark button.bg-amber-600,
+.dark button.bg-amber-500 {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+.dark button.bg-amber-600:hover,
+.dark button.bg-amber-500:hover {
+  background-color: #b45309 !important;
+}
+
+.dark button.bg-rose-600,
+.dark button.bg-rose-500,
+.dark button.bg-red-600 {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+.dark button.bg-rose-600:hover,
+.dark button.bg-red-600:hover {
+  background-color: #be123c !important;
+}
+
+.dark button.bg-indigo-600,
+.dark button.bg-indigo-500 {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+/* Interactive Hover States for List Rows & Cards */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-sky-50\/50:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #243248 !important;
+}
+
+/* Stat Cards & Eye-Safe Colored Alert Badges in Dark Mode */
+.dark .bg-\[\#FEF2F2\],
+.dark .bg-red-50,
+.dark .bg-rose-50,
+.dark .bg-red-100 {
+  background-color: rgba(225, 29, 72, 0.2) !important;
+  border-color: rgba(225, 29, 72, 0.4) !important;
+}
+
+.dark .bg-emerald-50,
+.dark .bg-green-50,
+.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.dark .bg-indigo-50,
+.dark .bg-blue-50,
+.dark .bg-sky-50,
+.dark .bg-sky-100 {
+  background-color: rgba(56, 189, 248, 0.2) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+.dark .bg-amber-50,
+.dark .bg-yellow-50,
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+.dark .bg-purple-50,
+.dark .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Typography High-Contrast Legibility */
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-\[\#1A1A2E\],
+.dark .text-slate-950 {
+  color: #f8fafc !important;
+}
+
+.dark .text-\[\#0D5C8C\],
+.dark .text-\[\#1A7FAA\] {
+  color: #38bdf8 !important;
+}
+
+.dark .text-amber-800,
+.dark .text-amber-900,
+.dark .text-amber-700,
+.dark .text-amber-600 {
+  color: #fde047 !important;
+}
+
+.dark .text-emerald-800,
+.dark .text-emerald-900,
+.dark .text-emerald-700,
+.dark .text-emerald-600 {
+  color: #4ade80 !important;
+}
+
+.dark .text-rose-800,
+.dark .text-rose-900,
+.dark .text-rose-600,
+.dark .text-red-800,
+.dark .text-red-900,
+.dark .text-red-600,
+.dark .text-\[\#C0152A\] {
+  color: #fb7185 !important;
+}
+
+.dark .text-indigo-800,
+.dark .text-indigo-900,
+.dark .text-sky-800,
+.dark .text-sky-900,
+.dark .text-sky-700 {
+  color: #7dd3fc !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-400,
+.dark .text-gray-400 {
+  color: #cbd5e1 !important;
+}
+
+/* Borders in Dark Mode */
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-200\/60 {
+  border-color: #334155 !important;
+}
+
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+}
+
+/* Form Inputs & Select Controls */
+.dark input[type="text"],
+.dark input[type="number"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="date"],
+.dark input[type="time"],
+.dark select,
+.dark textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+.dark select option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+/* Modals & Dropdowns */
+.dark .shadow-xl,
+.dark .shadow-2xl,
+.dark .shadow-lg,
+.dark .shadow-md {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Print Rules for Professional PDF & Document Export */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  body > * {
+    visibility: hidden;
+  }
+  
+  #printable-group-roster,
+  #printable-group-roster * {
+    visibility: visible !important;
+  }
+  
+  #printable-group-roster {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+

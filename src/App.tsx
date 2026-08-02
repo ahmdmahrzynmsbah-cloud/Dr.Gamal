@@ -427,7 +427,7 @@ export default function App() {
     
     const user = users.find(u => u.id === currentUserId);
     if (user && user.permissions && user.permissions.length > 0) {
-      return fullNavItems.filter(item => user.permissions.includes(item.id));
+      return fullNavItems.filter(item => user.permissions.includes(item.id) || item.id === 'privacy');
     }
     return fullNavItems.filter(item => item.roles.includes(currentUserRole || 'teacher'));
   }, [currentUserId, currentUserRole, fullNavItems]);

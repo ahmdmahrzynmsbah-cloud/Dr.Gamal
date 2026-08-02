@@ -1,16 +1,16 @@
 const fs = require('fs');
 let content = fs.readFileSync('src/components/AttendanceTracker.tsx', 'utf8');
 
-// Find the last closing div of the component
-// The component is named AttendanceTracker and returns a large div.
-
-const targetPoint = `      </div>
-
+const targetPoint = `        </div>
+      </div>
     </div>
   );
 }`;
 
 const printableSection = `
+        </div>
+      </div>
+
       {/* PRINTABLE ATTENDANCE SHEET */}
       <div id="printable-attendance-sheet" className="hidden print:block absolute inset-0 bg-white p-8 w-full h-full text-black">
         {/* Header */}
@@ -79,10 +79,13 @@ const printableSection = `
           <div className="text-sm font-bold text-slate-700">توقيع الإدارة: ........................</div>
         </div>
       </div>
-`;
+
+    </div>
+  );
+}`;
 
 if (content.includes(targetPoint)) {
-    content = content.replace(targetPoint, printableSection + targetPoint);
+    content = content.replace(targetPoint, printableSection);
     fs.writeFileSync('src/components/AttendanceTracker.tsx', content, 'utf8');
     console.log("Patched AttendanceTracker.tsx");
 } else {

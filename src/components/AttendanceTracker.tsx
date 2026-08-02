@@ -54,7 +54,7 @@ export default function AttendanceTracker() {
     return localToday.toISOString().split('T')[0];
   });
   
-  const [selectedClass, setSelectedClass] = useState('all');
+  const [selectedClass, setSelectedClass] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [recentScans, setRecentScans] = useState<Array<{
     student: Student;
@@ -134,6 +134,7 @@ export default function AttendanceTracker() {
 
   // Group Management logic
   const filteredStudents = useMemo(() => {
+    if (!selectedClass) return []; // Don't show students if no class is selected
     return students.filter(s => {
       const matchesClass = selectedClass === 'all' || s.class_id === selectedClass;
       const matchesSearch = !searchTerm || s.name.includes(searchTerm) || s.registration_id.includes(searchTerm);
@@ -322,6 +323,7 @@ export default function AttendanceTracker() {
                 onChange={(e) => setSelectedClass(e.target.value)}
                 className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
               >
+                <option value="" disabled>اختر المجموعة...</option>
                 <option value="all">جميع المجموعات</option>
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -423,8 +425,8 @@ export default function AttendanceTracker() {
                   );
                 }) : (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
-                      لا يوجد طلاب في هذه المجموعة
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400 font-bold">
+                      {selectedClass === '' ? 'يرجى اختيار المجموعة من الأعلى لعرض الطلاب' : 'لا يوجد طلاب في هذه المجموعة'}
                     </td>
                   </tr>
                 )}
@@ -500,7 +502,7 @@ export default function AttendanceTracker() {
             ) : (
               <tr>
                 <td colSpan={selectedClass === 'all' ? 6 : 5} className="py-8 text-center text-slate-500 font-bold">
-                  لا يوجد طلاب في هذه المجموعة
+                  {selectedClass === '' ? 'يرجى اختيار مجموعة أولاً' : 'لا يوجد طلاب في هذه المجموعة'}
                 </td>
               </tr>
             )}

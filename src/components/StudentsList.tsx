@@ -613,12 +613,12 @@ export default function StudentsList() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي</label>
                   <select name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
-                    <option value="الأول الإعدادي">الأول الإعدادي</option>
-                    <option value="الثاني الإعدادي">الثاني الإعدادي</option>
-                    <option value="الثالث الإعدادي">الثالث الإعدادي</option>
-                    <option value="الأول الثانوي">الأول الثانوي</option>
-                    <option value="الثاني الثانوي">الثاني الثانوي</option>
-                    <option value="الثالث الثانوي">الثالث الثانوي</option>
+                        <option value="الأول الإعدادي">الأول الإعدادي</option>
+                <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+                <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+                <option value="الأول الثانوي">الأول الثانوي</option>
+                <option value="الثاني الثانوي">الثاني الثانوي</option>
+                <option value="الثالث الثانوي">الثالث الثانوي</option>
                   </select>
                 </div>
 

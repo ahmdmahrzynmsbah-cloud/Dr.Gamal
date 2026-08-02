@@ -45,12 +45,12 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   const activeStudentsList = students.filter(s => s.status === 'active');
   const unpaidStudents = activeStudentsList.filter(s => !fees.some(f => f.student_id === s.id));
 let gradeFees = {
-    'الصف الأول الإعدادي': 150,
-    'الصف الثاني الإعدادي': 150,
-    'الصف الثالث الإعدادي': 150,
-    'الصف الأول الثانوي': 200,
-    'الصف الثاني الثانوي': 250,
-    'الصف الثالث الثانوي': 300
+    'الأول الإعدادي': 150,
+    'الثاني الإعدادي': 150,
+    'الثالث الإعدادي': 150,
+    'الأول الثانوي': 200,
+    'الثاني الثانوي': 250,
+    'الثالث الثانوي': 300
   };
   try {
     const saved = localStorage.getItem('sams_grade_monthly_fees');

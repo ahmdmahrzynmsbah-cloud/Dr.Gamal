@@ -211,12 +211,12 @@ export default function FeesTracker() {
       }
     }
     return {
-      'الصف الأول الإعدادي': 150,
-      'الصف الثاني الإعدادي': 150,
-      'الصف الثالث الإعدادي': 150,
-      'الصف الأول الثانوي': 200,
-      'الصف الثاني الثانوي': 250,
-      'الصف الثالث الثانوي': 300
+      'الأول الإعدادي': 150,
+      'الثاني الإعدادي': 150,
+      'الثالث الإعدادي': 150,
+      'الأول الثانوي': 200,
+      'الثاني الثانوي': 250,
+      'الثالث الثانوي': 300
     };
   });
 
@@ -899,7 +899,7 @@ export default function FeesTracker() {
                 }}
                 className="w-full text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
               >
-                {Array.from(new Set(classes.map(c => c.grade_level))).map(g => (
+                {["الأول الإعدادي","الثاني الإعدادي","الثالث الإعدادي","الأول الثانوي","الثاني الثانوي","الثالث الثانوي"].map(g => (
                   <option key={g} value={g}>{g}</option>
                 ))}
               </select>

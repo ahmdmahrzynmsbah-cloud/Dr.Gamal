@@ -21,27 +21,27 @@ export const INITIAL_TEACHERS: Teacher[] = [
 export const INITIAL_CLASSES: ClassRoom[] = [
   {
     id: 'c-1',
-    name: 'الصف الأول الثانوي - مجموعة السبت 4:30م',
+    name: 'الأول الثانوي - مجموعة السبت 4:30م',
     schedule_days: 'السبت والثلاثاء',
     schedule_time: '16:30',
     capacity: 50,
-    grade_level: 'الصف الأول الثانوي'
+    grade_level: 'الأول الثانوي'
   },
   {
     id: 'c-2',
-    name: 'الصف الثاني الثانوي - مجموعة الأحد 6:30م',
+    name: 'الثاني الثانوي - مجموعة الأحد 6:30م',
     schedule_days: 'الأحد والأربعاء',
     schedule_time: '18:30',
     capacity: 40,
-    grade_level: 'الصف الثاني الثانوي'
+    grade_level: 'الثاني الثانوي'
   },
   {
     id: 'c-3',
-    name: 'الصف الثالث الثانوي - مجموعة السبت 12:00م',
+    name: 'الثالث الثانوي - مجموعة السبت 12:00م',
     schedule_days: 'السبت والخميس',
     schedule_time: '12:00',
     capacity: 60,
-    grade_level: 'الصف الثالث الثانوي'
+    grade_level: 'الثالث الثانوي'
   }
 ];
 
@@ -52,7 +52,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31005120104321',
     registration_id: '20261001',
     class_id: 'c-3',
-    grade_level: 'الصف الثالث الثانوي',
+    grade_level: 'الثالث الثانوي',
     birth_date: '2008-05-12',
     phone: '01223456781',
     parent_name: 'محمود عبد العزيز الجمل',
@@ -66,7 +66,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31008240209876',
     registration_id: '20261002',
     class_id: 'c-3',
-    grade_level: 'الصف الثالث الثانوي',
+    grade_level: 'الثالث الثانوي',
     birth_date: '2008-08-24',
     phone: '01123456782',
     parent_name: 'شريف عبد الهادي حسن',
@@ -80,7 +80,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31004150102468',
     registration_id: '20261003',
     class_id: 'c-3',
-    grade_level: 'الصف الثالث الثانوي',
+    grade_level: 'الثالث الثانوي',
     birth_date: '2008-04-15',
     phone: '01523456783',
     parent_name: 'محمد علي الشافعي',
@@ -94,7 +94,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31011030101357',
     registration_id: '20261004',
     class_id: 'c-3',
-    grade_level: 'الصف الثالث الثانوي',
+    grade_level: 'الثالث الثانوي',
     birth_date: '2008-11-03',
     phone: '01023456784',
     parent_name: 'عادل عبد الحميد متولي',
@@ -108,7 +108,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31002180205555',
     registration_id: '20261005',
     class_id: 'c-3',
-    grade_level: 'الصف الثالث الثانوي',
+    grade_level: 'الثالث الثانوي',
     birth_date: '2008-02-18',
     phone: '01223456785',
     parent_name: 'حسن إبراهيم عبد السلام',
@@ -122,7 +122,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31109050103333',
     registration_id: '20262001',
     class_id: 'c-2',
-    grade_level: 'الصف الثاني الثانوي',
+    grade_level: 'الثاني الثانوي',
     birth_date: '2009-09-05',
     phone: '01123456786',
     parent_name: 'ياسر عبد اللطيف خليل',
@@ -136,7 +136,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31112300104444',
     registration_id: '20262002',
     class_id: 'c-2',
-    grade_level: 'الصف الثاني الثانوي',
+    grade_level: 'الثاني الثانوي',
     birth_date: '2009-12-30',
     phone: '01223456787',
     parent_name: 'خالد محمود أبو العلا',
@@ -150,7 +150,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31201150201111',
     registration_id: '20263001',
     class_id: 'c-1',
-    grade_level: 'الصف الأول الثانوي',
+    grade_level: 'الأول الثانوي',
     birth_date: '2010-01-15',
     phone: '01523456788',
     parent_name: 'كريم هشام مصطفى',
@@ -164,7 +164,7 @@ export const INITIAL_STUDENTS: Student[] = [
     national_id: '31206120102222',
     registration_id: '20263002',
     class_id: 'c-1',
-    grade_level: 'الصف الأول الثانوي',
+    grade_level: 'الأول الثانوي',
     birth_date: '2010-06-12',
     phone: '01023456789',
     parent_name: 'محمد رامي زكي',

@@ -97,12 +97,12 @@ export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
 
     // Get grade monthly fee map
     let gradeFeesMap: Record<string, number> = {
-      'الصف الأول الإعدادي': 150,
-      'الصف الثاني الإعدادي': 150,
-      'الصف الثالث الإعدادي': 150,
-      'الصف الأول الثانوي': 200,
-      'الصف الثاني الثانوي': 250,
-      'الصف الثالث الثانوي': 300
+      'الأول الإعدادي': 150,
+      'الثاني الإعدادي': 150,
+      'الثالث الإعدادي': 150,
+      'الأول الثانوي': 200,
+      'الثاني الثانوي': 250,
+      'الثالث الثانوي': 300
     };
     const savedFees = localStorage.getItem('sams_grade_monthly_fees');
     if (savedFees) {

@@ -54,6 +54,7 @@ export default function AttendanceTracker() {
     return localToday.toISOString().split('T')[0];
   });
   
+  const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [recentScans, setRecentScans] = useState<Array<{
@@ -133,6 +134,27 @@ export default function AttendanceTracker() {
   const { isScannerDetected } = useBarcodeScanner(handleBarcodeScan);
 
   // Group Management logic
+  
+  const uniqueGrades = useMemo(() => {
+    const grades = new Set(classes.map(c => c.grade_level));
+    return Array.from(grades).filter(Boolean);
+  }, [classes]);
+
+  const filteredClasses = useMemo(() => {
+    if (!selectedGrade) return classes;
+    return classes.filter(c => c.grade_level === selectedGrade);
+  }, [classes, selectedGrade]);
+
+  // Reset selectedClass if it doesn't belong to the newly selected grade
+  useEffect(() => {
+    if (selectedGrade && selectedClass) {
+      const classExistsInGrade = filteredClasses.some(c => c.id === selectedClass);
+      if (!classExistsInGrade) {
+        setSelectedClass('');
+      }
+    }
+  }, [selectedGrade, filteredClasses, selectedClass]);
+
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return []; // Don't show students if no class is selected
     return students.filter(s => {
@@ -319,13 +341,27 @@ export default function AttendanceTracker() {
               </div>
 
               <select
+                value={selectedGrade}
+                onChange={(e) => {
+                  setSelectedGrade(e.target.value);
+                  setSelectedClass(''); // reset class when grade changes
+                }}
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
+              >
+                <option value="">جميع الصفوف</option>
+                {uniqueGrades.map(grade => (
+                  <option key={grade} value={grade}>{grade}</option>
+                ))}
+              </select>
+
+              <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
                 className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
               >
                 <option value="" disabled>اختر المجموعة...</option>
                 
-                {classes.map(c => (
+                {filteredClasses.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>

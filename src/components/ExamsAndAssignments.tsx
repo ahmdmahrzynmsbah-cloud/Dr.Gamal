@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ReactMarkdown from 'react-markdown';
 import { Exam, Assignment, ExamGrade, AssignmentGrade, Student, ClassRoom, Attendance } from '../types';
 import { samsDb } from '../utils/db';
 import { 
@@ -133,115 +134,10 @@ export default function ExamsAndAssignments() {
   const [examToDelete, setExamToDelete] = useState<Exam | null>(null);
   const [assignmentToDelete, setAssignmentToDelete] = useState<Assignment | null>(null);
 
-  // AI Grade Analysis State
-  const [showAiModal, setShowAiModal] = useState<boolean>(false);
-  const [isAiAnalyzing, setIsAiAnalyzing] = useState<boolean>(false);
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
-  const [aiCopied, setAiCopied] = useState<boolean>(false);
-
+     
   // Notifications feedback
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
-  // Trigger Gemini AI Analysis for current evaluation sheet
-  const handleAskAiAnalysis = async () => {
-    if (!activeEvaluationObj) return;
-
-    setShowAiModal(true);
-    setIsAiAnalyzing(true);
-    setAiAnalysisResult(null);
-
-    const currentClass = classes.find(c => c.id === selectedClassId);
-    const groupName = currentClass ? `${currentClass.name} (${currentClass.grade_level})` : 'المجموعة المحددة';
-    const evalTitle = gradingType === 'exam' ? (activeEvaluationObj as Exam).name : (activeEvaluationObj as Assignment).title;
-    const maxScore = activeEvaluationObj.max_score;
-
-    let presentCount = 0;
-    let absentCount = 0;
-    let totalScoreSum = 0;
-    let excellentCount = 0;
-    let failingCount = 0;
-
-    const studentsData = activeClassStudents.map(student => {
-      const tempObj = tempGrades[student.id] || { score: 0, flag: false, notes: '' };
-      const isAbsentOrMissing = gradingType === 'exam' ? tempObj.flag : !tempObj.flag;
-
-      let score = tempObj.score;
-      if (isAbsentOrMissing) {
-        absentCount++;
-        score = 0;
-      } else {
-        presentCount++;
-        totalScoreSum += score;
-      }
-
-      const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
-      let rating = 'ضعيف';
-      if (!isAbsentOrMissing) {
-        if (pct >= 85) {
-          excellentCount++;
-          rating = 'ممتاز';
-        } else if (pct >= 75) {
-          rating = 'جيد جداً';
-        } else if (pct >= 65) {
-          rating = 'جيد';
-        } else if (pct >= 50) {
-          rating = 'مقبول';
-        } else {
-          failingCount++;
-          rating = 'ضعيف';
-        }
-      } else {
-        failingCount++;
-        rating = gradingType === 'exam' ? 'غائب' : 'لم يسلم الواجب';
-      }
-
-      return {
-        name: student.name,
-        score,
-        absent: isAbsentOrMissing,
-        rating
-      };
-    });
-
-    const averageScore = presentCount > 0 ? Number((totalScoreSum / presentCount).toFixed(1)) : 0;
-
-    const stats = {
-      totalStudents: activeClassStudents.length,
-      presentCount,
-      absentCount,
-      averageScore,
-      excellentCount,
-      failingCount
-    };
-
-    try {
-      const response = await fetch('/api/analyze-grades', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          evaluationTitle: evalTitle,
-          evaluationType: gradingType,
-          groupName,
-          maxScore,
-          stats,
-          studentsData
-        })
-      });
-
-      const data = await response.json();
-      if (data.success && data.analysis) {
-        setAiAnalysisResult(data.analysis);
-      } else {
-        setAiAnalysisResult('عذراً، حدثت مشكلة أثناء إعداد تقرير الذكاء الاصطناعي. الرجاء المحاولة مرة أخرى.');
-      }
-    } catch (err) {
-      console.error('AI Analysis fetch error:', err);
-      setAiAnalysisResult('تعذر الاتصال بخدمة الذكاء الاصطناعي SAMS Gemini AI.');
-    } finally {
-      setIsAiAnalyzing(false);
-    }
-  };
 
   // Auto-clear messages after 3 seconds
   useEffect(() => {
@@ -737,7 +633,7 @@ export default function ExamsAndAssignments() {
   const old_triggerPrintPDF_ignored = () => {
     if (!activeEvaluationObj) return;
 
-    const centerName = localStorage.getItem('sams_center_name') || 'المركز التعليمي التخصصي SAMS';
+    const centerName = 'الدكتور في اللغة العربية';
     const centerPhone = localStorage.getItem('sams_center_phone') || '';
     const centerLogo = localStorage.getItem('sams_center_logo') || '';
     const currentClass = classes.find(c => c.id === selectedClassId);
@@ -975,17 +871,13 @@ export default function ExamsAndAssignments() {
           </tbody>
         </table>
 
-        <div class="footer-signatures">
+        <div class="footer-signatures" style="display: flex; justify-content: space-around; text-align: center; margin-top: 40px; page-break-inside: avoid;">
           <div class="sig-box">
-            <p>أستاذ/معلم المادة</p>
+            <p>توقيع السكرتيرة</p>
             <p style="margin-top: 25px; color: #94a3b8;">التوقيع: ............................</p>
           </div>
           <div class="sig-box">
-            <p>مشرف شؤون الامتحانات</p>
-            <p style="margin-top: 25px; color: #94a3b8;">التوقيع: ............................</p>
-          </div>
-          <div class="sig-box">
-            <p>اعتماد مدير المركز التعليمي</p>
+            <p>اعتماد أستاذ المادة (المدير)</p>
             <p style="margin-top: 25px; color: #94a3b8;">الختم الرسمي: ............................</p>
           </div>
         </div>
@@ -1032,7 +924,7 @@ export default function ExamsAndAssignments() {
   }, [assignments, assignmentSearch, classes]);
 
   if (showPrintModal && activeEvaluationObj) {
-    const centerName = localStorage.getItem('sams_center_name') || 'المركز التعليمي التخصصي SAMS';
+    const centerName = 'الدكتور في اللغة العربية';
     const centerPhone = localStorage.getItem('sams_center_phone') || '';
     const centerLogo = localStorage.getItem('sams_center_logo') || '';
     const currentClass = classes.find(c => c.id === selectedClassId);
@@ -1187,18 +1079,14 @@ export default function ExamsAndAssignments() {
           </table>
 
           {/* Signatures */}
-          <div className="grid grid-cols-3 gap-6 mt-12 text-center text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
+          <div className="grid grid-cols-2 gap-6 mt-12 text-center text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
             <div>
-              <p>أستاذ/معلم المادة</p>
-              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">التوقيع ....................</p>
+              <p>توقيع السكرتيرة</p>
+              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-12">التوقيع ....................</p>
             </div>
             <div>
-              <p>مشرف شؤون الامتحانات</p>
-              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">التوقيع ....................</p>
-            </div>
-            <div>
-              <p>اعتماد مدير المركز التعليمي</p>
-              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">الختم الرسمي ....................</p>
+              <p>اعتماد أستاذ المادة (المدير)</p>
+              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-12">الختم الرسمي ....................</p>
             </div>
           </div>
         </div>
@@ -1475,15 +1363,7 @@ export default function ExamsAndAssignments() {
 
               {/* Action utilities */}
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleAskAiAnalysis}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-600 hover:from-purple-700 hover:to-sky-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
-                  title="تحليل درجات هذا الكشف بذكاء Gemini AI وتقديم توصيات تعليمية"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-                  <span>اسأل الذكاء الاصطناعي ✨</span>
-                </button>
+                
 
                 <button
                   type="button"
@@ -2449,114 +2329,7 @@ export default function ExamsAndAssignments() {
         )}
       </AnimatePresence>
 
-      {/* AI Grade Analysis Modal (Gemini API) */}
-      <AnimatePresence>
-        {showAiModal && (
-          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-            <motion.div
-              initial={{ scale: 0.92, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-slate-800 shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-right"
-            >
-              {/* Modal Header */}
-              <div className="p-5 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between border-b border-purple-800/50 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-tr from-amber-400 to-purple-500 rounded-2xl shadow-lg shrink-0">
-                    <Bot className="w-6 h-6 text-slate-950" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-extrabold text-base text-amber-300">مستشار الذكاء الاصطناعي (Gemini AI)</h3>
-                      <span className="text-[10px] bg-purple-500/30 border border-purple-400/40 px-2 py-0.5 rounded-full font-bold text-purple-200">
-                        تحليل الأداء والتوصيات
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-300 font-sans mt-0.5">
-                      {activeEvaluationObj 
-                        ? `${gradingType === 'exam' ? (activeEvaluationObj as Exam).name : (activeEvaluationObj as Assignment).title}` 
-                        : 'كشف الدرجات الأكاديمي'}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAiModal(false)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-sm font-bold cursor-pointer transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100 dark:text-slate-100">
-                {isAiAnalyzing ? (
-                  <div className="py-16 flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-3xl bg-purple-100 dark:bg-purple-950/60 border border-purple-300 dark:border-purple-800 flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-pulse" />
-                      </div>
-                      <Loader2 className="w-20 h-20 text-indigo-500 animate-spin absolute -top-2 -left-2" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-base text-slate-800 dark:text-slate-100 dark:text-slate-100">
-                        جاري معالجة الكشف وتحليل الدرجات...
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                        يقوم نموذج Gemini الفائق بقراءة نسب النجاح، تحديد الطلاب المتفوقين والراسبين، واستنباط التوصيات التربوية.
-                      </p>
-                    </div>
-                  </div>
-                ) : aiAnalysisResult ? (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/50 rounded-2xl leading-relaxed text-xs sm:text-sm font-sans space-y-3 whitespace-pre-wrap">
-                      {aiAnalysisResult}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {/* Modal Footer */}
-              {!isAiAnalyzing && aiAnalysisResult && (
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 flex flex-wrap items-center justify-end gap-2 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(aiAnalysisResult);
-                        setAiCopied(true);
-                        setTimeout(() => setAiCopied(false), 2000);
-                      }}
-                      className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                    >
-                      {aiCopied ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                      <span>{aiCopied ? 'تم النسخ!' : 'نسخ التقرير'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleAskAiAnalysis}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span>إعادة التحليل 🔄</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowAiModal(false)}
-                      className="px-4 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer"
-                    >
-                      إغلاق
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      
 
       {/* WhatsApp Parent Absence Alert Modal */}
       <AnimatePresence>

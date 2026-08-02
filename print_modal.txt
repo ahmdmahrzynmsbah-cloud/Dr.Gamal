@@ -1,0 +1,309 @@
+                {/* Top controls (hidden during print) */}
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 pb-4 gap-4 no-print">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl">
+                      <Printer className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-slate-900 text-lg">معاينة وتصدير كشف المجموعة كـ PDF</h3>
+                      <p className="text-xs text-slate-500 font-sans">تنسيق طباعة رسمي بكافة بيانات طلاب المجموعة</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowHeaderSettings(!showHeaderSettings)}
+                      className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-all cursor-pointer ${
+                        showHeaderSettings
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                      }`}
+                    >
+                      <Sliders className="w-4 h-4 text-amber-600" />
+                      <span>تخصيص الشعار والترويسة 🎨</span>
+                      {showHeaderSettings ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
+                    >
+                      <Printer className="w-4 h-4 text-slate-950" />
+                      <span>طباعة الآن / حفظ كـ PDF</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPrintRosterModal(false)}
+                      className="p-2.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Header & Logo Customization Panel (no-print) */}
+                {showHeaderSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 font-sans no-print text-xs"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span className="font-extrabold text-slate-900 flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-amber-600" />
+                        إعدادات الترويسة وشعار السنتر المطبوع
+                      </span>
+                      <span className="text-[10px] text-slate-500">التغييرات تحفظ تلقائياً لكافة التقارير</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Logo Section */}
+                      <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+                        <label className="block font-bold text-slate-800">1. شعار السنتر (Logo):</label>
+                        <div className="flex items-center gap-3">
+                          {printHeaderLogo ? (
+                            <img src={printHeaderLogo} alt="شعار السنتر" className="w-12 h-12 object-contain rounded-lg border border-slate-200 bg-slate-50" />
+                          ) : (
+                            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center font-bold text-amber-800 text-lg">
+                              {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1.5 flex-1">
+                            <label className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-center cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>رفع شعار من جهازك</span>
+                              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                            </label>
+                            {printHeaderLogo && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPrintHeaderLogo('');
+                                  localStorage.removeItem('sams_custom_app_logo_v2');
+                                }}
+                                className="text-[10px] text-rose-600 hover:underline text-center"
+                              >
+                                إزالة الشعار
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Preset logos */}
+                        <div className="pt-2 border-t border-slate-100">
+                          <span className="text-[10px] text-slate-500 block mb-1">أو اختر من الشعارات الجاهزة:</span>
+                          <div className="flex flex-wrap gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
+                            >
+                              🎓 أكاديمي
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
+                            >
+                              📚 كتب وتفوق
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
+                            >
+                              🖋️ قلم وقراءة
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Header Titles */}
+                      <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200 md:col-span-2">
+                        <label className="block font-bold text-slate-800">2. النصوص والترويسة المطبوعة:</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">عنوان السنتر الرئيسي:</span>
+                            <input
+                              type="text"
+                              value={printHeaderTitle}
+                              onChange={(e) => updatePrintTitle(e.target.value)}
+                              placeholder="مثال: سنتر التفوق للتعليم"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">الوصف أو النص الفرعي:</span>
+                            <input
+                              type="text"
+                              value={printHeaderSubtitle}
+                              onChange={(e) => updatePrintSubtitle(e.target.value)}
+                              placeholder="مثال: سجل كشوفات المجموعات التعليمية"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+                          <div className="md:col-span-2">
+                            <span className="text-[10px] text-slate-500 block">بيانات التواصل والفرع:</span>
+                            <input
+                              type="text"
+                              value={printHeaderContact}
+                              onChange={(e) => updatePrintContact(e.target.value)}
+                              placeholder="مثال: هاتف: 01000000000 - الفرع الرئيسي"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[11px] text-slate-700 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 block">محاذاة الترويسة:</span>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('right')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'right' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
+                                }`}
+                              >
+                                يمين
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('center')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'center' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
+                                }`}
+                              >
+                                وسط
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('left')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'left' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
+                                }`}
+                              >
+                                يسار
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* PRINTABLE CONTAINER AREA */}
+                <div id="printable-group-roster" className="space-y-6 bg-white p-6 rounded-2xl border border-slate-200">
+                  {/* Dynamic Header section */}
+                  <div
+                    className={`flex items-center justify-between border-b-2 border-slate-800 pb-4 ${
+                      printLogoAlign === 'center'
+                        ? 'flex-col text-center gap-3'
+                        : printLogoAlign === 'left'
+                        ? 'flex-row-reverse text-right'
+                        : 'flex-row text-right'
+                    }`}
+                  >
+                    <div className={`flex items-center gap-3.5 ${printLogoAlign === 'center' ? 'flex-col text-center' : ''}`}>
+                      {printHeaderLogo ? (
+                        <img src={printHeaderLogo} alt="شعار السنتر" className="w-16 h-16 object-contain rounded-xl border border-slate-200 bg-slate-50 shrink-0" />
+                      ) : (
+                        <div className="w-14 h-14 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 font-extrabold text-2xl shrink-0">
+                          {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
+                        </div>
+                      )}
+                      <div>
+                        <h1 className="text-xl font-extrabold text-slate-900 leading-tight">{printHeaderTitle || 'سنتر التعليم والتفوق'}</h1>
+                        <p className="text-xs text-slate-600 font-medium mt-0.5">{printHeaderSubtitle}</p>
+                        {printHeaderContact && <p className="text-[11px] text-slate-500 font-sans mt-0.5">{printHeaderContact}</p>}
+                      </div>
+                    </div>
+
+                    <div className="text-center px-4 py-2 bg-slate-50 border border-slate-300 rounded-xl shrink-0">
+                      <span className="text-xs font-bold text-slate-700 block">كشف طلاب رسمي</span>
+                      <span className="text-[10px] text-slate-500 font-mono">{new Date().toLocaleDateString('ar-EG')}</span>
+                    </div>
+                  </div>
+
+                  {/* Group details grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs font-sans">
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">اسم المجموعة:</span>
+                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">الصف الدراسي:</span>
+                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.grade_level}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">المواعيد والجدول:</span>
+                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.schedule_days} - {selectedClassForStudents.schedule_time}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">عدد الطلاب:</span>
+                      <strong className="text-amber-700 font-bold">{filteredGroupStudents.length} طالب</strong>
+                    </div>
+                  </div>
+
+                  {/* Students table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right border-collapse border border-slate-300 text-xs">
+                      <thead>
+                        <tr className="bg-slate-100 text-slate-900 font-extrabold border-b border-slate-300">
+                          <th className="p-2 border border-slate-300 text-center w-10">#</th>
+                          <th className="p-2 border border-slate-300 w-24">رقم القيد</th>
+                          <th className="p-2 border border-slate-300">اسم الطالب الرباعي</th>
+                          <th className="p-2 border border-slate-300 w-28">هاتف ولي الأمر</th>
+                          <th className="p-2 border border-slate-300 w-20 text-center">الحضور %</th>
+                          <th className="p-2 border border-slate-300 w-24 text-center">الرسوم</th>
+                          <th className="p-2 border border-slate-300 w-32 text-center">ملاحظات / التوقيع</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredGroupStudents.map((st, idx) => {
+                          const att = getStudentAttendanceStats(st.id);
+                          const fee = getStudentFeeStatus(st.id);
+                          return (
+                            <tr key={st.id} className="border-b border-slate-200 hover:bg-slate-50 font-sans">
+                              <td className="p-2 border border-slate-300 text-center font-bold text-slate-700">{idx + 1}</td>
+                              <td className="p-2 border border-slate-300 font-mono text-slate-800">{st.registration_id}</td>
+                              <td className="p-2 border border-slate-300 font-bold text-slate-900">{st.name}</td>
+                              <td className="p-2 border border-slate-300 font-mono text-slate-700" dir="ltr">{st.parent_phone || st.phone || '-'}</td>
+                              <td className="p-2 border border-slate-300 text-center font-bold">{att.percentage}%</td>
+                              <td className="p-2 border border-slate-300 text-center text-[11px] font-bold">
+                                {fee.isPaid ? 'مسدد' : 'غير مسدد'}
+                              </td>
+                              <td className="p-2 border border-slate-300"></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Footer signature */}
+                  <div className="pt-6 flex justify-between items-center text-xs text-slate-600 border-t border-slate-200 font-sans">
+                    <div>توقيع إشراف السنتر: ....................................</div>
+                    <div>اعتماد إدارة اللغة العربية: ....................................</div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>

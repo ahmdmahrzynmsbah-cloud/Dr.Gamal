@@ -123,10 +123,10 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">إدارة المستخدمين والصلاحيات</h1>
-          <p className="text-sm text-slate-500 mt-1">تغيير كلمات المرور وإضافة حسابات سكرتارية جديدة</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">إدارة المستخدمين والصلاحيات</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">تغيير كلمات المرور وإضافة حسابات سكرتارية جديدة</p>
         </div>
         <button
           onClick={() => {
@@ -142,46 +142,46 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
       </div>
 
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2">
           <Check className="w-4 h-4 text-emerald-600" />
           <span className="font-bold">{successMsg}</span>
         </div>
       )}
 
       {showAddForm && (
-        <div className="bg-white p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs mb-6">
-          <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 pb-2">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs mb-6">
+          <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">
             {editingId ? 'تعديل بيانات المستخدم' : 'إضافة سكرتيرة جديدة'}
           </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">الاسم</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الاسم</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                className="w-full text-sm border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
+                className="w-full text-sm border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">كلمة المرور (الرمز السري)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">كلمة المرور (الرمز السري)</label>
               <input
                 type="text"
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                className="w-full text-sm border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
+                className="w-full text-sm border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
                 required
               />
             </div>
 
             {!editingId && (
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">الصلاحية</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الصلاحية</label>
                 <select
                   value={formData.role}
                   onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full text-sm border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
+                  className="w-full text-sm border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
                 >
                   <option value="secretary">سكرتيرة</option>
                   <option value="teacher">مدير النظام (أدمن)</option>
@@ -190,11 +190,11 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
             )}
             {editingId && (
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">تغيير الصلاحية الأساسية</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تغيير الصلاحية الأساسية</label>
                 <select
                   value={formData.role}
                   onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                  className="w-full text-sm border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
+                  className="w-full text-sm border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-none focus:border-[#0D5C8C]"
                 >
                   <option value="secretary">سكرتيرة</option>
                   <option value="teacher">مدير النظام (أدمن)</option>
@@ -202,8 +202,8 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
               </div>
             )}
             
-            <div className="md:col-span-3 mt-4 border-t border-slate-100 pt-4">
-              <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <div className="md:col-span-3 mt-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+              <label className="block text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-3 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#0D5C8C]" />
                 التحكم المخصص في الصفحات المسموحة (اختر ما يمكنه رؤيته)
               </label>
@@ -217,11 +217,11 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
                       className={`cursor-pointer p-3 rounded-xl border flex items-center gap-2 transition-all ${
                         isSelected 
                           ? 'bg-sky-50 border-sky-200 text-[#0D5C8C]' 
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                       }`}
                     >
                       <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        isSelected ? 'bg-[#0D5C8C] border-[#0D5C8C]' : 'border-slate-300'
+                        isSelected ? 'bg-[#0D5C8C] border-[#0D5C8C]' : 'border-slate-300 dark:border-slate-600'
                       }`}>
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
@@ -230,14 +230,14 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
                   );
                 })}
               </div>
-              <p className="text-[10px] text-slate-500 mt-2">* إذا لم تقم بتحديد أي صفحات، فسيتم تطبيق الصلاحيات الافتراضية الخاصة بالدور المختار.</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">* إذا لم تقم بتحديد أي صفحات، فسيتم تطبيق الصلاحيات الافتراضية الخاصة بالدور المختار.</p>
             </div>
 
             <div className="md:col-span-3 flex justify-end gap-2 mt-2">
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-lg"
               >
                 إلغاء
               </button>
@@ -253,9 +253,9 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
         <table className="w-full text-right text-sm">
-          <thead className="bg-slate-50 text-slate-600 text-xs font-bold">
+          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 text-xs font-bold">
             <tr>
               <th className="p-4">الاسم</th>
               <th className="p-4">نوع الصلاحية</th>
@@ -265,27 +265,27 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {users.map(u => (
-              <tr key={u.id} className="hover:bg-slate-50/50">
-                <td className="p-4 font-bold text-slate-800">{u.name}</td>
+              <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50">
+                <td className="p-4 font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{u.name}</td>
                 <td className="p-4">
                   {u.role === 'teacher' ? (
                     <span className="bg-[#0D5C8C]/10 text-[#0D5C8C] px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 w-max">
                       <Shield className="w-3 h-3" /> المدير الأكاديمي
                     </span>
                   ) : (
-                    <span className="bg-sky-100 text-sky-700 px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 w-max">
+                    <span className="bg-sky-100 text-sky-700 dark:text-sky-300 px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 w-max">
                       <User className="w-3 h-3" /> سكرتيرة
                     </span>
                   )}
                 </td>
-                <td className="p-4 font-mono text-slate-600">
-                  <span className="bg-slate-100 px-2 py-1 rounded text-xs">{u.password}</span>
+                <td className="p-4 font-mono text-slate-600 dark:text-slate-300">
+                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">{u.password}</span>
                 </td>
                 <td className="p-4">
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => handleEdit(u)}
-                      className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                      className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
                       title="تغيير كلمة المرور أو الاسم"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -294,7 +294,7 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); confirmDelete(u.id); }}
-                        className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors"
+                        className="p-1.5 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 rounded-lg transition-colors"
                         title="حذف"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -310,13 +310,13 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
 
       {userToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-scale-up">
-            <div className="bg-rose-50 p-6 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-scale-up">
+            <div className="bg-rose-50 dark:bg-rose-900/40 p-6 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm mb-4">
                 <Trash2 className="w-8 h-8 text-rose-500" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">تأكيد الحذف</h3>
-              <p className="text-sm text-slate-600">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-2">تأكيد الحذف</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
                 هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذه الخطوة.
               </p>
             </div>
@@ -324,7 +324,7 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
               <button
                 type="button"
                 onClick={() => setUserToDelete(null)}
-                className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors text-sm"
+                className="flex-1 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-sm"
               >
                 إلغاء
               </button>

@@ -113,10 +113,10 @@ let gradeFees = {
   return (
     <div className="space-y-6" id="sams_control_dashboard">
       {/* Header Info */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">الأداء العام للسنتر</h1>
-          <p className="text-sm text-slate-500 mt-1">نظام منصة الإدارة — قاعدة البيانات المحدثة لحظياً حتى تاريخ اليوم</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">نظام منصة الإدارة — قاعدة البيانات المحدثة لحظياً حتى تاريخ اليوم</p>
         </div>
         <div className="flex items-center gap-2.5 bg-[#E8192C]/5 px-4 py-2 rounded-xl text-[#C0152A] text-xs font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans">
           <Calendar className="w-4 h-4 text-[#C0152A]" />
@@ -168,8 +168,8 @@ let gradeFees = {
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">المجموعات الدراسية</p>
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-2xl font-black text-slate-800 dark:text-amber-300">{totalClasses}</span>
-              <span className="text-sm font-bold text-slate-800 dark:text-amber-200">مجموعات</span>
+              <span className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-300">{totalClasses}</span>
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-200">مجموعات</span>
             </div>
             <p className="text-[10px] text-[#0D5C8C] dark:text-sky-400 font-black font-sans">تحديث فوري</p>
           </div>
@@ -181,13 +181,13 @@ let gradeFees = {
         {/* Financial Collection Rate Card - Colored alert state */}
         <div className={`p-5 rounded-2xl shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer ${
           fees.length === 0
-            ? 'bg-slate-50 dark:bg-slate-800/90 border border-slate-400 border-r-4 text-slate-700 dark:text-slate-200'
+            ? 'bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-800/90 border border-slate-400 border-r-4 text-slate-700 dark:text-slate-200'
             : pendingRevenue > 0
             ? 'bg-[#FEF2F2] dark:bg-rose-950/50 border border-[#C0152A] dark:border-rose-500 border-r-4 text-[#C0152A] dark:text-rose-200'
             : 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-600 dark:border-emerald-400 border-r-4 text-emerald-800 dark:text-emerald-200'
         }`} onClick={() => onNavigateToTab('fees')} id="stat_revenue_card">
           <div className="space-y-2">
-            <p className={`text-xs font-extrabold font-sans ${fees.length === 0 ? 'text-slate-500' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات المالية والرسوم</p>
+            <p className={`text-xs font-extrabold font-sans ${fees.length === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات المالية والرسوم</p>
             <div className="flex items-baseline gap-1 flex-wrap">
               <span className="text-2xl font-black">{totalRevenue.toLocaleString()}</span>
               <span className="text-sm font-bold">ج.م</span>
@@ -217,9 +217,9 @@ let gradeFees = {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Grades Performance Plot (Recharts) */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#0D5C8C]" />
               توزيع تقديرات الدرجات الأكاديمية للطلاب
             </h3>
@@ -243,7 +243,7 @@ let gradeFees = {
             ) : (
               <div className="text-center p-6 space-y-2 text-slate-400 font-sans">
                 <div className="text-3xl">📊</div>
-                <p className="text-xs font-bold text-slate-500">لا توجد درجات امتحانات مرصودة حالياً في النظام</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد درجات امتحانات مرصودة حالياً في النظام</p>
                 <p className="text-[10px] text-slate-400 max-w-xs">يمكنك رصد علامات الطلاب من تبويب الامتحانات والواجبات لتظهر لك التحليلات وتوزيع المستويات تلقائياً هنا</p>
               </div>
             )}
@@ -251,9 +251,9 @@ let gradeFees = {
         </div>
 
         {/* Financial Collection Doughnut Chart */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-slate-800 text-sm mb-1 flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm mb-1 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-amber-500" />
               الحالة المالية وتحصيل الرسوم
             </h3>
@@ -291,7 +291,7 @@ let gradeFees = {
             ) : (
               <div className="text-center p-4 space-y-1.5 text-slate-400 font-sans">
                 <div className="text-3xl">💳</div>
-                <p className="text-xs font-bold text-slate-500">لا توجد رسوم محصلة بعد</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد رسوم محصلة بعد</p>
                 <p className="text-[10px] text-slate-400 max-w-[180px] mx-auto">عند تسجيل سداد اشتراك أو مصروفات لأي طالب، سيظهر لك مؤشر نسب التحصيل فوراً</p>
               </div>
             )}
@@ -299,11 +299,11 @@ let gradeFees = {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs p-1.5 rounded bg-[#0D5C8C]/5 border-r-4 border-[#0D5C8C]">
-              <span className="text-slate-600">تم تحصيله رقمياً ونقداً</span>
+              <span className="text-slate-600 dark:text-slate-300">تم تحصيله رقمياً ونقداً</span>
               <span className="font-bold text-[#0D5C8C]">{totalRevenue.toLocaleString()} ج.م</span>
             </div>
-            <div className="flex items-center justify-between text-xs p-1.5 rounded bg-red-50 border-r-4 border-[#E8192C]">
-              <span className="text-slate-600">رسوم جارية ومستحقة</span>
+            <div className="flex items-center justify-between text-xs p-1.5 rounded bg-red-50 dark:bg-red-900/40 border-r-4 border-[#E8192C]">
+              <span className="text-slate-600 dark:text-slate-300">رسوم جارية ومستحقة</span>
               <span className="font-bold text-[#C0152A]">{pendingRevenue.toLocaleString()} ج.م</span>
             </div>
           </div>
@@ -315,9 +315,9 @@ let gradeFees = {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Live Transactional Audit Logs */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm" id="sams_audit_logs_preview">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <Activity className="w-4.5 h-4.5 text-indigo-600" />
               سجل تدقيق وإجراءات قاعدة البيانات الحية (Audit Logs)
             </h3>
@@ -338,11 +338,11 @@ let gradeFees = {
               }[log.action_type];
 
               return (
-                <div key={log.id} className="p-3 border border-gray-50 rounded-xl hover:bg-slate-50/50 transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 text-xs">
+                <div key={log.id} className="p-3 border border-gray-50 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 text-xs">
                   <div className="space-y-1">
-                    <p className="text-slate-800 font-medium leading-relaxed">{log.details}</p>
+                    <p className="text-slate-800 dark:text-slate-100 dark:text-slate-100 font-medium leading-relaxed">{log.details}</p>
                     <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
-                      <span className="font-bold text-slate-600">{log.user_name}</span>
+                      <span className="font-bold text-slate-600 dark:text-slate-300">{log.user_name}</span>
                       <span>•</span>
                       <span>الجدول: {log.table_name}</span>
                       <span>•</span>
@@ -359,9 +359,9 @@ let gradeFees = {
         </div>
 
         {/* High-Level Attendance Absent Alert Notice */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <AlertTriangle className="w-4.5 h-4.5 text-[#C0152A]" />
               الحالات الطارئة وتنبيهات الغياب المتكرر
             </h3>
@@ -374,13 +374,13 @@ let gradeFees = {
                 <AlertTriangle className="w-4 h-4" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-bold text-xs text-slate-800">تجاوز نسبة الغياب المسموحة (الطالب عمر السقا)</h4>
-                <p className="text-slate-500 text-[11px] leading-relaxed">
+                <h4 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">تجاوز نسبة الغياب المسموحة (الطالب عمر السقا)</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
                   تجاوز الطالب عمر شادي نسبة غياب 25% من الحصص الشهرية لمجموعة الصف الثالث الابتدائي. تم تجميد القيد تلقائياً وإرسال إشعار SMS لولي الأمر.
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <button onClick={() => onNavigateToTab('attendance')} className="text-xxs px-2 py-1 bg-[#0D5C8C] text-white rounded cursor-pointer hover:bg-[#1A7FAA]">تحرير الحضور</button>
-                  <button onClick={() => onNavigateToTab('notifications')} className="text-xxs px-2 py-1 bg-white border border-gray-200 text-slate-600 rounded cursor-pointer hover:bg-slate-50">عرض الرسالة</button>
+                  <button onClick={() => onNavigateToTab('notifications')} className="text-xxs px-2 py-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">عرض الرسالة</button>
                 </div>
               </div>
             </div>
@@ -390,8 +390,8 @@ let gradeFees = {
                 <Calendar className="w-4 h-4" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-bold text-xs text-slate-800">مراجعة كشوف الدرجات للمجموعات الدراسية</h4>
-                <p className="text-slate-500 text-[11px] leading-relaxed">
+                <h4 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">مراجعة كشوف الدرجات للمجموعات الدراسية</h4>
+                <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
                   هناك 3 طلاب لم ترصد لهم درجات الاختبار الشهري الخاص بمادة الرياضيات حتى الآن.
                 </p>
                 <button onClick={() => onNavigateToTab('exams')} className="text-xxs px-2 py-1 bg-amber-600 text-white rounded cursor-pointer hover:bg-amber-700 mt-2">توجه للرصد</button>

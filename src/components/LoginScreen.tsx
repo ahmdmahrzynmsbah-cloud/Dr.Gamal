@@ -71,8 +71,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex items-center justify-center p-4 font-sans" dir="rtl">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-gray-150 shadow-lg overflow-hidden animate-fade-in">
+    <div className="min-h-screen bg-[#F4F6F8] dark:bg-slate-900 flex items-center justify-center p-4 font-sans" dir="rtl">
+      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-gray-150 shadow-lg overflow-hidden animate-fade-in">
         
         {/* Banner with customized elegant "الدكتور" branding */}
         <div className="bg-[#0D5C8C] p-8 text-center relative overflow-hidden flex flex-col items-center justify-center">
@@ -93,20 +93,20 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         {/* Content Form */}
         <div className="p-6 md:p-8 space-y-6">
           <div className="text-center space-y-1">
-            <h2 className="text-base font-bold text-slate-800">مرحباً بك، تسجيل الدخول للمنظومة</h2>
-            <p className="text-xs text-slate-500">الرجاء اختيار الدور وإدخال رمز المرور لتفعيل الجلسة</p>
+            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">مرحباً بك، تسجيل الدخول للمنظومة</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">الرجاء اختيار الدور وإدخال رمز المرور لتفعيل الجلسة</p>
           </div>
 
           
           {/* Quick Choice Tabs */}
-          <div className="grid grid-cols-2 gap-3 bg-slate-50 p-1.5 rounded-xl border border-gray-100">
+          <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700">
             <button
               type="button"
               onClick={() => { setRole('teacher'); setName(''); setPassword(''); }}
               className={`py-2.5 px-3 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 role === 'teacher'
-                  ? 'bg-white text-[#0D5C8C] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
@@ -117,8 +117,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               onClick={() => { setRole('secretary'); setName(''); setPassword(''); }}
               className={`py-2.5 px-3 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 role === 'secretary'
-                  ? 'bg-white text-[#0D5C8C] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100'
               }`}
             >
               <User className="w-4 h-4" />
@@ -130,7 +130,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             
             {/* Input Name */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-600">اسم المستخدم (اختياري):</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">اسم المستخدم (اختياري):</label>
               <div className="relative">
                 
                 <input
@@ -138,14 +138,14 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="أدخل اسم المستخدم"
-                  className="w-full pl-3 pr-10 py-2.5 text-xs bg-white border border-gray-200 rounded-xl outline-none focus:border-[#0D5C8C] shadow-3xs"
+                  className="w-full pl-3 pr-10 py-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] shadow-3xs"
                 />
               </div>
             </div>
 
             {/* Input Password */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-600">رمز الدخول السري المعطى لك:</label>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">رمز الدخول السري المعطى لك:</label>
               <div className="relative">
                 
                 <input
@@ -153,14 +153,14 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-3 pr-10 py-2.5 text-xs bg-white border border-gray-200 rounded-xl outline-none focus:border-[#0D5C8C] shadow-3xs text-left"
+                  className="w-full pl-3 pr-10 py-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] shadow-3xs text-left"
                   required
                 />
               </div>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-150 text-red-850 rounded-xl text-[11px] font-bold text-center animate-pulse">
+              <div className="p-3 bg-red-50 dark:bg-red-900/40 border border-red-150 text-red-850 rounded-xl text-[11px] font-bold text-center animate-pulse">
                 {error}
               </div>
             )}

@@ -52,7 +52,7 @@ export default function InstallPWAButton() {
           exit={{ opacity: 0, scale: 0.8 }}
           type="button"
           onClick={handleInstallClick}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-700 transition-colors font-bold text-xs font-sans cursor-pointer shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-700 transition-colors font-bold text-xs font-sans cursor-pointer shadow-sm"
           title="تثبيت التطبيق على الجهاز"
         >
           <Download className="w-3.5 h-3.5" />

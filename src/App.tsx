@@ -301,11 +301,14 @@ export default function App() {
   }, []);
 
   // List matching students and teachers
+  const allStudents = useMemo(() => samsDb.getStudents(), [refreshTrigger]);
+  const allTeachers = useMemo(() => samsDb.getTeachers(), [refreshTrigger]);
+
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return { students: [], teachers: [] };
     const cleanQuery = searchQuery.trim().toLowerCase();
     
-    const studentsRes = samsDb.getStudents().filter(s => 
+    const studentsRes = allStudents.filter(s => 
       s.name.toLowerCase().includes(cleanQuery) ||
       s.registration_id.toLowerCase().includes(cleanQuery) ||
       s.phone.toLowerCase().includes(cleanQuery) ||
@@ -313,7 +316,7 @@ export default function App() {
       s.national_id.includes(cleanQuery)
     ).slice(0, 5);
 
-    const teachersRes = samsDb.getTeachers().filter(t => 
+    const teachersRes = allTeachers.filter(t => 
       t.name.toLowerCase().includes(cleanQuery) ||
       t.specialization.toLowerCase().includes(cleanQuery) ||
       t.phone.toLowerCase().includes(cleanQuery) ||
@@ -321,7 +324,7 @@ export default function App() {
     ).slice(0, 3);
 
     return { students: studentsRes, teachers: teachersRes };
-  }, [searchQuery, refreshTrigger]);
+  }, [searchQuery, allStudents, allTeachers]);
 
   const forceRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -530,7 +533,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen bg-[#F4F6F8] text-[#1A1A2E] flex overflow-hidden font-sans" dir="rtl">
+    <div className="h-screen print:h-auto bg-[#F4F6F8] dark:bg-slate-900 print:bg-white dark:bg-slate-800 text-[#1A1A2E] dark:text-white flex overflow-hidden print:overflow-visible font-sans" dir="rtl">
       
       {/* Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
@@ -541,7 +544,7 @@ export default function App() {
       )}
 
       {/* Navigation Sidebar (RTL: right side) */}
-      <aside className={`
+      <aside className={` print:hidden 
         fixed lg:static inset-y-0 right-0 bg-[#0D5C8C] text-white flex flex-col p-0 shadow-lg z-50 lg:z-auto transition-all duration-300 border-l border-[#1A7FAA]/20 shrink-0 h-full overflow-y-auto no-scrollbar
         ${mobileMenuOpen ? 'translate-x-0 w-64' : 'translate-x-full lg:translate-x-0'}
         ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
@@ -677,16 +680,16 @@ export default function App() {
       </aside>
 
       {/* Main Content Area Container */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full print:h-auto overflow-hidden print:overflow-visible">
         
         {/* Upper Main Header inside the content wrapper */}
-        <header className="h-16 bg-white border-b border-gray-100 px-6 flex items-center justify-between shrink-0 shadow-xs z-30">
+        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden">
           
           {/* Logo and Branding section (User Customizable) */}
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 ml-1 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg lg:hidden cursor-pointer"
+              className="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg lg:hidden cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -694,7 +697,7 @@ export default function App() {
             {/* Desktop Sidebar Toggle */}
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden lg:flex p-2 ml-1 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+              className="hidden lg:flex p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer transition-colors"
               title={isSidebarCollapsed ? "توسيع القائمة" : "طي القائمة"}
             >
               {isSidebarCollapsed ? <PanelRightOpen className="w-5 h-5" /> : <PanelRightClose className="w-5 h-5" />}
@@ -711,7 +714,7 @@ export default function App() {
                 boxShadow: isSearchFocused ? '0 10px 25px -5px rgba(26, 127, 170, 0.15), 0 8px 10px -6px rgba(26, 127, 170, 0.15)' : 'none'
               }}
               transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-              className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl py-2 px-3.5"
+              className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-xl py-2 px-3.5"
             >
               <motion.span 
                 animate={{ 
@@ -733,12 +736,12 @@ export default function App() {
                 }}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="البحث السريع عن طالب، معلم، أو رقم قيد..." 
-                className="w-full bg-transparent border-none text-xs text-slate-700 outline-none focus:ring-0 placeholder:text-slate-400 text-right font-sans"
+                className="w-full bg-transparent border-none text-xs text-slate-700 dark:text-slate-200 outline-none focus:ring-0 placeholder:text-slate-400 text-right font-sans"
               />
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery('')}
-                  className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -753,7 +756,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 5, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-[400px] bg-white border border-gray-150 rounded-2xl shadow-xl overflow-hidden py-3 text-right z-50"
+                  className="absolute right-0 top-full mt-2 w-[400px] bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden py-3 text-right z-50"
                   dir="rtl"
                 >
                   <div className="space-y-4 max-h-[350px] overflow-y-auto no-scrollbar">
@@ -777,14 +780,14 @@ export default function App() {
                               className="w-full px-4 py-2 text-right hover:bg-sky-50/50 transition-all flex items-center justify-between text-xs cursor-pointer group"
                             >
                               <div className="space-y-0.5">
-                                <div className="font-bold text-slate-800 group-hover:text-[#0D5C8C] transition-colors">{student.name}</div>
+                                <div className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 group-hover:text-[#0D5C8C] transition-colors">{student.name}</div>
                                 <div className="text-[10px] text-slate-400 flex items-center gap-2 font-mono">
                                   <span>قيد: {student.registration_id}</span>
                                   <span>•</span>
                                   <span>{student.grade_level}</span>
                                 </div>
                               </div>
-                              <span className="text-[10px] text-[#0D5C8C] font-semibold bg-blue-50 px-2 py-0.5 rounded-md">
+                              <span className="text-[10px] text-[#0D5C8C] font-semibold bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-md">
                                 {student.status === 'active' ? 'نشط' : student.status === 'suspended' ? 'موقوف' : 'مؤجل'}
                               </span>
                             </button>
@@ -821,7 +824,7 @@ export default function App() {
             <div className="relative" ref={notiDropdownRef}>
               <button 
                 onClick={() => setShowNotiDropdown(!showNotiDropdown)}
-                className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-full cursor-pointer transition-colors"
+                className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-full cursor-pointer transition-colors"
               >
                 <Bell className="w-5 h-5" />
                 {unreadNotisCount > 0 && (
@@ -836,11 +839,11 @@ export default function App() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 top-full mt-2 w-[350px] bg-white border border-gray-150 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]"
+                    className="absolute left-0 top-full mt-2 w-[350px] bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]"
                     dir="rtl"
                   >
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-slate-50">
-                      <div className="font-bold text-slate-800 text-sm">الإشعارات</div>
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                      <div className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">الإشعارات</div>
                       {unreadNotisCount > 0 && (
                         <button 
                           onClick={handleMarkAllRead}
@@ -861,13 +864,13 @@ export default function App() {
                         displayedNotis.map(noti => (
                           <div 
                             key={noti.id} 
-                            className={`p-3 rounded-xl border ${noti.read ? 'border-transparent opacity-60 bg-white' : 'border-blue-100 bg-blue-50/30'} flex gap-3 transition-colors text-right relative`}
+                            className={`p-3 rounded-xl border ${noti.read ? 'border-transparent opacity-60 bg-white dark:bg-slate-800' : 'border-blue-100 bg-blue-50/30'} flex gap-3 transition-colors text-right relative`}
                           >
                             <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${noti.type === 'absence' ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
                               {noti.type === 'absence' ? <Bell className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                             </div>
                             <div className="flex-1 space-y-1 pr-1">
-                              <p className={`text-xs leading-relaxed ${noti.read ? 'text-slate-600' : 'text-slate-900 font-bold'}`}>
+                              <p className={`text-xs leading-relaxed ${noti.read ? 'text-slate-600 dark:text-slate-300' : 'text-slate-900 dark:text-slate-50 font-bold'}`}>
                                 {noti.message}
                               </p>
                               <div className="flex items-center gap-2 pt-0.5">
@@ -900,7 +903,7 @@ export default function App() {
         </header>
 
         {/* Viewport scroll area containing current Tab view */}
-        <main className="flex-1 p-6 overflow-y-auto no-scrollbar w-full space-y-6">
+        <main className="flex-1 p-6 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-6">
           <div key={`${activeTab}-${refreshTrigger}`} className="max-w-7xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'students' && <StudentsList />}

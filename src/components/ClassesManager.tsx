@@ -43,6 +43,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
 export default function ClassesManager() {
   const [classes, setClasses] = useState<ClassRoom[]>([]);
@@ -85,6 +86,11 @@ export default function ClassesManager() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [archivedStudentToPermanentDelete, setArchivedStudentToPermanentDelete] = useState<Student | null>(null);
   const [archivedSearchTerm, setArchivedSearchTerm] = useState('');
+  
+  // Progress State
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingText, setProcessingText] = useState('');
 
   // PDF / Print Customization State
   const [printHeaderTitle, setPrintHeaderTitle] = useState(
@@ -211,6 +217,34 @@ export default function ClassesManager() {
     }
   };
 
+  const handleProcessAction = (text: string, onComplete: () => void) => {
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    setProcessingText(text);
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 20) + 10;
+      if (progress >= 100) {
+        progress = 100;
+        setProcessingProgress(progress);
+        clearInterval(interval);
+        
+        setTimeout(() => {
+          setIsProcessing(false);
+          setProcessingProgress(0);
+          onComplete();
+        }, 400);
+      } else {
+        setProcessingProgress(progress);
+      }
+    }, 150);
+  };
+
+  useSamsDbSync(() => {
+    loadData();
+  });
+
   const loadData = () => {
     setClasses(samsDb.getClasses());
     setStudents(samsDb.getStudents());
@@ -296,8 +330,424 @@ export default function ClassesManager() {
     const totalPresentRecords = currentClassStudents.reduce((acc, s) => acc + getStudentAttendanceStats(s.id).present, 0);
     const groupAvgAttendance = totalAttRecords > 0 ? Math.round((totalPresentRecords / totalAttRecords) * 100) : 100;
 
+
+    if (selectedStudentForReport) {
+      return (
+        <StudentFullReport
+          student={selectedStudentForReport}
+          onClose={() => setSelectedStudentForReport(null)}
+        />
+      );
+    }
+
+    if (showPrintRosterModal) {
+      return (
+        <div className="space-y-6 animate-fade-in bg-white dark:bg-slate-800 p-6 rounded-3xl" id="print_roster_dedicated_page" dir="rtl">
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 gap-4 no-print">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setShowPrintRosterModal(false)}
+                className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl cursor-pointer ml-2 flex items-center gap-1.5"
+                title="رجوع"
+              >
+                 <ArrowRight className="w-5 h-5" /><span className="font-bold text-sm">رجوع</span>
+              </button>
+              <div className="p-2.5 bg-amber-100 text-amber-800 dark:text-amber-300 rounded-2xl">
+                <Printer className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-lg">معاينة وتصدير كشف المجموعة كـ PDF</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">تنسيق طباعة رسمي بكافة بيانات طلاب المجموعة</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowHeaderSettings(!showHeaderSettings)}
+                className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-all cursor-pointer ${
+                  showHeaderSettings
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                <Sliders className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>تخصيص الشعار والترويسة 🎨</span>
+                {showHeaderSettings ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleProcessAction("جاري تجهيز التقرير للطباعة...", () => window.print())}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
+              >
+                <Printer className="w-4 h-4 text-slate-950" />
+                <span>طباعة الآن / حفظ كـ PDF</span>
+              </button>
+            </div>
+          </div>
+{/* Header & Logo Customization Panel (no-print) */}
+                {showHeaderSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-4 font-sans no-print text-xs"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                      <span className="font-extrabold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        إعدادات الترويسة وشعار السنتر المطبوع
+                      </span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">التغييرات تحفظ تلقائياً لكافة التقارير</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Logo Section */}
+                      <div className="space-y-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label className="block font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">1. شعار السنتر (Logo):</label>
+                        <div className="flex items-center gap-3">
+                          {printHeaderLogo ? (
+                            <img src={printHeaderLogo} alt="شعار السنتر" className="w-12 h-12 object-contain rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50" />
+                          ) : (
+                            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center font-bold text-amber-800 dark:text-amber-300 text-lg">
+                              {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1.5 flex-1">
+                            <label className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-center cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>رفع شعار من جهازك</span>
+                              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                            </label>
+                            {printHeaderLogo && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPrintHeaderLogo('');
+                                  localStorage.removeItem('sams_custom_app_logo_v2');
+                                }}
+                                className="text-[10px] text-rose-600 dark:text-rose-400 hover:underline text-center"
+                              >
+                                إزالة الشعار
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Preset logos */}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">أو اختر من الشعارات الجاهزة:</span>
+                          <div className="flex flex-wrap gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
+                            >
+                              🎓 أكاديمي
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
+                            >
+                              📚 كتب وتفوق
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const preset = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=120&auto=format&fit=crop&q=80';
+                                setPrintHeaderLogo(preset);
+                                localStorage.setItem('sams_custom_app_logo_v2', preset);
+                              }}
+                              className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
+                            >
+                              🖋️ قلم وقراءة
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Header Titles */}
+                      <div className="space-y-2 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 md:col-span-2">
+                        <label className="block font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">2. النصوص والترويسة المطبوعة:</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <div>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block">عنوان السنتر الرئيسي:</span>
+                            <input
+                              type="text"
+                              value={printHeaderTitle}
+                              onChange={(e) => updatePrintTitle(e.target.value)}
+                              placeholder="مثال: سنتر التفوق للتعليم"
+                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-bold text-slate-900 dark:text-slate-50 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block">الوصف أو النص الفرعي:</span>
+                            <input
+                              type="text"
+                              value={printHeaderSubtitle}
+                              onChange={(e) => updatePrintSubtitle(e.target.value)}
+                              placeholder="مثال: سجل كشوفات المجموعات التعليمية"
+                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                          <div className="md:col-span-2">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block">بيانات التواصل والفرع:</span>
+                            <input
+                              type="text"
+                              value={printHeaderContact}
+                              onChange={(e) => updatePrintContact(e.target.value)}
+                              placeholder="مثال: هاتف: 01000000000 - الفرع الرئيسي"
+                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 text-[11px] text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block">محاذاة الترويسة:</span>
+                            <div className="flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('right')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'right' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                                }`}
+                              >
+                                يمين
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('center')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'center' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                                }`}
+                              >
+                                وسط
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateLogoAlign('left')}
+                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
+                                  printLogoAlign === 'left' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                                }`}
+                              >
+                                يسار
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* PRINTABLE CONTAINER AREA */}
+                <div id="printable-group-roster" className="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  {/* Dynamic Header section */}
+                  <div
+                    className={`flex items-center justify-between border-b-2 border-slate-800 pb-4 ${
+                      printLogoAlign === 'center'
+                        ? 'flex-col text-center gap-3'
+                        : printLogoAlign === 'left'
+                        ? 'flex-row-reverse text-right'
+                        : 'flex-row text-right'
+                    }`}
+                  >
+                    <div className={`flex items-center gap-3.5 ${printLogoAlign === 'center' ? 'flex-col text-center' : ''}`}>
+                      {printHeaderLogo ? (
+                        <img src={printHeaderLogo} alt="شعار السنتر" className="w-16 h-16 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 shrink-0" />
+                      ) : (
+                        <div className="w-14 h-14 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 dark:text-amber-300 font-extrabold text-2xl shrink-0">
+                          {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
+                        </div>
+                      )}
+                      <div>
+                        <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-50 leading-tight">{printHeaderTitle || 'سنتر التعليم والتفوق'}</h1>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">{printHeaderSubtitle}</p>
+                        {printHeaderContact && <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans mt-0.5">{printHeaderContact}</p>}
+                      </div>
+                    </div>
+
+                    <div className="text-center px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 dark:border-slate-600 rounded-xl shrink-0">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">كشف طلاب رسمي</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{new Date().toLocaleDateString('ar-EG')}</span>
+                    </div>
+                  </div>
+
+                  {/* Group details grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-sans">
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px]">اسم المجموعة:</span>
+                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px]">الصف الدراسي:</span>
+                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.grade_level}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px]">المواعيد والجدول:</span>
+                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.schedule_days} - {selectedClassForStudents.schedule_time}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 dark:text-slate-400 block text-[10px]">عدد الطلاب:</span>
+                      <strong className="text-amber-700 dark:text-amber-300 font-bold">{filteredGroupStudents.length} طالب</strong>
+                    </div>
+                  </div>
+
+                  {/* Students table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right border-collapse border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-xs">
+                      <thead>
+                        <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-extrabold border-b border-slate-300 dark:border-slate-600 dark:border-slate-600">
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-center w-10">#</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 w-24">رقم القيد</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600">اسم الطالب الرباعي</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 w-28">هاتف ولي الأمر</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 w-20 text-center">الحضور %</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 w-24 text-center">الرسوم</th>
+                          <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 w-32 text-center">ملاحظات / التوقيع</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredGroupStudents.map((st, idx) => {
+                          const att = getStudentAttendanceStats(st.id);
+                          const fee = getStudentFeeStatus(st.id);
+                          return (
+                            <tr key={st.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-sans">
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-center font-bold text-slate-700 dark:text-slate-200">{idx + 1}</td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-mono text-slate-800 dark:text-slate-100 dark:text-slate-100">{st.registration_id}</td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold text-slate-900 dark:text-slate-50">{st.name}</td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-mono text-slate-700 dark:text-slate-200" dir="ltr">{st.parent_phone || st.phone || '-'}</td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-center font-bold">{att.percentage}%</td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-center text-[11px] font-bold">
+                                {fee.isPaid ? 'مسدد' : 'غير مسدد'}
+                              </td>
+                              <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600"></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Footer signature */}
+                  <div className="pt-6 flex justify-between items-center text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700 font-sans">
+                    <div>توقيع إشراف السنتر: ....................................</div>
+                    <div>اعتماد إدارة اللغة العربية: ....................................</div>
+                  </div>
+                </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6 animate-fade-in" id="group_students_dedicated_page">
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
         {/* Top Navigation & Group Header */}
         <div className="bg-gradient-to-r from-[#0D5C8C] via-[#126b9e] to-[#0A4B73] text-white p-6 rounded-3xl shadow-lg space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -328,7 +778,7 @@ export default function ClassesManager() {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end mt-4 md:mt-0">
               <button
                 type="button"
                 onClick={() => {
@@ -343,10 +793,10 @@ export default function ClassesManager() {
                   });
                   setShowAddStudentModal(true);
                 }}
-                className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-transform active:scale-95 cursor-pointer"
+                className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
               >
-                <UserPlus className="w-4 h-4" />
-                <span>إضافة طالب جديد للمجموعة</span>
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>إضافة طالب</span>
               </button>
 
               <button
@@ -362,30 +812,30 @@ export default function ClassesManager() {
                   setGroupWhatsAppMsg(defaultBroadcastMsg);
                   setShowGroupWhatsAppModal(true);
                 }}
-                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-transform active:scale-95 cursor-pointer"
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
               >
-                <MessageCircle className="w-4 h-4 fill-current text-white" />
-                <span>تنبيه واتساب جماعي 📱</span>
+                <MessageCircle className="w-3.5 h-3.5 fill-current text-white" />
+                <span>تنبيه واتساب</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowPrintRosterModal(true)}
-                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-2 transition-transform active:scale-95 cursor-pointer"
+                className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
                 title="طباعة كشف طلاب المجموعة وتصديره كـ PDF"
               >
-                <Printer className="w-4 h-4 text-slate-950" />
-                <span>طباعة كشف المجموعة 📄</span>
+                <Printer className="w-3.5 h-3.5 text-slate-950" />
+                <span>طباعة الكشف</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowArchiveModal(true)}
-                className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] rounded-lg border border-white/20 flex items-center gap-1.5 transition-all cursor-pointer flex-1 md:flex-none justify-center"
                 title="عرض الأرشيف والطلاب المؤرشفين"
               >
-                <Archive className="w-4 h-4 text-amber-300" />
-                <span>أرشيف الطلاب ({samsDb.getArchivedStudents().length})</span>
+                <Archive className="w-3.5 h-3.5 text-amber-300" />
+                <span>الأرشيف ({samsDb.getArchivedStudents().length})</span>
               </button>
             </div>
           </div>
@@ -409,13 +859,13 @@ export default function ClassesManager() {
 
         {/* Alerts & Messages */}
         {errorText && (
-          <div className="p-4 bg-red-50 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
+          <div className="p-4 bg-red-50 dark:bg-red-900/40 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-[#E8192C] shrink-0" />
             <span className="font-semibold">{errorText}</span>
           </div>
         )}
         {successText && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
             <span className="font-semibold">{successText}</span>
           </div>
@@ -423,45 +873,45 @@ export default function ClassesManager() {
 
         {/* Analytics KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs space-y-1">
-            <div className="text-xs text-slate-500 font-sans">إجمالي طلاب المجموعة</div>
-            <div className="text-2xl font-black text-slate-800 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">إجمالي طلاب المجموعة</div>
+            <div className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center justify-between">
               <span>{totalStudents}</span>
-              <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-normal">طالب</span>
+              <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-normal">طالب</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs space-y-1">
-            <div className="text-xs text-slate-500 font-sans">الطلاب النشطون بالحضور</div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">الطلاب النشطون بالحضور</div>
             <div className="text-2xl font-black text-emerald-600 flex items-center justify-between">
               <span>{activeCount}</span>
-              <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold">{Math.round((activeCount / (totalStudents || 1)) * 100)}%</span>
+              <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold">{Math.round((activeCount / (totalStudents || 1)) * 100)}%</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs space-y-1">
-            <div className="text-xs text-slate-500 font-sans">متوسط حضور المجموعة</div>
-            <div className="text-2xl font-black text-sky-700 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">متوسط حضور المجموعة</div>
+            <div className="text-2xl font-black text-sky-700 dark:text-sky-300 flex items-center justify-between">
               <span>{groupAvgAttendance}%</span>
-              <span className="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded-md font-bold">نسبة انضباط</span>
+              <span className="text-xs bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-md font-bold">نسبة انضباط</span>
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs space-y-1">
-            <div className="text-xs text-slate-500 font-sans">طلاب بإنذار غياب (≥3 غيابات)</div>
-            <div className="text-2xl font-black text-rose-600 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">طلاب بإنذار غياب (≥3 غيابات)</div>
+            <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center justify-between">
               <span>{warningAbsenceCount}</span>
               {warningAbsenceCount > 0 ? (
                 <span className="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-black animate-pulse">تنبيه ⚠️</span>
               ) : (
-                <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold">لا يوجد ✨</span>
+                <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold">لا يوجد ✨</span>
               )}
             </div>
           </div>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative w-full md:w-96">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
             <input
@@ -469,12 +919,12 @@ export default function ClassesManager() {
               value={studentSearchTerm}
               onChange={(e) => setStudentSearchTerm(e.target.value)}
               placeholder="ابحث باسم الطالب، رقم القيد، أو هاتف ولي الأمر..."
-              className="w-full text-xs font-sans border border-slate-200 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+              className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-            <div className="flex items-center gap-1 text-xs text-slate-600 font-bold">
+            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-bold">
               <Filter className="w-3.5 h-3.5 text-slate-400" />
               <span>تصفية النتائج:</span>
             </div>
@@ -482,7 +932,7 @@ export default function ClassesManager() {
             <select
               value={studentStatusFilter}
               onChange={(e) => setStudentStatusFilter(e.target.value as any)}
-              className="text-xs font-sans border border-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white cursor-pointer"
+              className="text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
             >
               <option value="all">جميع الحالات (نشط وموقوف)</option>
               <option value="active">الطلاب النشطون فقط</option>
@@ -492,7 +942,7 @@ export default function ClassesManager() {
             <select
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value as any)}
-              className="text-xs font-sans border border-slate-200 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white cursor-pointer"
+              className="text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
             >
               <option value="all">جميع معدلات الحضور</option>
               <option value="excellent">انضباط ممتاز (≥90%)</option>
@@ -502,29 +952,29 @@ export default function ClassesManager() {
         </div>
 
         {/* Detailed Student Roster Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <Users className="w-4 h-4 text-[#0D5C8C]" />
               <span>كشف طلاب المجموعة التفصيلي والبيانات الكاملة ({filteredGroupStudents.length} طالب)</span>
             </h3>
-            <span className="text-xs text-slate-500 font-sans">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-sans">
               رقم القيد، التواصل، نسبة الحضور، المصروفات والتقرير الشامل
             </span>
           </div>
 
           {filteredGroupStudents.length === 0 ? (
             <div className="p-12 text-center space-y-3">
-              <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mx-auto">
                 <Users className="w-6 h-6" />
               </div>
-              <p className="text-slate-600 font-bold text-sm">لا يوجد طلاب مطابقون لمعايير البحث والفلترة بهذه المجموعة.</p>
+              <p className="text-slate-600 dark:text-slate-300 font-bold text-sm">لا يوجد طلاب مطابقون لمعايير البحث والفلترة بهذه المجموعة.</p>
               <p className="text-slate-400 text-xs font-sans">يمكنك إضافة طالب جديد مباشرة إلى هذه المجموعة باستخدام الزر بالأعلى.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-right border-collapse min-w-[900px]">
-                <thead className="bg-slate-100/70 text-slate-700 text-xs font-extrabold border-b border-slate-200">
+                <thead className="bg-slate-100/70 text-slate-700 dark:text-slate-200 text-xs font-extrabold border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th className="p-3.5">رقم القيد</th>
                     <th className="p-3.5">اسم الطالب</th>
@@ -535,7 +985,7 @@ export default function ClassesManager() {
                     <th className="p-3.5 text-center">العمليات والإجراءات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs font-sans text-slate-700">
+                <tbody className="divide-y divide-slate-100 text-xs font-sans text-slate-700 dark:text-slate-200">
                   {filteredGroupStudents.map((student) => {
                     const attStats = getStudentAttendanceStats(student.id);
                     const feeStats = getStudentFeeStatus(student.id);
@@ -543,7 +993,7 @@ export default function ClassesManager() {
                     const formattedParentPhone = parentPhoneClean.startsWith('0') ? '2' + parentPhoneClean : parentPhoneClean;
 
                     return (
-                      <tr key={student.id} className="hover:bg-sky-50/40 transition-colors">
+                      <tr key={student.id} className="hover:bg-sky-50/40 dark:hover:bg-slate-800/50 transition-colors">
                         {/* Registration ID */}
                         <td className="p-3.5 font-bold font-mono text-[#0D5C8C]">
                           {student.registration_id}
@@ -551,11 +1001,11 @@ export default function ClassesManager() {
 
                         {/* Student Name */}
                         <td className="p-3.5">
-                          <div className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                          <div className="font-extrabold text-slate-900 dark:text-slate-50 text-sm flex items-center gap-2">
                             <span>{student.name}</span>
                             {attStats.absent >= 3 && (
-                              <span className="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200 flex items-center gap-1 animate-pulse">
-                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                              <span className="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-700 flex items-center gap-1 animate-pulse">
+                                <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                                 غياب متكرر ({attStats.absent})
                               </span>
                             )}
@@ -568,16 +1018,16 @@ export default function ClassesManager() {
                         {/* Phone Contacts */}
                         <td className="p-3.5">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-xs text-slate-800 font-bold">
+                            <div className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100 font-bold">
                               <span>ولي الأمر: {student.parent_name || 'غير مدخل'}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-[11px] text-slate-500 font-mono dir-ltr justify-end">
+                            <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono dir-ltr justify-end">
                               {student.parent_phone ? (
                                 <a
                                   href={`https://wa.me/${formattedParentPhone}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="text-emerald-700 hover:text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1 cursor-pointer"
+                                  className="text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 font-bold bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md flex items-center gap-1 cursor-pointer"
                                   title="محادثة واتساب ولي الأمر"
                                 >
                                   <MessageCircle className="w-3 h-3 fill-current" />
@@ -594,12 +1044,12 @@ export default function ClassesManager() {
                         <td className="p-3.5 text-center min-w-[150px]">
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[11px] font-bold">
-                              <span className="text-slate-600">حضور: {attStats.present} | غياب: {attStats.absent}</span>
+                              <span className="text-slate-600 dark:text-slate-300">حضور: {attStats.present} | غياب: {attStats.absent}</span>
                               <span className={attStats.percentage >= 90 ? 'text-emerald-600 font-black' : attStats.percentage >= 75 ? 'text-amber-600 font-bold' : 'text-rose-600 font-black'}>
                                 {attStats.percentage}%
                               </span>
                             </div>
-                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all ${
                                   attStats.percentage >= 90 ? 'bg-emerald-500' : attStats.percentage >= 75 ? 'bg-amber-500' : 'bg-rose-500'
@@ -613,13 +1063,13 @@ export default function ClassesManager() {
                         {/* Fee Status */}
                         <td className="p-3.5 text-center">
                           {feeStats.isPaid ? (
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-2.5 py-1 rounded-xl">
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 text-xs font-bold px-2.5 py-1 rounded-xl">
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
                               {feeStats.label}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-xl">
-                              <CreditCard className="w-3.5 h-3.5 text-amber-600" />
+                            <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 text-xs font-bold px-2.5 py-1 rounded-xl">
+                              <CreditCard className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                               غير مسدد
                             </span>
                           )}
@@ -628,7 +1078,7 @@ export default function ClassesManager() {
                         {/* Status */}
                         <td className="p-3.5 text-center">
                           <span className={`inline-block px-2.5 py-1 rounded-xl text-xs font-bold ${
-                            student.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                            student.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                           }`}>
                             {student.status === 'active' ? 'نشط بالسنتر' : 'موقوف'}
                           </span>
@@ -641,7 +1091,7 @@ export default function ClassesManager() {
                             <button
                               type="button"
                               onClick={() => setSelectedStudentForReport(student)}
-                              className="p-2 bg-sky-50 hover:bg-sky-100 text-[#0D5C8C] rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-sky-200"
+                              className="p-2 bg-sky-50 dark:bg-sky-900/40 hover:bg-sky-100 text-[#0D5C8C] rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-sky-200"
                               title="عرض كشف وتاريخ الطالب الكامل"
                             >
                               <Eye className="w-3.5 h-3.5 text-[#0D5C8C]" />
@@ -654,7 +1104,7 @@ export default function ClassesManager() {
                                 href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ولي أمر الطالب/ة: ${student.name}، تحية طيبة وبعد من سنتر اللغة العربية...`)}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition-transform active:scale-95 cursor-pointer border border-emerald-200"
+                                className="p-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-emerald-200 dark:border-emerald-700"
                                 title="تواصل مباشر عبر الواتساب"
                               >
                                 <MessageCircle className="w-3.5 h-3.5 fill-current" />
@@ -668,7 +1118,7 @@ export default function ClassesManager() {
                                 setTransferStudent(student);
                                 setTargetClassIdForTransfer('');
                               }}
-                              className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-transform active:scale-95 cursor-pointer"
+                              className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl transition-transform active:scale-95 cursor-pointer"
                               title="نقل الطالب إلى مجموعة أخرى"
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
@@ -678,7 +1128,7 @@ export default function ClassesManager() {
                             <button
                               type="button"
                               onClick={() => setEditingStudent(student)}
-                              className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl transition-transform active:scale-95 cursor-pointer border border-amber-200"
+                              className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
                               title="تعديل بيانات الطالب"
                             >
                               <Edit className="w-3.5 h-3.5" />
@@ -694,10 +1144,10 @@ export default function ClassesManager() {
                                   setSuccessText(`تم نقل الطالب (${student.name}) إلى الأرشيف بنجاح.`);
                                 }
                               }}
-                              className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-amber-200"
+                              className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-800 dark:text-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
                               title="نقل الطالب إلى الأرشيف"
                             >
-                              <Archive className="w-3.5 h-3.5 text-amber-700" />
+                              <Archive className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300" />
                               <span>أرشفة</span>
                             </button>
                           </div>
@@ -711,15 +1161,7 @@ export default function ClassesManager() {
           )}
         </div>
 
-        {/* Student Full Report Modal */}
-        <AnimatePresence>
-          {selectedStudentForReport && (
-            <StudentFullReport
-              student={selectedStudentForReport}
-              onClose={() => setSelectedStudentForReport(null)}
-            />
-          )}
-        </AnimatePresence>
+        
 
         {/* Add Student directly to this Group Modal */}
         <AnimatePresence>
@@ -729,7 +1171,7 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-lg w-full overflow-hidden"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
                 <div className="p-5 bg-[#0D5C8C] text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -772,57 +1214,57 @@ export default function ClassesManager() {
                   className="p-6 space-y-4 text-right"
                 >
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">اسم الطالب الرباعي *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب الرباعي *</label>
                     <input
                       type="text"
                       required
                       value={newStudentForm.name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                       placeholder="أدخل اسم الطالب..."
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">هاتف الطالب</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب</label>
                       <input
                         type="text"
                         value={newStudentForm.phone}
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="01xxxxxxxxx"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">هاتف ولي الأمر *</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر *</label>
                       <input
                         type="text"
                         required
                         value={newStudentForm.parent_phone}
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="01xxxxxxxxx"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">اسم ولي الأمر</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم ولي الأمر</label>
                     <input
                       type="text"
                       value={newStudentForm.parent_name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                       placeholder="اسم ولي الأمر..."
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                     <button
                       type="button"
                       onClick={() => setShowAddStudentModal(false)}
-                      className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -847,7 +1289,7 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-lg w-full overflow-hidden"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
                 <div className="p-5 bg-amber-600 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -879,64 +1321,64 @@ export default function ClassesManager() {
                   className="p-6 space-y-4 text-right"
                 >
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">اسم الطالب *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب *</label>
                     <input
                       type="text"
                       required
                       value={editingStudent.name}
                       onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">هاتف الطالب</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب</label>
                       <input
                         type="text"
                         value={editingStudent.phone || ''}
                         onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">هاتف ولي الأمر</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر</label>
                       <input
                         type="text"
                         value={editingStudent.parent_phone || ''}
                         onChange={(e) => setEditingStudent({ ...editingStudent, parent_phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">اسم ولي الأمر</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم ولي الأمر</label>
                     <input
                       type="text"
                       value={editingStudent.parent_name || ''}
                       onChange={(e) => setEditingStudent({ ...editingStudent, parent_name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">حالة الطالب</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">حالة الطالب</label>
                     <select
                       value={editingStudent.status}
                       onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value as any })}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600 bg-white"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600 bg-white dark:bg-slate-800"
                     >
                       <option value="active">نشط بالسنتر</option>
                       <option value="inactive">موقوف</option>
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                     <button
                       type="button"
                       onClick={() => setEditingStudent(null)}
-                      className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -961,7 +1403,7 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-md w-full overflow-hidden"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-md w-full overflow-hidden"
               >
                 <div className="p-5 bg-sky-700 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -978,16 +1420,16 @@ export default function ClassesManager() {
                 </div>
 
                 <div className="p-6 space-y-4 text-right">
-                  <p className="text-xs text-slate-600 font-sans">
-                    اختر المجموعة الدراسية الجديدة لنقل الطالب <strong className="text-slate-900 font-extrabold">({transferStudent.name})</strong> إليها:
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-sans">
+                    اختر المجموعة الدراسية الجديدة لنقل الطالب <strong className="text-slate-900 dark:text-slate-50 font-extrabold">({transferStudent.name})</strong> إليها:
                   </p>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">المجموعة الجديدة المستهدفة *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">المجموعة الجديدة المستهدفة *</label>
                     <select
                       value={targetClassIdForTransfer}
                       onChange={(e) => setTargetClassIdForTransfer(e.target.value)}
-                      className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-xl focus:outline-hidden focus:border-sky-600 bg-white"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-sky-600 bg-white dark:bg-slate-800"
                     >
                       <option value="">-- اختر مجموعة من القائمة --</option>
                       {classes.filter(c => c.id !== selectedClassForStudents.id).map(cls => (
@@ -998,11 +1440,11 @@ export default function ClassesManager() {
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                     <button
                       type="button"
                       onClick={() => setTransferStudent(null)}
-                      className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -1038,7 +1480,7 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-lg w-full overflow-hidden"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
                 <div className="p-5 bg-emerald-600 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1055,25 +1497,25 @@ export default function ClassesManager() {
                 </div>
 
                 <div className="p-6 space-y-4 text-right">
-                  <p className="text-xs text-slate-600 font-sans">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-sans">
                     سيتم توجيه الرسالة لأولياء أمور كافة الطلاب بالمجموعة ({currentClassStudents.length} طالب):
                   </p>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">نص الرسالة الجماعية:</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">نص الرسالة الجماعية:</label>
                     <textarea
                       rows={6}
                       value={groupWhatsAppMsg}
                       onChange={(e) => setGroupWhatsAppMsg(e.target.value)}
-                      className="w-full text-xs font-sans border border-slate-200 p-3 rounded-2xl focus:outline-hidden focus:border-emerald-600 leading-relaxed"
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-3 rounded-2xl focus:outline-hidden focus:border-emerald-600 leading-relaxed"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                     <button
                       type="button"
                       onClick={() => setShowGroupWhatsAppModal(false)}
-                      className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -1103,326 +1545,6 @@ export default function ClassesManager() {
           )}
         </AnimatePresence>
 
-        {/* Print Roster Modal */}
-        <AnimatePresence>
-          {showPrintRosterModal && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in" dir="rtl">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-4xl w-full p-6 text-right space-y-6 my-8"
-              >
-                {/* Top controls (hidden during print) */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 pb-4 gap-4 no-print">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl">
-                      <Printer className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-lg">معاينة وتصدير كشف المجموعة كـ PDF</h3>
-                      <p className="text-xs text-slate-500 font-sans">تنسيق طباعة رسمي بكافة بيانات طلاب المجموعة</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowHeaderSettings(!showHeaderSettings)}
-                      className={`px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-all cursor-pointer ${
-                        showHeaderSettings
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
-                      }`}
-                    >
-                      <Sliders className="w-4 h-4 text-amber-600" />
-                      <span>تخصيص الشعار والترويسة 🎨</span>
-                      {showHeaderSettings ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => window.print()}
-                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
-                    >
-                      <Printer className="w-4 h-4 text-slate-950" />
-                      <span>طباعة الآن / حفظ كـ PDF</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowPrintRosterModal(false)}
-                      className="p-2.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Header & Logo Customization Panel (no-print) */}
-                {showHeaderSettings && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 font-sans no-print text-xs"
-                  >
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="font-extrabold text-slate-900 flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-amber-600" />
-                        إعدادات الترويسة وشعار السنتر المطبوع
-                      </span>
-                      <span className="text-[10px] text-slate-500">التغييرات تحفظ تلقائياً لكافة التقارير</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Logo Section */}
-                      <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
-                        <label className="block font-bold text-slate-800">1. شعار السنتر (Logo):</label>
-                        <div className="flex items-center gap-3">
-                          {printHeaderLogo ? (
-                            <img src={printHeaderLogo} alt="شعار السنتر" className="w-12 h-12 object-contain rounded-lg border border-slate-200 bg-slate-50" />
-                          ) : (
-                            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center font-bold text-amber-800 text-lg">
-                              {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
-                            </div>
-                          )}
-                          <div className="flex flex-col gap-1.5 flex-1">
-                            <label className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-center cursor-pointer transition-all flex items-center justify-center gap-1.5">
-                              <Upload className="w-3.5 h-3.5" />
-                              <span>رفع شعار من جهازك</span>
-                              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                            </label>
-                            {printHeaderLogo && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPrintHeaderLogo('');
-                                  localStorage.removeItem('sams_custom_app_logo_v2');
-                                }}
-                                className="text-[10px] text-rose-600 hover:underline text-center"
-                              >
-                                إزالة الشعار
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Preset logos */}
-                        <div className="pt-2 border-t border-slate-100">
-                          <span className="text-[10px] text-slate-500 block mb-1">أو اختر من الشعارات الجاهزة:</span>
-                          <div className="flex flex-wrap gap-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const preset = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=120&auto=format&fit=crop&q=80';
-                                setPrintHeaderLogo(preset);
-                                localStorage.setItem('sams_custom_app_logo_v2', preset);
-                              }}
-                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
-                            >
-                              🎓 أكاديمي
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const preset = 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=120&auto=format&fit=crop&q=80';
-                                setPrintHeaderLogo(preset);
-                                localStorage.setItem('sams_custom_app_logo_v2', preset);
-                              }}
-                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
-                            >
-                              📚 كتب وتفوق
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const preset = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=120&auto=format&fit=crop&q=80';
-                                setPrintHeaderLogo(preset);
-                                localStorage.setItem('sams_custom_app_logo_v2', preset);
-                              }}
-                              className="px-2 py-1 bg-slate-100 hover:bg-amber-50 text-[10px] font-bold rounded-md border border-slate-200"
-                            >
-                              🖋️ قلم وقراءة
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Header Titles */}
-                      <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200 md:col-span-2">
-                        <label className="block font-bold text-slate-800">2. النصوص والترويسة المطبوعة:</label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          <div>
-                            <span className="text-[10px] text-slate-500 block">عنوان السنتر الرئيسي:</span>
-                            <input
-                              type="text"
-                              value={printHeaderTitle}
-                              onChange={(e) => updatePrintTitle(e.target.value)}
-                              placeholder="مثال: سنتر التفوق للتعليم"
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-900 focus:outline-none focus:border-amber-500"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-500 block">الوصف أو النص الفرعي:</span>
-                            <input
-                              type="text"
-                              value={printHeaderSubtitle}
-                              onChange={(e) => updatePrintSubtitle(e.target.value)}
-                              placeholder="مثال: سجل كشوفات المجموعات التعليمية"
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-medium text-slate-700 focus:outline-none focus:border-amber-500"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-slate-100">
-                          <div className="md:col-span-2">
-                            <span className="text-[10px] text-slate-500 block">بيانات التواصل والفرع:</span>
-                            <input
-                              type="text"
-                              value={printHeaderContact}
-                              onChange={(e) => updatePrintContact(e.target.value)}
-                              placeholder="مثال: هاتف: 01000000000 - الفرع الرئيسي"
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[11px] text-slate-700 focus:outline-none focus:border-amber-500"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-slate-500 block">محاذاة الترويسة:</span>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => updateLogoAlign('right')}
-                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
-                                  printLogoAlign === 'right' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
-                                }`}
-                              >
-                                يمين
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateLogoAlign('center')}
-                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
-                                  printLogoAlign === 'center' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
-                                }`}
-                              >
-                                وسط
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateLogoAlign('left')}
-                                className={`flex-1 py-1.5 rounded-md font-bold text-[10px] border ${
-                                  printLogoAlign === 'left' ? 'bg-amber-500 text-slate-950 border-amber-600' : 'bg-slate-100 text-slate-700 border-slate-200'
-                                }`}
-                              >
-                                يسار
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* PRINTABLE CONTAINER AREA */}
-                <div id="printable-group-roster" className="space-y-6 bg-white p-6 rounded-2xl border border-slate-200">
-                  {/* Dynamic Header section */}
-                  <div
-                    className={`flex items-center justify-between border-b-2 border-slate-800 pb-4 ${
-                      printLogoAlign === 'center'
-                        ? 'flex-col text-center gap-3'
-                        : printLogoAlign === 'left'
-                        ? 'flex-row-reverse text-right'
-                        : 'flex-row text-right'
-                    }`}
-                  >
-                    <div className={`flex items-center gap-3.5 ${printLogoAlign === 'center' ? 'flex-col text-center' : ''}`}>
-                      {printHeaderLogo ? (
-                        <img src={printHeaderLogo} alt="شعار السنتر" className="w-16 h-16 object-contain rounded-xl border border-slate-200 bg-slate-50 shrink-0" />
-                      ) : (
-                        <div className="w-14 h-14 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 font-extrabold text-2xl shrink-0">
-                          {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
-                        </div>
-                      )}
-                      <div>
-                        <h1 className="text-xl font-extrabold text-slate-900 leading-tight">{printHeaderTitle || 'سنتر التعليم والتفوق'}</h1>
-                        <p className="text-xs text-slate-600 font-medium mt-0.5">{printHeaderSubtitle}</p>
-                        {printHeaderContact && <p className="text-[11px] text-slate-500 font-sans mt-0.5">{printHeaderContact}</p>}
-                      </div>
-                    </div>
-
-                    <div className="text-center px-4 py-2 bg-slate-50 border border-slate-300 rounded-xl shrink-0">
-                      <span className="text-xs font-bold text-slate-700 block">كشف طلاب رسمي</span>
-                      <span className="text-[10px] text-slate-500 font-mono">{new Date().toLocaleDateString('ar-EG')}</span>
-                    </div>
-                  </div>
-
-                  {/* Group details grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs font-sans">
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">اسم المجموعة:</span>
-                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.name}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">الصف الدراسي:</span>
-                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.grade_level}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">المواعيد والجدول:</span>
-                      <strong className="text-slate-900 font-bold">{selectedClassForStudents.schedule_days} - {selectedClassForStudents.schedule_time}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">عدد الطلاب:</span>
-                      <strong className="text-amber-700 font-bold">{filteredGroupStudents.length} طالب</strong>
-                    </div>
-                  </div>
-
-                  {/* Students table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-right border-collapse border border-slate-300 text-xs">
-                      <thead>
-                        <tr className="bg-slate-100 text-slate-900 font-extrabold border-b border-slate-300">
-                          <th className="p-2 border border-slate-300 text-center w-10">#</th>
-                          <th className="p-2 border border-slate-300 w-24">رقم القيد</th>
-                          <th className="p-2 border border-slate-300">اسم الطالب الرباعي</th>
-                          <th className="p-2 border border-slate-300 w-28">هاتف ولي الأمر</th>
-                          <th className="p-2 border border-slate-300 w-20 text-center">الحضور %</th>
-                          <th className="p-2 border border-slate-300 w-24 text-center">الرسوم</th>
-                          <th className="p-2 border border-slate-300 w-32 text-center">ملاحظات / التوقيع</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredGroupStudents.map((st, idx) => {
-                          const att = getStudentAttendanceStats(st.id);
-                          const fee = getStudentFeeStatus(st.id);
-                          return (
-                            <tr key={st.id} className="border-b border-slate-200 hover:bg-slate-50 font-sans">
-                              <td className="p-2 border border-slate-300 text-center font-bold text-slate-700">{idx + 1}</td>
-                              <td className="p-2 border border-slate-300 font-mono text-slate-800">{st.registration_id}</td>
-                              <td className="p-2 border border-slate-300 font-bold text-slate-900">{st.name}</td>
-                              <td className="p-2 border border-slate-300 font-mono text-slate-700" dir="ltr">{st.parent_phone || st.phone || '-'}</td>
-                              <td className="p-2 border border-slate-300 text-center font-bold">{att.percentage}%</td>
-                              <td className="p-2 border border-slate-300 text-center text-[11px] font-bold">
-                                {fee.isPaid ? 'مسدد' : 'غير مسدد'}
-                              </td>
-                              <td className="p-2 border border-slate-300"></td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Footer signature */}
-                  <div className="pt-6 flex justify-between items-center text-xs text-slate-600 border-t border-slate-200 font-sans">
-                    <div>توقيع إشراف السنتر: ....................................</div>
-                    <div>اعتماد إدارة اللغة العربية: ....................................</div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
         {/* Archived Students Modal */}
         <AnimatePresence>
           {showArchiveModal && (
@@ -1431,22 +1553,22 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-3xl w-full p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-3xl w-full p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 shrink-0">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 shrink-0">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl">
+                    <div className="p-2.5 bg-amber-100 text-amber-800 dark:text-amber-300 rounded-2xl">
                       <Archive className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-slate-900 text-base">أرشيف الطلاب المؤرشفين</h3>
-                      <p className="text-xs text-slate-500 font-sans">إدارة واستعادة أو حذف بيانات الطلاب الموجودين في الأرشيف</p>
+                      <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-base">أرشيف الطلاب المؤرشفين</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">إدارة واستعادة أو حذف بيانات الطلاب الموجودين في الأرشيف</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowArchiveModal(false)}
-                    className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -1460,7 +1582,7 @@ export default function ClassesManager() {
                     value={archivedSearchTerm}
                     onChange={(e) => setArchivedSearchTerm(e.target.value)}
                     placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
+                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
                   />
                 </div>
 
@@ -1485,15 +1607,15 @@ export default function ClassesManager() {
                     return (
                       <div className="space-y-2">
                         {archivedList.map(st => (
-                          <div key={st.id} className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans">
+                          <div key={st.id} className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans">
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-900 text-xs">{st.name}</span>
-                                <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-mono font-bold">
+                                <span className="font-bold text-slate-900 dark:text-slate-50 text-xs">{st.name}</span>
+                                <span className="text-[10px] bg-amber-100 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md font-mono font-bold">
                                   {st.registration_id}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-3">
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap gap-3">
                                 <span>الصف: {st.grade_level}</span>
                                 <span>الهاتف: {st.phone || st.parent_phone || '-'}</span>
                               </div>
@@ -1508,7 +1630,7 @@ export default function ClassesManager() {
                                   loadData();
                                   setSuccessText(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
                                 }}
-                                className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
+                                className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                               >
                                 <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
                                 <span>استعادة الطالب</span>
@@ -1518,9 +1640,9 @@ export default function ClassesManager() {
                               <button
                                 type="button"
                                 onClick={() => setArchivedStudentToPermanentDelete(st)}
-                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
+                                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                               >
-                                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                                 <span>حذف نهائي</span>
                               </button>
                             </div>
@@ -1543,37 +1665,39 @@ export default function ClassesManager() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
               >
-                <div className="flex items-center gap-3 text-red-600">
-                  <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
-                    <Trash2 className="w-5 h-5 text-red-600" />
+                <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                  <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center shrink-0">
+                    <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-950 text-sm">تأكيد الحذف النهائي من النظام</h3>
-                    <p className="text-[11px] text-slate-500 font-sans">حذف دائم لا يمكن التراجع عنه بأي حال</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">حذف دائم لا يمكن التراجع عنه بأي حال</p>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-700 leading-relaxed font-sans bg-rose-50/50 p-3.5 rounded-xl border border-rose-100">
-                  هل أنت متأكد تماماً من الحذف النهائي للطالب <strong className="text-rose-700">"{archivedStudentToPermanentDelete.name}"</strong>؟ سيتم مسح ملفه وكافة سجلاته نهائياً من قاعدة البيانات.
+                <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-sans bg-rose-50/50 p-3.5 rounded-xl border border-rose-100 dark:border-rose-800">
+                  هل أنت متأكد تماماً من الحذف النهائي للطالب <strong className="text-rose-700 dark:text-rose-300">"{archivedStudentToPermanentDelete.name}"</strong>؟ سيتم مسح ملفه وكافة سجلاته نهائياً من قاعدة البيانات.
                 </p>
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-50">
                   <button
                     type="button"
                     onClick={() => setArchivedStudentToPermanentDelete(null)}
-                    className="px-4 py-2 border border-gray-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold cursor-pointer"
+                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-xs font-bold cursor-pointer"
                   >
                     إلغاء
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      samsDb.permanentlyDeleteStudent(archivedStudentToPermanentDelete.id);
-                      setArchivedStudentToPermanentDelete(null);
-                      loadData();
-                      setSuccessText('تم مسح بيانات الطالب نهائياً من قاعدة البيانات.');
+                      handleProcessAction("جاري الحذف النهائي...", () => {
+                        samsDb.permanentlyDeleteStudent(archivedStudentToPermanentDelete.id);
+                        setArchivedStudentToPermanentDelete(null);
+                        loadData();
+                        setSuccessText('تم مسح بيانات الطالب نهائياً من قاعدة البيانات.');
+                      });
                     }}
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
                   >
@@ -1591,15 +1715,64 @@ export default function ClassesManager() {
 
   return (
     <div className="space-y-6" id="sams_classes_module">
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       
       {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             
             إدارة المجموعات والمقررات والجداول بالسنتر
           </h2>
-          <p className="text-xs text-slate-500 mt-1">تنسيق المجموعات الدراسية وسعتها الاستيعابية ومواعيدها</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">تنسيق المجموعات الدراسية وسعتها الاستيعابية ومواعيدها</p>
         </div>
         <button
           onClick={() => {
@@ -1615,7 +1788,7 @@ export default function ClassesManager() {
 
       {/* Error text alert */}
       {errorText && (
-        <div className="p-4 bg-red-50 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
+        <div className="p-4 bg-red-50 dark:bg-red-900/40 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 text-[#E8192C] shrink-0" />
           <span className="font-semibold">{errorText}</span>
         </div>
@@ -1623,7 +1796,7 @@ export default function ClassesManager() {
 
       {/* Success text alert */}
       {successText && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
           <span className="font-semibold">{successText}</span>
         </div>
@@ -1631,27 +1804,27 @@ export default function ClassesManager() {
 
       {/* Initialize classroom form */}
       {showAddClass && (
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-slide-up">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-slide-up">
           <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-gray-50 pb-2">تأسيس مجموعة دراسية جديدة</h3>
           <form onSubmit={handleCreateClass} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 font-sans">اسم المجموعة الدراسية *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">اسم المجموعة الدراسية *</label>
               <input
                 type="text"
                 value={classForm.name}
                 onChange={(e) => setClassForm({ ...classForm, name: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
+                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
                 placeholder="اسم المجموعة"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 font-sans">أيام المجموعة *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أيام المجموعة *</label>
               <div className="flex flex-wrap gap-1.5">
                 {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
-                  <label key={day} className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-md text-[11px] cursor-pointer hover:bg-slate-100 transition-colors">
+                  <label key={day} className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md text-[11px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors">
                     <input 
                       type="checkbox" 
                       className="accent-[#0D5C8C]"
@@ -1665,29 +1838,29 @@ export default function ClassesManager() {
                         }
                       }}
                     />
-                    <span className="font-bold text-slate-700">{day}</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{day}</span>
                   </label>
                 ))}
               </div>
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 font-sans">وقت المجموعة *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">وقت المجموعة *</label>
               <input
                 type="text"
                 value={classForm.schedule_time}
                 onChange={(e) => setClassForm({ ...classForm, schedule_time: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white"
+                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
                 placeholder="أدخل وقت المواعيد..."
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 font-sans">الصف الدراسي *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">الصف الدراسي *</label>
               <select
                 value={classForm.grade_level}
                 onChange={(e) => setClassForm({ ...classForm, grade_level: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white"
+                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
                 required
               >
                 <option value="الأول الإعدادي">الأول الإعدادي</option>
@@ -1699,11 +1872,11 @@ export default function ClassesManager() {
               </select>
             </div>
 
-            <div className="md:col-span-4 flex justify-end gap-2 border-t border-slate-50 pt-3">
+            <div className="md:col-span-4 flex justify-end gap-2 border-t border-slate-50 dark:border-slate-800 pt-3">
               <button
                 type="button"
                 onClick={() => setShowAddClass(false)}
-                className="px-4 py-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 text-slate-600 font-bold shrink-0 cursor-pointer"
+                className="px-4 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-bold shrink-0 cursor-pointer"
               >
                 إلغاء
               </button>
@@ -1727,42 +1900,42 @@ export default function ClassesManager() {
           const totalHours = currentSubjects.reduce((sum, item) => sum + item.weekly_hours, 0);
 
           return (
-            <div key={cls.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all space-y-4" id={`classroom_card_${cls.id}`}>
+            <div key={cls.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all space-y-4" id={`classroom_card_${cls.id}`}>
               
               <div className="flex items-center justify-between border-b border-gray-50 pb-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-800 text-sm">{cls.name}</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">{cls.name}</h3>
                   <button
                     onClick={() => setClassToDelete(cls)}
-                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-all cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer"
                     title="حذف المجموعة"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
+                <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
               </div>
 
               {/* Attributes */}
               <div className="space-y-2.5 text-xs">
                 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                   <span className="flex items-center gap-1.5 font-sans">
                     <Calendar className="w-4 h-4 text-slate-400" />
                     مواعيد المجموعة
                   </span>
-                  <span className="font-bold text-slate-800">{cls.schedule_days ? `${cls.schedule_days} - ${cls.schedule_time || ''}` : 'ـ لم تحدد بعد ـ'}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? `${cls.schedule_days} - ${cls.schedule_time || ''}` : 'ـ لم تحدد بعد ـ'}</span>
                 </div>
 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                   <span className="flex items-center gap-1.5 font-sans">
                     <User className="w-4 h-4 text-slate-400" />
                     عدد الطلاب
                   </span>
-                  <span className="font-bold text-slate-800">{students.filter(s => s.class_id === cls.id).length} طالب</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{students.filter(s => s.class_id === cls.id).length} طالب</span>
                 </div>
 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                   <span className="flex items-center gap-1.5 font-sans">
                     <BookOpen className="w-4 h-4 text-slate-400" />
                     المحاضرات والمقررات
@@ -1773,10 +1946,10 @@ export default function ClassesManager() {
               </div>
 
               {/* Subjects in that group list display */}
-              <div className="pt-3 border-t border-slate-50 space-y-1.5">
+              <div className="pt-3 border-t border-slate-50 dark:border-slate-800 space-y-1.5">
                 <p className="text-[10px] text-slate-400 font-bold uppercase">قائمة المواد الدراسية النشطة بالمجموعة:</p>
                 {currentSubjects.length === 0 ? (
-                  <p className="text-[10px] text-amber-600 italic">يتم تدريس المحاضرات الأساسية حالياً.</p>
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400 italic">يتم تدريس المحاضرات الأساسية حالياً.</p>
                 ) : (
                   <div className="flex flex-wrap gap-1">
                     {currentSubjects.map(sub => (
@@ -1789,7 +1962,7 @@ export default function ClassesManager() {
               </div>
 
               {/* Dedicated Group Students Page Trigger Button */}
-              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -1817,27 +1990,27 @@ export default function ClassesManager() {
 
 
       {/* Dynamic Week Class Schedule */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs space-y-3">
         <div className="flex justify-between items-center">
-          <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
             أوقات المحاضرات وجدول التوزيع اليومي الأسبوعي الأساسي للمجموعات بالسنتر
           </h3>
           {!isEditingSchedule ? (
             <button onClick={() => { setIsEditingSchedule(true); setEditingSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null); }} className="text-xs bg-[#0D5C8C] text-white px-3 py-1.5 rounded-lg">تعديل الجدول</button>
           ) : (
             <div className="flex gap-2">
-              <button onClick={() => setIsEditingSchedule(false)} className="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg">إلغاء</button>
+              <button onClick={() => setIsEditingSchedule(false)} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg">إلغاء</button>
               <button onClick={() => { if (editingSchedule) { samsDb.saveCenterSchedule(editingSchedule); setSchedule(editingSchedule); setIsEditingSchedule(false); } }} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Check className="w-3 h-3"/> حفظ</button>
             </div>
           )}
         </div>
         
-        <p className="text-[11px] text-slate-500 leading-relaxed">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
           يتكون الأسبوع الدراسي من أيام وفترات يمكن تخصيصها.
         </p>
 
         {(isEditingSchedule && editingSchedule) || (!isEditingSchedule && schedule) ? (
-          <div className="overflow-x-auto border border-gray-100 rounded-xl mt-2 text-xxs sm:text-xs">
+          <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl mt-2 text-xxs sm:text-xs">
             <table className="min-w-full text-right border-collapse" dir="rtl">
               <thead className="bg-[#0D5C8C] text-white">
                 <tr>
@@ -1872,10 +2045,10 @@ export default function ClassesManager() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 font-sans text-slate-700">
+              <tbody className="divide-y divide-gray-100 font-sans text-slate-700 dark:text-slate-200">
                 {(isEditingSchedule ? editingSchedule : schedule)?.days?.map(day => (
-                  <tr key={day.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-bold bg-slate-50 border-l border-gray-100">
+                  <tr key={day.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="p-3 font-bold bg-slate-50 dark:bg-slate-900/50 border-l border-gray-100 dark:border-gray-700">
                       {isEditingSchedule ? (
                         <input type="text" value={day.name} onChange={(e) => {
                           const newSched = {...editingSchedule} as any;
@@ -1918,7 +2091,7 @@ export default function ClassesManager() {
                                   <div className="flex flex-col items-center">
                                     <span className="font-bold text-xs">{currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject}</span>
                                     {currentSubject.includes('||') && currentSubject.split('||')[1] && (
-                                      <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-1">{currentSubject.split('||')[1]}</span>
+                                      <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-1">{currentSubject.split('||')[1]}</span>
                                     )}
                                   </div>
                                 ) : <span className="text-slate-300">-</span>
@@ -1934,7 +2107,7 @@ export default function ClassesManager() {
             </table>
           </div>
         ) : (
-          <div className="text-center p-5 text-slate-500 text-xs">جاري تحميل الجدول...</div>
+          <div className="text-center p-5 text-slate-500 dark:text-slate-400 text-xs">جاري تحميل الجدول...</div>
         )}
       </div>
 
@@ -1946,20 +2119,20 @@ export default function ClassesManager() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
             >
-              <div className="flex items-center gap-3 text-red-600">
-                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-                  <ShieldAlert className="w-5 h-5 text-red-600" />
+              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
+                  <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-950 text-sm">تأكيد حذف المجموعة الدراسية</h3>
-                  <p className="text-[11px] text-slate-500 font-sans">إجراء إداري حساس وغير قابل للتراجع</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">إجراء إداري حساس وغير قابل للتراجع</p>
                 </div>
               </div>
 
-              <div className="text-xs text-slate-700 leading-relaxed font-sans space-y-2 py-2 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                <p>هل أنت متأكد من رغبتك في حذف المجموعة: <strong className="text-red-700">"{classToDelete.name}"</strong>؟</p>
+              <div className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-sans space-y-2 py-2 bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                <p>هل أنت متأكد من رغبتك في حذف المجموعة: <strong className="text-red-700 dark:text-red-300">"{classToDelete.name}"</strong>؟</p>
                 <p className="text-[10px] text-slate-400">ملاحظة: سيقوم النظام بالتحقق أولاً من عدم وجود أي طالب مسجل بهذه المجموعة كإجراء وقائي لمنع فقدان البيانات.</p>
               </div>
 
@@ -1967,7 +2140,7 @@ export default function ClassesManager() {
                 <button
                   type="button"
                   onClick={() => setClassToDelete(null)}
-                  className="px-4 py-2 border border-gray-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-xs font-bold cursor-pointer"
                 >
                   إلغاء
                 </button>

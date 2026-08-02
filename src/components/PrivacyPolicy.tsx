@@ -92,19 +92,19 @@ export default function PrivacyPolicy() {
     <div className="space-y-8 animate-slide-up" dir="rtl">
       
       {/* Dynamic Header Section */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2.5">
-            <span className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2.5">
+            <span className="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 rounded-xl">
               <ShieldCheck className="w-6 h-6" />
             </span>
             سياسة الخصوصية وحماية البيانات
           </h2>
-          <p className="text-xs text-slate-500 mt-2 font-sans">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-sans">
             الالتزام الكامل بسلامة السجلات الأكاديمية وحصانة البيانات الشخصية للمنصة التعليمية
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100 self-start md:self-auto">
+        <div className="flex items-center gap-2 bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100 dark:border-indigo-800 self-start md:self-auto">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-[11px] font-black text-indigo-950 font-mono">آخر تحديث: يوليو 2026</span>
         </div>
@@ -114,11 +114,11 @@ export default function PrivacyPolicy() {
         
         {/* Left/Right Column: Privacy Content Accordion (7 Columns) */}
         <div className="lg:col-span-7 flex flex-col h-full">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xs flex-grow flex flex-col justify-between h-full gap-6">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex-grow flex flex-col justify-between h-full gap-6">
             <div className="space-y-4 flex-grow flex flex-col">
-              <div className="flex items-center gap-2.5 pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5 pb-4 border-b border-gray-100 dark:border-gray-700">
                 <FileText className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-extrabold text-slate-800">بنود اتفاقية الخصوصية والأمان</h3>
+                <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">بنود اتفاقية الخصوصية والأمان</h3>
               </div>
 
               <div className="space-y-3 flex-grow">
@@ -128,7 +128,7 @@ export default function PrivacyPolicy() {
                   <div 
                     key={idx} 
                     className={`border rounded-2xl transition-all duration-300 overflow-hidden ${
-                      isOpen ? 'border-indigo-200 bg-indigo-50/10 shadow-xs' : 'border-gray-100 hover:border-gray-200 bg-white'
+                      isOpen ? 'border-indigo-200 bg-indigo-50/10 shadow-xs' : 'border-gray-100 hover:border-gray-200 bg-white dark:bg-slate-800'
                     }`}
                   >
                     <button
@@ -136,10 +136,10 @@ export default function PrivacyPolicy() {
                       className="w-full text-right px-5 py-4 flex items-center justify-between cursor-pointer focus:outline-none"
                     >
                       <div className="flex items-center gap-3">
-                        <span className={`p-1.5 rounded-lg ${isOpen ? 'bg-indigo-50' : 'bg-slate-50'}`}>
+                        <span className={`p-1.5 rounded-lg ${isOpen ? 'bg-indigo-50' : 'bg-slate-50 dark:bg-slate-900/50'}`}>
                           {section.icon}
                         </span>
-                        <span className="text-xs font-black text-slate-700 font-sans">{section.title}</span>
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-200 font-sans">{section.title}</span>
                       </div>
                       {isOpen ? (
                         <ChevronUp className="w-4 h-4 text-slate-400" />
@@ -156,7 +156,7 @@ export default function PrivacyPolicy() {
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <div className="px-5 pb-5 pt-1 text-xs text-slate-600 leading-relaxed font-sans border-t border-gray-50 mt-1 whitespace-pre-line">
+                          <div className="px-5 pb-5 pt-1 text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans border-t border-gray-50 mt-1 whitespace-pre-line">
                             {section.content}
                           </div>
                         </motion.div>
@@ -168,11 +168,11 @@ export default function PrivacyPolicy() {
             </div>
           </div>
 
-          <div className="bg-slate-50 p-4 rounded-2xl border border-gray-200/50 flex gap-3 mt-4">
+          <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-gray-200/50 flex gap-3 mt-4">
             <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="text-xs font-bold text-slate-800">تأكيد الموافقة والأمان</h4>
-              <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">تأكيد الموافقة والأمان</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
                 باستخدامك لهذه المنصة بصفتك إدارياً، معلمًا، أو سكرتيرة، فإنك توافق بشكل تلقائي على الالتزام التام ببنود السرية وحفظ أمان المعلومات المذكورة أعلاه.
               </p>
             </div>
@@ -326,7 +326,7 @@ export default function PrivacyPolicy() {
 
                       {/* Official Signature Line */}
                       <div className="w-full border-t border-slate-800/80 my-3 relative">
-                        <span className="absolute -top-2 left-2 px-1.5 text-[7px] font-black text-slate-500 bg-[#07111e] rounded tracking-wider uppercase font-mono">
+                        <span className="absolute -top-2 left-2 px-1.5 text-[7px] font-black text-slate-500 dark:text-slate-400 bg-[#07111e] rounded tracking-wider uppercase font-mono">
                           SECURE SEC-CEO
                         </span>
                       </div>
@@ -389,7 +389,7 @@ export default function PrivacyPolicy() {
 
                       {/* Official Signature Line */}
                       <div className="w-full border-t border-slate-800/80 my-3 relative">
-                        <span className="absolute -top-2 left-2 px-1.5 text-[7px] font-black text-slate-500 bg-[#07111e] rounded tracking-wider uppercase font-mono">
+                        <span className="absolute -top-2 left-2 px-1.5 text-[7px] font-black text-slate-500 dark:text-slate-400 bg-[#07111e] rounded tracking-wider uppercase font-mono">
                           SECURE SEC-CTO
                         </span>
                       </div>

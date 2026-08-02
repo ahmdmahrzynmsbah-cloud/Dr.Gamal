@@ -116,7 +116,7 @@ export default function Barcode({
   }, [value, renderType]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white p-3 rounded-2xl border border-slate-100 shadow-3xs hover:shadow-2xs transition-all w-full" dir="ltr">
+    <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-3xs hover:shadow-2xs transition-all w-full" dir="ltr">
       
       {/* Container for code rendering based on renderType */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
@@ -125,7 +125,7 @@ export default function Barcode({
         {(renderType === 'barcode' || renderType === 'both') && (
           <div className="flex flex-col items-center justify-center grow max-w-full">
             {/* SVG wrapper with absolute height and crisp pixel widths to prevent stretch distortion */}
-            <div className="bg-white p-2 rounded-lg border border-slate-100 flex items-center justify-center overflow-hidden w-full">
+            <div className="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden w-full">
               <svg
                 width={totalWidth}
                 height={height}
@@ -156,7 +156,7 @@ export default function Barcode({
               </svg>
             </div>
             {showText && renderType === 'barcode' && (
-              <span className="mt-1.5 text-[10px] font-mono tracking-[4px] font-bold text-slate-800 uppercase text-center">
+              <span className="mt-1.5 text-[10px] font-mono tracking-[4px] font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 uppercase text-center">
                 {cleanValue}
               </span>
             )}
@@ -166,7 +166,7 @@ export default function Barcode({
         {/* QR CODE RENDER */}
         {(renderType === 'qrcode' || renderType === 'both') && qrDataUrl && (
           <div className="flex flex-col items-center justify-center shrink-0">
-            <div className="bg-white p-1.5 rounded-xl border border-slate-100 shadow-4xs flex items-center justify-center hover:scale-105 transition-transform duration-200">
+            <div className="bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-4xs flex items-center justify-center hover:scale-105 transition-transform duration-200">
               <img 
                 src={qrDataUrl} 
                 alt={`QR code for ${value}`} 
@@ -182,7 +182,7 @@ export default function Barcode({
       {/* Unified Caption display */}
       {showText && renderType !== 'barcode' && (
         <div className="mt-2 text-center">
-          <span className="text-[10px] font-mono tracking-[3px] font-black text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-sm uppercase">
+          <span className="text-[10px] font-mono tracking-[3px] font-black text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-sm uppercase">
             ID: {cleanValue}
           </span>
         </div>

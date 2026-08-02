@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
+import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
 export default function StudentsList() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -23,6 +24,11 @@ export default function StudentsList() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [archivedSearchTerm, setArchivedSearchTerm] = useState('');
   const [archivedStudentToPermanentDelete, setArchivedStudentToPermanentDelete] = useState<Student | null>(null);
+  
+  // Progress State
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingText, setProcessingText] = useState('');
 
   // Full Report state
   const [showFullReport, setShowFullReport] = useState(false);
@@ -59,8 +65,8 @@ export default function StudentsList() {
         present: 0,
         absent: 0,
         statusLabel: 'لا توجد سجلات 📂',
-        statusColor: 'text-slate-500',
-        bgClass: 'bg-slate-50 border-slate-200 text-slate-600',
+        statusColor: 'text-slate-500 dark:text-slate-400',
+        bgClass: 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300',
         description: 'لم يتم تسجيل أي حضور أو غياب لهذا الطالب بعد في النظام.'
       };
     }
@@ -128,6 +134,34 @@ export default function StudentsList() {
       localStorage.removeItem('sams_global_search');
     }
   }, []);
+
+  const handleProcessAction = (text: string, onComplete: () => void) => {
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    setProcessingText(text);
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 20) + 10;
+      if (progress >= 100) {
+        progress = 100;
+        setProcessingProgress(progress);
+        clearInterval(interval);
+        
+        setTimeout(() => {
+          setIsProcessing(false);
+          setProcessingProgress(0);
+          onComplete();
+        }, 400);
+      } else {
+        setProcessingProgress(progress);
+      }
+    }, 150);
+  };
+
+  useSamsDbSync(() => {
+    loadData();
+  });
 
   const loadData = () => {
     setStudents(samsDb.getStudents());
@@ -221,13 +255,15 @@ export default function StudentsList() {
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      samsDb.permanentlyDeleteStudent(studentToDelete.id);
-      setSuccessMessage('تم حذف الطالب نهائياً بنجاح.');
-      setStudentToDelete(null);
-      loadData();
-      if (selectedProfile?.id === studentToDelete.id) {
-        setSelectedProfile(null);
-      }
+      handleProcessAction("جاري الحذف النهائي...", () => {
+        samsDb.permanentlyDeleteStudent(studentToDelete.id);
+        setSuccessMessage('تم حذف الطالب نهائياً بنجاح.');
+        setStudentToDelete(null);
+        loadData();
+        if (selectedProfile?.id === studentToDelete.id) {
+          setSelectedProfile(null);
+        }
+      });
     }
   };
 
@@ -235,26 +271,253 @@ export default function StudentsList() {
     setStudentToDelete(null);
   };
 
-  const filteredStudents = students.filter(s => {
-    const matchesSearch = s.name.includes(searchTerm) || s.registration_id.includes(searchTerm);
-    const matchesClass = classFilter === 'all' || s.class_id === classFilter;
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    return matchesSearch && matchesClass && matchesStatus;
-  });
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const matchesSearch = s.name.includes(searchTerm) || s.registration_id.includes(searchTerm);
+      const matchesClass = classFilter === 'all' || s.class_id === classFilter;
+      const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+      return matchesSearch && matchesClass && matchesStatus;
+    });
+  }, [students, searchTerm, classFilter, statusFilter]);
+
+
+  if (showArchiveModal) {
+    return (
+      <div className="space-y-6 animate-fade-in" dir="rtl">
+        {/* Header */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowArchiveModal(false)}
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl transition-colors cursor-pointer flex items-center gap-2 font-bold text-sm"
+            >
+              <ArrowRight className="w-5 h-5" />
+              <span>رجوع</span>
+            </button>
+            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-2xl flex items-center justify-center border border-amber-200 dark:border-amber-800">
+              <Archive className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">أرشيف الطلاب المؤرشفين</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-sans">إدارة واستعادة أو حذف بيانات الطلاب نهائياً</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[70vh]">
+          {/* Search */}
+          <div className="relative shrink-0 mb-6">
+            <Search className="w-5 h-5 text-slate-400 absolute right-4 top-3.5" />
+            <input
+              type="text"
+              value={archivedSearchTerm}
+              onChange={(e) => setArchivedSearchTerm(e.target.value)}
+              placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
+              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-600 font-sans transition-colors"
+            />
+          </div>
+
+          {/* Archived list */}
+          <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+            {(() => {
+              const archivedList = samsDb.getArchivedStudents().filter(st => 
+                !archivedSearchTerm || 
+                st.name.includes(archivedSearchTerm) || 
+                st.registration_id.includes(archivedSearchTerm)
+              );
+
+              if (archivedList.length === 0) {
+                return (
+                  <div className="text-center py-20 text-slate-400 space-y-3">
+                    <Archive className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600" />
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">لا يوجد طلاب في الأرشيف حالياً</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {archivedList.map(st => (
+                    <div key={st.id} className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans hover:border-amber-200 dark:hover:border-amber-700 transition-colors">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="font-bold text-slate-900 dark:text-white text-sm">{st.name}</span>
+                          <span className="text-[10px] bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md font-mono font-bold border border-amber-200 dark:border-amber-800">
+                            {st.registration_id}
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-3">
+                          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
+                          <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        {/* Restore */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            samsDb.restoreStudent(st.id);
+                            loadData();
+                            setSuccessMessage(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
+                          }}
+                          className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          <span>استعادة</span>
+                        </button>
+
+                        {/* Permanent Delete */}
+                        <button
+                          type="button"
+                          onClick={() => setArchivedStudentToPermanentDelete(st)}
+                          className="px-3 py-2 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>حذف نهائي</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+        
+        {/* Global Processing Progress Overlay and Modals should still be accessible if needed */}
+        <AnimatePresence>
+          {archivedStudentToPermanentDelete && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[100] animate-fade-in" dir="rtl">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              >
+                <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                  <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">تأكيد الحذف النهائي</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">هذا الإجراء لا يمكن التراجع عنه.</p>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  هل أنت متأكد من رغبتك في الحذف النهائي للطالب <span className="font-bold">({archivedStudentToPermanentDelete?.name})</span>؟ سيتم مسح كافة سجلاته بشكل دائم.
+                </p>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setArchivedStudentToPermanentDelete(null)}
+                    className="px-4 py-2 text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl font-bold text-sm transition-colors cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (archivedStudentToPermanentDelete) {
+                        handleProcessAction("جاري الحذف النهائي...", () => {
+                          samsDb.permanentlyDeleteStudent(archivedStudentToPermanentDelete.id);
+                          setSuccessMessage('تم حذف الطالب نهائياً بنجاح.');
+                          setArchivedStudentToPermanentDelete(null);
+                          loadData();
+                        });
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-sm shadow-red-200 dark:shadow-none"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    تأكيد الحذف النهائي 🗑️
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (showFullReport && selectedProfile) {
+    return (
+      <StudentFullReport
+        student={selectedProfile}
+        onClose={() => {
+          setShowFullReport(false);
+          setSelectedProfile(null);
+        }}
+      />
+    );
+  }
 
   return (
-    <motion.div 
+    <>
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6" 
       id="sams_students_module"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             إدارة سجلات الطلاب والقبول والتسجيل
           </h2>
-          <p className="text-xs text-slate-500 mt-1">تسجيل، تعديل، أرشفة الطلاب الجدد وإدارة الملفات السنتر</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">تسجيل، تعديل، أرشفة الطلاب الجدد وإدارة الملفات السنتر</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -289,13 +552,13 @@ export default function StudentsList() {
 
       <AnimatePresence>
         {errorMessage && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl flex items-center gap-3 text-sm font-bold">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700 rounded-xl flex items-center gap-3 text-sm font-bold">
             <ShieldAlert className="w-5 h-5 shrink-0" />
             <p>{errorMessage}</p>
           </motion.div>
         )}
         {successMessage && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl flex items-center gap-3 text-sm font-bold">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 rounded-xl flex items-center gap-3 text-sm font-bold">
             <CheckCircle className="w-5 h-5 shrink-0" />
             <p>{successMessage}</p>
           </motion.div>
@@ -305,30 +568,30 @@ export default function StudentsList() {
       <AnimatePresence>
         {showAddForm && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <form onSubmit={executeAddOrUpdate} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-6 space-y-5">
-              <h3 className="font-bold text-slate-800 border-b border-gray-100 pb-3">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
+            <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6 space-y-5">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 border-b border-gray-100 dark:border-gray-700 pb-3">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
-                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
+                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">هاتف الطالب <span className="text-rose-500">*</span></label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-rose-500">*</span></label>
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">المجموعة المخصصة <span className="text-rose-500">*</span></label>
-                  <select name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة <span className="text-rose-500">*</span></label>
+                  <select name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>)}
                   </select>
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">الصف الدراسي</label>
-                  <select name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي</label>
+                  <select name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     <option value="الأول الإعدادي">الأول الإعدادي</option>
                     <option value="الثاني الإعدادي">الثاني الإعدادي</option>
                     <option value="الثالث الإعدادي">الثالث الإعدادي</option>
@@ -339,31 +602,31 @@ export default function StudentsList() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">تاريخ الميلاد</label>
-                  <input type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد</label>
+                  <input type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">حالة القيد</label>
-                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد</label>
+                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     <option value="active">مفعل ومنتظم</option>
                     <option value="inactive">مجمد مؤقتاً</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">اسم ولي الأمر</label>
-                  <input type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر</label>
+                  <input type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 block">رقم هاتف ولي الأمر (للطوارئ)</label>
-                  <input type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ)</label>
+                  <input type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-gray-100">
-                <button type="button" onClick={() => setShowAddForm(false)} className="px-5 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-100 rounded-xl ml-3">إلغاء</button>
+              <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
+                <button type="button" onClick={() => setShowAddForm(false)} className="px-5 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl ml-3">إلغاء</button>
                 <button type="submit" className="px-6 py-2 bg-[#1A7FAA] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0D5C8C]">
                   {isEditing ? 'حفظ التعديلات المطبقة' : 'حفظ وتسجيل الطالب المذكور'}
                 </button>
@@ -374,26 +637,26 @@ export default function StudentsList() {
       </AnimatePresence>
 
       {/* Control Tools Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96 shrink-0">
           <input 
             type="text" 
             placeholder="البحث بالاسم المذكور أو بكود التسجيل..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
         </div>
         <div className="flex w-full md:w-auto items-center gap-3 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
             <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 outline-none cursor-pointer">
+            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
               <option value="all">كل المجموعات (الكل)</option>
               {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 outline-none cursor-pointer">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
             <option value="all">كل الحالات (مفعل/غير مفعل)</option>
             <option value="active">المنتظمون فقط (مفعل)</option>
             <option value="inactive">المجمدون فقط (غير مفعل)</option>
@@ -401,10 +664,10 @@ export default function StudentsList() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">
-              <thead className="bg-slate-50 text-slate-600 font-bold border-b border-gray-100 whitespace-nowrap">
+              <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold border-b border-gray-100 dark:border-gray-700 whitespace-nowrap">
                 <tr>
                   <th className="px-4 py-4 pr-6">م</th>
                   <th className="px-4 py-4 min-w-[200px]">بيانات الطالب</th>
@@ -415,23 +678,23 @@ export default function StudentsList() {
               </thead>
               <tbody className="divide-y divide-slate-100 whitespace-nowrap">
                 {filteredStudents.length > 0 ? filteredStudents.map((student, index) => (
-                  <tr key={student.id} className="hover:bg-blue-50/30 transition-colors">
+                  <tr key={student.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-4 py-3 pr-6 text-xs text-slate-400 font-mono">
                       {(index + 1).toString().padStart(2, '0')}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400 font-bold text-lg">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 text-slate-400 font-bold text-lg">
                           {student.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800 text-sm leading-tight">{student.name}</p>
+                          <p className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm leading-tight">{student.name}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <p className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-sm">#{student.registration_id}</p>
+                            <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{student.registration_id}</p>
                             {student.status === 'active' ? (
                               <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> منتظم</span>
                             ) : (
-                              <span className="flex items-center gap-1 text-[9px] font-bold text-rose-600"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> غير منتظم</span>
+                              <span className="flex items-center gap-1 text-[9px] font-bold text-rose-600 dark:text-rose-400"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> غير منتظم</span>
                             )}
                           </div>
                         </div>
@@ -439,14 +702,14 @@ export default function StudentsList() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-bold text-[#0D5C8C] text-xs bg-sky-50 px-2 py-1 rounded-md inline-flex items-center w-fit border border-sky-100">
+                        <span className="font-bold text-[#0D5C8C] text-xs bg-sky-50 dark:bg-sky-900/40 px-2 py-1 rounded-md inline-flex items-center w-fit border border-sky-100 dark:border-sky-800">
                           {classes.find(c => c.id === student.class_id)?.name || '-'}
                         </span>
-                        <span className="text-[10px] text-slate-500 mt-1 mr-1">{student.grade_level}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 mr-1">{student.grade_level}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-100" dir="ltr">
+                      <span className="font-mono text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 px-2 py-1 rounded border border-slate-100 dark:border-slate-700" dir="ltr">
                         {student.parent_phone}
                       </span>
                     </td>
@@ -457,7 +720,7 @@ export default function StudentsList() {
                             setSelectedProfile(student);
                             setShowBriefProfile(true);
                           }} 
-                          className="p-1.5 text-slate-400 hover:text-[#1A7FAA] hover:bg-sky-50 rounded-lg transition-colors" 
+                          className="p-1.5 text-slate-400 hover:text-[#1A7FAA] hover:bg-sky-50 dark:hover:bg-sky-900/40 rounded-lg transition-colors" 
                           title="عرض الملف"
                         >
                           <Eye className="w-4 h-4" />
@@ -467,23 +730,23 @@ export default function StudentsList() {
                             setSelectedProfile(student);
                             setShowFullReport(true);
                           }} 
-                          className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors" 
+                          className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 rounded-lg transition-colors" 
                           title="التقرير الشامل"
                         >
                           <BookOpen className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors" title="تعديل">
+                        <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors" title="تعديل">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="حذف الطالب">
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-lg transition-colors cursor-pointer" title="حذف الطالب">
+                          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
                         </button>
                       </div>
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500">
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
                       <Users className="w-8 h-8 mx-auto text-slate-300 mb-2" />
                       <p>لا توجد سجلات طلاب مطابقة للشروط الحالية</p>
                     </td>
@@ -506,11 +769,11 @@ export default function StudentsList() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 overflow-hidden"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 overflow-hidden"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-50 pb-3">
-                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
                     الملف الأكاديمي والشخصي
                   </h3>
                   <div className="flex items-center gap-2">
@@ -519,39 +782,39 @@ export default function StudentsList() {
                         setShowBriefProfile(false);
                         setSelectedProfile(null);
                       }}
-                      className="p-1 text-slate-400 hover:text-slate-600 hover:bg-gray-100 rounded-lg cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-slate-600 dark:text-slate-300 hover:bg-gray-100 rounded-lg cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                  <div className="w-12 h-12 rounded-full bg-[#1A7FAA]/10 flex items-center justify-center border border-[#1A7FAA]/20 text-[#1A7FAA] shrink-0">
+                <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <div className="w-12 h-12 rounded-full bg-[#1A7FAA]/10 flex items-center justify-center border border-[#1A7FAA]/20 text-[#1A7FAA] dark:text-sky-400 shrink-0">
                     <User className="w-6 h-6" />
                   </div>
                   <div className="space-y-0.5">
-                    <h4 className="font-bold text-slate-800 text-sm leading-tight">{selectedProfile.name}</h4>
-                    <p className="text-[10px] text-slate-500 font-mono">قيد: #{selectedProfile.registration_id}</p>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm leading-tight">{selectedProfile.name}</h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">قيد: #{selectedProfile.registration_id}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between p-2 border-b border-slate-50">
-                    <span className="text-slate-500">المجموعة المقيد بها</span>
-                    <span className="font-bold text-[#1A7FAA] bg-[#1A7FAA]/5 px-2 py-0.5 rounded">{classes.find(c => c.id === selectedProfile.class_id)?.name || '-'}</span>
+                  <div className="flex justify-between p-2 border-b border-slate-50 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">المجموعة المقيد بها</span>
+                    <span className="font-bold text-[#1A7FAA] dark:text-sky-400 bg-[#1A7FAA]/5 px-2 py-0.5 rounded">{classes.find(c => c.id === selectedProfile.class_id)?.name || '-'}</span>
                   </div>
-                  <div className="flex justify-between p-2 border-b border-slate-50">
-                    <span className="text-slate-500">الصف الدراسي</span>
-                    <span className="font-bold text-slate-700">{selectedProfile.grade_level}</span>
+                  <div className="flex justify-between p-2 border-b border-slate-50 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">الصف الدراسي</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{selectedProfile.grade_level}</span>
                   </div>
-                  <div className="flex justify-between p-2 border-b border-slate-50">
-                    <span className="text-slate-500">تاريخ الميلاد</span>
-                    <span className="font-mono text-slate-600">{selectedProfile.birth_date}</span>
+                  <div className="flex justify-between p-2 border-b border-slate-50 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">تاريخ الميلاد</span>
+                    <span className="font-mono text-slate-600 dark:text-slate-300">{selectedProfile.birth_date}</span>
                   </div>
                   <div className="flex justify-between p-2">
-                    <span className="text-slate-500">هاتف ولي الأمر</span>
-                    <span className="font-mono text-slate-600" dir="ltr">{selectedProfile.parent_phone}</span>
+                    <span className="text-slate-500 dark:text-slate-400">هاتف ولي الأمر</span>
+                    <span className="font-mono text-slate-600 dark:text-slate-300" dir="ltr">{selectedProfile.parent_phone}</span>
                   </div>
                 </div>
 
@@ -599,27 +862,27 @@ export default function StudentsList() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden space-y-4"
             >
-              <div className="flex items-center gap-3 text-red-600">
-                <div className="p-3 bg-red-50 rounded-2xl">
-                  <Trash2 className="w-6 h-6 text-red-600" />
+              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                <div className="p-3 bg-red-50 dark:bg-red-900/40 rounded-2xl">
+                  <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900">تأكيد حذف الطالب</h3>
-                  <p className="text-xs text-slate-500 font-sans">حذف سجل الطالب نهائياً من السنتر</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد حذف الطالب</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">حذف سجل الطالب نهائياً من السنتر</p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed font-sans bg-red-50/50 p-3.5 rounded-xl border border-red-100">
-                هل أنت متأكد من رغبتك في حذف الطالب <strong className="text-slate-900">"{studentToDelete.name}"</strong> نهائياً؟ سيتم مسح كافة بياناته ولن تتمكن من استعادتها.
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans bg-red-50/50 p-3.5 rounded-xl border border-red-100 dark:border-red-800">
+                هل أنت متأكد من رغبتك في حذف الطالب <strong className="text-slate-900 dark:text-slate-50">"{studentToDelete.name}"</strong> نهائياً؟ سيتم مسح كافة بياناته ولن تتمكن من استعادتها.
               </p>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={cancelDelete}
-                  className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-xs font-bold transition-colors cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -636,179 +899,10 @@ export default function StudentsList() {
         )}
       </AnimatePresence>
 
-      {/* Archived Students Modal */}
-      <AnimatePresence>
-        {showArchiveModal && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl border border-gray-100 shadow-2xl max-w-3xl w-full p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl">
-                    <Archive className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-base">أرشيف الطلاب المؤرشفين</h3>
-                    <p className="text-xs text-slate-500 font-sans">إدارة واستعادة أو حذف بيانات الطلاب الموجودين في الأرشيف</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowArchiveModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Search */}
-              <div className="relative shrink-0">
-                <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
-                <input
-                  type="text"
-                  value={archivedSearchTerm}
-                  onChange={(e) => setArchivedSearchTerm(e.target.value)}
-                  placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
-                />
-              </div>
 
-              {/* Archived list */}
-              <div className="overflow-y-auto flex-1 space-y-3 pr-1">
-                {(() => {
-                  const archivedList = samsDb.getArchivedStudents().filter(st => 
-                    !archivedSearchTerm || 
-                    st.name.includes(archivedSearchTerm) || 
-                    st.registration_id.includes(archivedSearchTerm)
-                  );
 
-                  if (archivedList.length === 0) {
-                    return (
-                      <div className="text-center py-12 text-slate-400 space-y-2">
-                        <Archive className="w-10 h-10 mx-auto text-slate-300" />
-                        <p className="text-xs font-bold">لا يوجد طلاب في الأرشيف حالياً</p>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="space-y-2">
-                      {archivedList.map(st => (
-                        <div key={st.id} className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900 text-xs">{st.name}</span>
-                              <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-mono font-bold">
-                                {st.registration_id}
-                              </span>
-                            </div>
-                            <div className="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-3">
-                              <span>الصف: {st.grade_level}</span>
-                              <span>الهاتف: {st.phone || st.parent_phone || '-'}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            {/* Restore */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                samsDb.restoreStudent(st.id);
-                                loadData();
-                                setSuccessMessage(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
-                              }}
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
-                            >
-                              <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>استعادة الطالب</span>
-                            </button>
-
-                            {/* Permanent Delete */}
-                            <button
-                              type="button"
-                              onClick={() => setArchivedStudentToPermanentDelete(st)}
-                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                              <span>حذف نهائي</span>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Permanent Delete Confirmation Modal */}
-      <AnimatePresence>
-        {archivedStudentToPermanentDelete && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[60] animate-fade-in" dir="rtl">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 text-right space-y-4"
-            >
-              <div className="flex items-center gap-3 text-red-600">
-                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
-                  <Trash2 className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-950 text-sm">تأكيد الحذف النهائي من النظام</h3>
-                  <p className="text-[11px] text-slate-500 font-sans">حذف دائم لا يمكن التراجع عنه بأي حال</p>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-700 leading-relaxed font-sans bg-rose-50/50 p-3.5 rounded-xl border border-rose-100">
-                هل أنت متأكد تماماً من الحذف النهائي للطالب <strong className="text-rose-700">"{archivedStudentToPermanentDelete.name}"</strong>؟ سيتم مسح ملفه وكافة سجلاته نهائياً من قاعدة البيانات.
-              </p>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-50">
-                <button
-                  type="button"
-                  onClick={() => setArchivedStudentToPermanentDelete(null)}
-                  className="px-4 py-2 border border-gray-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    samsDb.permanentlyDeleteStudent(archivedStudentToPermanentDelete.id);
-                    setArchivedStudentToPermanentDelete(null);
-                    loadData();
-                    setSuccessMessage('تم مسح بيانات الطالب نهائياً من قاعدة البيانات.');
-                  }}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
-                >
-                  تأكيد الحذف النهائي
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showFullReport && selectedProfile && (
-          <StudentFullReport
-            student={selectedProfile}
-            onClose={() => {
-              setShowFullReport(false);
-              setSelectedProfile(null);
-            }}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
+    </>
   );
 }

@@ -51,7 +51,7 @@ export default function ThemeToggle({ isDarkMode, onToggle, className = '' }: Th
           if (!isDarkMode) onToggle();
         }}
         className={`relative px-3 py-1 text-xs font-bold rounded-full transition-colors duration-200 cursor-pointer flex items-center gap-1.5 ${
-          isDarkMode ? 'text-slate-950 font-black' : 'text-slate-600 hover:text-slate-900'
+          isDarkMode ? 'text-slate-950 font-black' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-slate-50'
         }`}
         title="التبديل للوضع المظلم"
       >
@@ -62,7 +62,7 @@ export default function ThemeToggle({ isDarkMode, onToggle, className = '' }: Th
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           />
         )}
-        <Moon className={`relative z-10 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-950 fill-current' : 'text-slate-500'}`} />
+        <Moon className={`relative z-10 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-950 fill-current' : 'text-slate-500 dark:text-slate-400'}`} />
         <span className="relative z-10 font-sans text-[11px]">مظلم</span>
       </button>
     </div>

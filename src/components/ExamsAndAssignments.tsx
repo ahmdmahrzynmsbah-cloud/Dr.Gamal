@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Exam, Assignment, ExamGrade, AssignmentGrade, Student, ClassRoom, Attendance } from '../types';
 import { samsDb } from '../utils/db';
-import {
+import { 
   Check,
   X,
   Plus,
@@ -41,7 +41,7 @@ import {
   Send,
   Smartphone,
   ExternalLink
-} from 'lucide-react';
+, RefreshCw } from 'lucide-react';
 
 export default function ExamsAndAssignments() {
   const [activeSubTab, setActiveSubTab] = useState<'grading' | 'exams' | 'assignments'>('grading');
@@ -95,6 +95,35 @@ export default function ExamsAndAssignments() {
   // key is student_id, value is object with score, absent/completed, notes
   const [tempGrades, setTempGrades] = useState<Record<string, { score: number; flag: boolean; notes: string }>>({});
   const [isEditingSheet, setIsEditingSheet] = useState<boolean>(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingText, setProcessingText] = useState('');
+
+  const handleProcessAction = (text: string, onComplete: () => void) => {
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    setProcessingText(text);
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 20) + 10;
+      if (progress >= 100) {
+        progress = 100;
+        setProcessingProgress(progress);
+        clearInterval(interval);
+        
+        setTimeout(() => {
+          setIsProcessing(false);
+          setProcessingProgress(0);
+          onComplete();
+        }, 400);
+      } else {
+        setProcessingProgress(progress);
+      }
+    }, 150);
+  };
 
   // Search queries for lists
   const [examSearch, setExamSearch] = useState('');
@@ -436,7 +465,7 @@ export default function ExamsAndAssignments() {
   const getScoreBadge = (score: number, maxScore: number, flag: boolean) => {
     if (gradingType === 'exam' && flag) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
           غائب 🔴
         </span>
@@ -444,7 +473,7 @@ export default function ExamsAndAssignments() {
     }
     if (gradingType === 'assignment' && !flag) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
           لم يسلم ❌
         </span>
@@ -456,21 +485,21 @@ export default function ExamsAndAssignments() {
 
     if (missed <= 3 && score > maxScore / 2) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
           {score} / {maxScore} (ممتاز ✨)
         </span>
       );
     } else if (percentage <= 50) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
           {score} / {maxScore} (ضعيف ⚠️)
         </span>
       );
     } else {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
           {score} / {maxScore} (متوسط 👍)
         </span>
@@ -699,6 +728,13 @@ export default function ExamsAndAssignments() {
 
   // Trigger print / export PDF of official student grade report sheet
   const triggerPrintPDF = () => {
+    if (!activeEvaluationObj) return;
+    handleProcessAction('جاري تجهيز تقرير الدرجات للطباعة...', () => {
+      setShowPrintModal(true);
+    });
+  };
+
+  const old_triggerPrintPDF_ignored = () => {
     if (!activeEvaluationObj) return;
 
     const centerName = localStorage.getItem('sams_center_name') || 'المركز التعليمي التخصصي SAMS';
@@ -995,26 +1031,250 @@ export default function ExamsAndAssignments() {
     });
   }, [assignments, assignmentSearch, classes]);
 
+  if (showPrintModal && activeEvaluationObj) {
+    const centerName = localStorage.getItem('sams_center_name') || 'المركز التعليمي التخصصي SAMS';
+    const centerPhone = localStorage.getItem('sams_center_phone') || '';
+    const centerLogo = localStorage.getItem('sams_center_logo') || '';
+    const currentClass = classes.find(c => c.id === selectedClassId);
+    const className = currentClass ? `${currentClass.name} (الصف: ${currentClass.grade_level})` : 'المجموعة المحددة';
+    
+    // cast activeEvaluationObj to any to avoid type errors with name vs title
+    const activeEval = activeEvaluationObj as any;
+    const evalTitle = gradingType === 'exam' ? activeEval.name : activeEval.title;
+    const maxScore = activeEval.max_score || 0;
+    const termName = termFilter === 'first_term' ? 'الفصل الدراسي الأول' : 'الفصل الدراسي الثاني';
+    const evalTypeLabel = gradingType === 'exam'
+      ? ({ quiz: 'امتحان حصة', comprehensive: 'امتحان شامل', monthly: 'اختبار شهري', midterm: 'منتصف الفصل', final: 'اختبار نهائي' }[activeEval.type] || 'اختبار مخصص')
+      : 'واجب دراسي يومي';
+    const evalDate = gradingType === 'exam' ? activeEval.date : activeEval.due_date;
+
+    let presentCount = 0;
+    let absentCount = 0;
+    let totalScoreSum = 0;
+    let highestScore = 0;
+
+    activeClassStudents.forEach(student => {
+      const tempObj = tempGrades[student.id] || { score: 0, flag: false, notes: '' };
+      const isAbsentOrMissing = gradingType === 'exam' ? tempObj.flag : !tempObj.flag;
+      if (!isAbsentOrMissing) {
+        presentCount++;
+        totalScoreSum += tempObj.score;
+        if (tempObj.score > highestScore) highestScore = tempObj.score;
+      } else {
+        absentCount++;
+      }
+    });
+
+    const avgScore = presentCount > 0 ? (totalScoreSum / presentCount).toFixed(1) : '0';
+    const avgPct = maxScore > 0 && presentCount > 0 ? Math.round((Number(avgScore) / maxScore) * 100) : 0;
+
+    return (
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4 gap-4">
+          <button 
+            onClick={() => setShowPrintModal(false)}
+            className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-2 font-bold text-sm cursor-pointer"
+          >
+            <X className="w-5 h-5" /> رجوع
+          </button>
+          <button 
+            onClick={() => window.print()}
+            className="px-5 py-2.5 bg-slate-800 text-white hover:bg-slate-700 rounded-xl flex items-center gap-2 font-bold text-sm cursor-pointer shadow-md w-full md:w-auto justify-center"
+          >
+            <Printer className="w-5 h-5" /> طباعة كشف الدرجات / حفظ PDF
+          </button>
+        </div>
+
+        <div id="printable-group-roster" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-sans p-2">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b-2 border-[#0d5c8c] pb-4 mb-4">
+            <div className="flex items-center gap-4">
+              {centerLogo && <img src={centerLogo} alt="Logo" className="w-14 h-14 object-contain rounded-lg" />}
+              <div>
+                <h1 className="text-xl font-black text-[#0d5c8c]">{centerName}</h1>
+                {centerPhone && <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">هاتف: {centerPhone}</p>}
+              </div>
+            </div>
+            <div className="text-left bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:bg-transparent print:border-none print:shadow-none">
+              <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{evalTitle}</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">{evalTypeLabel} - {termName}</p>
+            </div>
+          </div>
+
+          {/* Meta Grid */}
+          <div className="grid grid-cols-3 gap-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl mb-4 text-sm print:bg-transparent">
+            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">المجموعة</span><span className="font-black text-slate-900 dark:text-slate-50">{className}</span></div>
+            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">تاريخ التقييم</span><span className="font-black text-slate-900 dark:text-slate-50">{evalDate}</span></div>
+            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">الدرجة النهائية</span><span className="font-black text-slate-900 dark:text-slate-50">{maxScore} درجة</span></div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-5 gap-3 mb-6">
+            <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 dark:border-slate-600 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+              <span className="text-xl font-black text-[#0d5c8c]">{activeClassStudents.length}</span>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 mt-1">إجمالي الطلاب</span>
+            </div>
+            <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+              <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">{presentCount}</span>
+              <span className="text-[10px] font-bold text-emerald-600 mt-1">{gradingType === 'exam' ? 'الحضور' : 'المسلمين'}</span>
+            </div>
+            <div className="bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+              <span className="text-xl font-black text-rose-700 dark:text-rose-300">{absentCount}</span>
+              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-1">{gradingType === 'exam' ? 'الغياب' : 'لم يسلم'}</span>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+              <span className="text-xl font-black text-amber-700 dark:text-amber-300">{highestScore}</span>
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-1">أعلى درجة</span>
+            </div>
+            <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+              <span className="text-xl font-black text-sky-700 dark:text-sky-300">{avgScore} <span className="text-xs">({avgPct}%)</span></span>
+              <span className="text-[10px] font-bold text-sky-600 mt-1">متوسط الدرجات</span>
+            </div>
+          </div>
+
+          {/* Table */}
+          <table className="w-full text-sm text-center border-collapse">
+            <thead>
+              <tr className="bg-[#0d5c8c] text-white print:text-black">
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">م</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">رقم القيد</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-right print:bg-slate-100 dark:bg-slate-800">اسم الطالب</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">الحالة</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">الدرجة</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">النسبة</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">التقدير</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeClassStudents.map((student, idx) => {
+                const tempObj = tempGrades[student.id] || { score: 0, flag: false, notes: '' };
+                const isAbsentOrMissing = gradingType === 'exam' ? tempObj.flag : !tempObj.flag;
+                const pct = maxScore > 0 ? Math.round((tempObj.score / maxScore) * 100) : 0;
+                let gradeLabel = 'ضعيف';
+                if (!isAbsentOrMissing) {
+                  if (pct >= 90) gradeLabel = 'ممتاز ✨';
+                  else if (pct >= 80) gradeLabel = 'جيد جداً 👍';
+                  else if (pct >= 65) gradeLabel = 'جيد';
+                  else if (pct >= 50) gradeLabel = 'مقبول';
+                } else {
+                  gradeLabel = gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌';
+                }
+
+                return (
+                  <tr key={student.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold text-slate-500 dark:text-slate-400">{idx + 1}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-mono font-bold text-[#0d5c8c]">{student.registration_id}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-right font-bold text-slate-900 dark:text-slate-50">{student.name}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600">
+                      {isAbsentOrMissing 
+                        ? <span className="text-rose-700 dark:text-rose-300 font-bold">{gradingType === 'exam' ? 'غائب' : 'لم يسلم'}</span>
+                        : <span className="text-emerald-700 dark:text-emerald-300 font-bold">{gradingType === 'exam' ? 'حاضر' : 'تم التسليم'}</span>
+                      }
+                    </td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">
+                      {isAbsentOrMissing ? '0' : tempObj.score} <span className="text-xs text-slate-400">/ {maxScore}</span>
+                    </td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold" style={{ color: pct >= 80 ? '#16a34a' : pct >= 50 ? '#0284c7' : '#dc2626' }}>
+                      {isAbsentOrMissing ? '0%' : pct + '%'}
+                    </td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">{gradeLabel}</td>
+                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-slate-500 dark:text-slate-400 text-xs">{tempObj.notes || '-'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Signatures */}
+          <div className="grid grid-cols-3 gap-6 mt-12 text-center text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
+            <div>
+              <p>أستاذ/معلم المادة</p>
+              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">التوقيع ....................</p>
+            </div>
+            <div>
+              <p>مشرف شؤون الامتحانات</p>
+              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">التوقيع ....................</p>
+            </div>
+            <div>
+              <p>اعتماد مدير المركز التعليمي</p>
+              <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-4">الختم الرسمي ....................</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6" id="sams_exams_assignments_module">
+    <div className="space-y-6 animate-fade-in" id="sams_exams_assignments_module">
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       
       {/* Upper Tab Navigation Header */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 w-fit">
+          <span className="bg-amber-100 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 w-fit">
             <Sparkles className="w-3 h-3 fill-current" />
             تطوير شؤون الطلاب والأكاديمية
           </span>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mt-1.5">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2 mt-1.5">
             الامتحانات والواجبات المخصصة
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             إضافة وإدارة اختبارات الحصة والامتحانات الشاملة، مع رصد ذكي للواجبات وحالة استلامها اليومية لكل مجموعة
           </p>
         </div>
 
         {/* Navigation sub-tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
           <button
             onClick={() => {
               setActiveSubTab('grading');
@@ -1023,8 +1283,8 @@ export default function ExamsAndAssignments() {
             }}
             className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeSubTab === 'grading'
-                ? 'bg-white text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             <Notebook className="w-4 h-4 text-emerald-500" />
@@ -1038,8 +1298,8 @@ export default function ExamsAndAssignments() {
             }}
             className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeSubTab === 'exams'
-                ? 'bg-white text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             <Award className="w-4 h-4 text-blue-500" />
@@ -1053,8 +1313,8 @@ export default function ExamsAndAssignments() {
             }}
             className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeSubTab === 'assignments'
-                ? 'bg-white text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
             }`}
           >
             <Calendar className="w-4 h-4 text-amber-500" />
@@ -1065,13 +1325,13 @@ export default function ExamsAndAssignments() {
 
       {/* Toast notifications */}
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
           <span className="font-semibold">{successMsg}</span>
         </div>
       )}
       {errorMsg && (
-        <div className="p-4 bg-red-50 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
+        <div className="p-4 bg-red-50 dark:bg-red-900/40 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-[#E8192C] shrink-0" />
           <span className="font-semibold">{errorMsg}</span>
         </div>
@@ -1084,18 +1344,18 @@ export default function ExamsAndAssignments() {
         <div className="space-y-6">
           
           {/* Quick Filters Panel */}
-          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-4">
             
             {/* Term Select */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">الفصل الدراسي</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الفصل الدراسي</label>
               <select
                 value={termFilter}
                 onChange={(e) => {
                   setTermFilter(e.target.value as any);
                   setSuccessMsg('');
                 }}
-                className="w-full text-xs font-semibold border border-slate-200 p-2.5 rounded-xl bg-white text-slate-700"
+                className="w-full text-xs font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
               >
                 <option value="first_term">الفصل الدراسي الأول</option>
                 <option value="second_term">الفصل الدراسي الثاني</option>
@@ -1104,14 +1364,14 @@ export default function ExamsAndAssignments() {
 
             {/* Class Group Select */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">المجموعة الدراسية</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">المجموعة الدراسية</label>
               <select
                 value={selectedClassId}
                 onChange={(e) => {
                   setSelectedClassId(e.target.value);
                   setSuccessMsg('');
                 }}
-                className="w-full text-xs font-semibold border border-slate-200 p-2.5 rounded-xl bg-white text-slate-700"
+                className="w-full text-xs font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
               >
                 {classes.length === 0 ? (
                   <option value="">لا توجد مجموعات</option>
@@ -1125,8 +1385,8 @@ export default function ExamsAndAssignments() {
 
             {/* Grading Type Switch */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">تصنيف الرصد الحالي</label>
-              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تصنيف الرصد الحالي</label>
+              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1134,7 +1394,7 @@ export default function ExamsAndAssignments() {
                     setSuccessMsg('');
                   }}
                   className={`py-1.5 text-center text-[11px] font-bold rounded-lg cursor-pointer transition-all ${
-                    gradingType === 'exam' ? 'bg-white text-[#0D5C8C] shadow-xs' : 'text-slate-600 hover:text-slate-800'
+                    gradingType === 'exam' ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
                   }`}
                 >
                   الامتحانات
@@ -1146,7 +1406,7 @@ export default function ExamsAndAssignments() {
                     setSuccessMsg('');
                   }}
                   className={`py-1.5 text-center text-[11px] font-bold rounded-lg cursor-pointer transition-all ${
-                    gradingType === 'assignment' ? 'bg-white text-[#0D5C8C] shadow-xs' : 'text-slate-600 hover:text-slate-800'
+                    gradingType === 'assignment' ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
                   }`}
                 >
                   الواجبات اليومية
@@ -1156,7 +1416,7 @@ export default function ExamsAndAssignments() {
 
             {/* Evaluation Object Select */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
                 {gradingType === 'exam' ? 'اختر الامتحان المراد رصده' : 'اختر واجب اليوم المراد رصده'}
               </label>
               <select
@@ -1165,7 +1425,7 @@ export default function ExamsAndAssignments() {
                   setSelectedEvaluationId(e.target.value);
                   setSuccessMsg('');
                 }}
-                className="w-full text-xs font-black border border-slate-200 p-2.5 rounded-xl bg-amber-50/50 text-[#0D5C8C]"
+                className="w-full text-xs font-black border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-amber-50/50 text-[#0D5C8C]"
               >
                 {availableEvaluations.length === 0 ? (
                   <option value="">-- لا يوجد مدخلات متاحة لهذه المجموعة --</option>
@@ -1192,10 +1452,10 @@ export default function ExamsAndAssignments() {
                   {gradingType === 'exam' ? <Award className="w-5 h-5" /> : <Notebook className="w-5 h-5" />}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-800 text-sm">
+                  <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">
                     {gradingType === 'exam' ? (activeEvaluationObj as Exam).name : (activeEvaluationObj as Assignment).title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-0.5 font-sans">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-sans">
                     {gradingType === 'exam' && (
                       <>
                         <span className="bg-blue-100 text-[#0D5C8C] px-2 py-0.5 rounded text-[10px] font-bold">
@@ -1206,7 +1466,7 @@ export default function ExamsAndAssignments() {
                         <span>•</span>
                       </>
                     )}
-                    <span>درجة التقييم العظمى: <strong className="text-amber-600">{(activeEvaluationObj as Exam | Assignment).max_score} درجات</strong></span>
+                    <span>درجة التقييم العظمى: <strong className="text-amber-600 dark:text-amber-400">{(activeEvaluationObj as Exam | Assignment).max_score} درجات</strong></span>
                     <span>•</span>
                     <span>تاريخ الحدث: {gradingType === 'exam' ? (activeEvaluationObj as Exam).date : (activeEvaluationObj as Assignment).due_date}</span>
                   </div>
@@ -1237,13 +1497,13 @@ export default function ExamsAndAssignments() {
                 {isEditingSheet ? (
                   <button
                     onClick={handleMarkAllPerfect}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     <span>تعبئة الدرجة كاملة للجميع</span>
                   </button>
                 ) : (
-                  <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-100 font-bold flex items-center gap-1.5">
+                  <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-800 font-bold flex items-center gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
                     الدرجات معتمدة ومحفوظة
                   </span>
@@ -1251,10 +1511,10 @@ export default function ExamsAndAssignments() {
               </div>
             </div>
           ) : (
-            <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-center space-y-3">
+            <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-6 rounded-2xl text-center space-y-3">
               <Info className="w-8 h-8 text-amber-500 mx-auto" />
-              <p className="text-slate-700 font-bold text-sm">لم تقم بإضافة أي {gradingType === 'exam' ? 'امتحانات' : 'واجبات'} مخصصة لهذه المجموعة حتى الآن.</p>
-              <p className="text-slate-500 text-xs max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-200 font-bold text-sm">لم تقم بإضافة أي {gradingType === 'exam' ? 'امتحانات' : 'واجبات'} مخصصة لهذه المجموعة حتى الآن.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs max-w-md mx-auto">
                 توجه للتبويبات بالأعلى لإضافة امتحان (امتحان حصة، شامل، إلخ) أو واجب دراسي مخصص لهذه المجموعة، ومن ثم ستظهر لك قائمة الطلاب وتستطيع رصد الدرجات مباشرة.
               </p>
               <button
@@ -1308,30 +1568,30 @@ export default function ExamsAndAssignments() {
 
           {/* Student Grading Grid Table */}
           {activeEvaluationObj && (
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 gap-3">
-                <h4 className="font-extrabold text-slate-800 text-xs flex items-center gap-1.5">
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-gray-700 pb-3 gap-3">
+                <h4 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs flex items-center gap-1.5">
                   <ListPlus className="w-4 h-4 text-[#0D5C8C]" />
                   قائمة كشف طلاب المجموعة للرصد والتقييم
                 </h4>
                 <div className="flex items-center gap-3">
-                  <span className="text-[11px] text-slate-500 font-bold">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">
                     العدد الكلي للطلاب: <strong className="text-[#0D5C8C] font-mono text-xs">{activeClassStudents.length}</strong> طالب
                   </span>
                   <button
                     type="button"
                     onClick={triggerPrintPDF}
-                    className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-1.5 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 border border-amber-200 dark:border-amber-700 text-amber-900 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    <FileText className="w-3.5 h-3.5 text-amber-600" />
+                    <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     <span>تصدير تقرير PDF</span>
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto border border-gray-100 rounded-xl">
+              <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl">
                 <table className="min-w-full text-right" dir="rtl">
-                  <thead className="bg-slate-50 text-slate-700 text-xs font-bold border-b border-gray-100">
+                  <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
                     <tr>
                       <th className="p-3">رقم القيد</th>
                       <th className="p-3">اسم الطالب وبياناته</th>
@@ -1346,7 +1606,7 @@ export default function ExamsAndAssignments() {
                       <th className="p-3 text-center w-[160px]">تنبيهات الغياب (واتساب)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-xs text-slate-700">
+                  <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">
                     {activeClassStudents.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="p-8 text-center text-slate-400">
@@ -1362,14 +1622,14 @@ export default function ExamsAndAssignments() {
                         const monthlyAbsence = getStudentMonthlyAbsences(student.id);
 
                         return (
-                          <tr key={student.id} className={`hover:bg-slate-50/50 transition-all font-sans ${tempObj.flag && gradingType === 'exam' ? 'bg-red-50/30' : ''}`}>
+                          <tr key={student.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-all font-sans ${tempObj.flag && gradingType === 'exam' ? 'bg-red-50/30' : ''}`}>
                             <td className="p-3 font-mono font-semibold text-[#0D5C8C]">{student.registration_id}</td>
                             <td className="p-3">
-                              <div className="font-bold text-slate-800 flex items-center gap-2">
+                              <div className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
                                 <span>{student.name}</span>
                                 {monthlyAbsence.count >= 3 && (
                                   <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full animate-pulse shrink-0">
-                                    <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                    <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                                     تكرر الغياب ({monthlyAbsence.count} مرات)
                                   </span>
                                 )}
@@ -1404,7 +1664,7 @@ export default function ExamsAndAssignments() {
                                       }`}
                                     >
                                       <span
-                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 shadow-xs ring-0 transition duration-200 ease-in-out ${
                                           tempObj.flag ? 'translate-x-0' : 'translate-x-5'
                                         }`}
                                       />
@@ -1435,7 +1695,7 @@ export default function ExamsAndAssignments() {
                                       }`}
                                     >
                                       <span
-                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 shadow-xs ring-0 transition duration-200 ease-in-out ${
                                           tempObj.flag ? 'translate-x-5' : 'translate-x-0'
                                         }`}
                                       />
@@ -1448,15 +1708,15 @@ export default function ExamsAndAssignments() {
                               ) : (
                                 gradingType === 'exam' ? (
                                   tempObj.flag ? (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">🔴 غائب</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">🔴 غائب</span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">🟢 حاضر</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">🟢 حاضر</span>
                                   )
                                 ) : (
                                   tempObj.flag ? (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">✔️ تم التسليم</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">✔️ تم التسليم</span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">❌ لم يسلم</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">❌ لم يسلم</span>
                                   )
                                 )
                               )}
@@ -1485,7 +1745,7 @@ export default function ExamsAndAssignments() {
                                         }
                                       }));
                                     }}
-                                    className="w-20 text-center border border-slate-200 bg-slate-50 disabled:bg-slate-100 disabled:opacity-50 disabled:text-slate-400 rounded-xl p-2 font-mono font-bold text-sm focus:outline-hidden focus:border-[#0D5C8C] focus:bg-white"
+                                    className="w-20 text-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 disabled:bg-slate-100 dark:bg-slate-800 disabled:opacity-50 disabled:text-slate-400 rounded-xl p-2 font-mono font-bold text-sm focus:outline-hidden focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800"
                                   />
                                   <span className="text-slate-400 font-bold">/ {activeEvaluationObj.max_score}</span>
                                 </div>
@@ -1513,12 +1773,12 @@ export default function ExamsAndAssignments() {
                                       }
                                     }));
                                   }}
-                                  className="w-full text-right border border-slate-200 bg-slate-50 hover:bg-white focus:bg-white rounded-xl p-2 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                                  className="w-full text-right border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:bg-slate-800 focus:bg-white dark:bg-slate-800 rounded-xl p-2 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
                                   dir="rtl"
                                 />
                               ) : (
                                 tempObj.notes ? (
-                                  <span className="font-bold text-slate-700 text-xs">{tempObj.notes}</span>
+                                  <span className="font-bold text-slate-700 dark:text-slate-200 text-xs">{tempObj.notes}</span>
                                 ) : (
                                   <span className="text-slate-300 italic text-xs">لا توجد ملاحظات</span>
                                 )
@@ -1526,9 +1786,9 @@ export default function ExamsAndAssignments() {
                             </td>
 
                             {/* Percentage Label */}
-                            <td className="p-3 text-center font-mono font-bold text-slate-600">
+                            <td className="p-3 text-center font-mono font-bold text-slate-600 dark:text-slate-300">
                               {tempObj.flag && gradingType === 'exam' ? (
-                                <span className="text-rose-600">0%</span>
+                                <span className="text-rose-600 dark:text-rose-400">0%</span>
                               ) : (
                                 <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
                                   {scorePercent}%
@@ -1552,7 +1812,7 @@ export default function ExamsAndAssignments() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenWhatsAppModal(student, monthlyAbsence.count, monthlyAbsence.dates)}
-                                  className="w-full px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 transition-all cursor-pointer"
+                                  className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 transition-all cursor-pointer"
                                   title="تنبيه أو مراسلة ولي الأمر عبر الواتساب"
                                 >
                                   <MessageCircle className="w-3.5 h-3.5 text-slate-400" />
@@ -1571,10 +1831,10 @@ export default function ExamsAndAssignments() {
 
               {/* Save Sheet Action Button */}
               {activeClassStudents.length > 0 && (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100">
-                  <div className="text-xs text-slate-500 font-bold">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 font-bold">
                     {isEditingSheet ? (
-                      <span className="text-amber-600 flex items-center gap-1.5">
+                      <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                         <Info className="w-4 h-4 animate-bounce" />
                         أنت في وضع رصد وتعديل الدرجات حالياً... يرجى الضغط على حفظ واعتماد الكشف لتثبيتها.
                       </span>
@@ -1599,7 +1859,7 @@ export default function ExamsAndAssignments() {
                               loadAllData();
                               setIsEditingSheet(false);
                             }}
-                            className="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                            className="px-5 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
                           >
                             إلغاء التعديل
                           </button>
@@ -1648,10 +1908,10 @@ export default function ExamsAndAssignments() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Create/Edit Exam Form (5 columns) */}
-          <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-            <div className="border-b border-gray-100 pb-2 flex items-center gap-1.5">
+          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+            <div className="border-b border-gray-100 dark:border-gray-700 pb-2 flex items-center gap-1.5">
               <Award className="w-5 h-5 text-blue-500" />
-              <h3 className="font-extrabold text-slate-800 text-xs">
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs">
                 {editingExamId ? 'تعديل الامتحان المحدد' : 'إنشاء وتجهيز امتحان جديد'}
               </h3>
             </div>
@@ -1660,13 +1920,13 @@ export default function ExamsAndAssignments() {
               
               {/* Exam Name */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">اسم أو كود الامتحان</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسم أو كود الامتحان</label>
                 <input
                   type="text"
                   placeholder="مثال: امتحان الحصة الأولى، امتحان البلاغة الشامل"
                   value={examForm.name}
                   onChange={(e) => setExamForm({ ...examForm, name: e.target.value })}
-                  className="w-full text-right border border-slate-200 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                  className="w-full text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
                   dir="rtl"
                 />
               </div>
@@ -1674,11 +1934,11 @@ export default function ExamsAndAssignments() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Exam Type */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">تصنيف الامتحان</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تصنيف الامتحان</label>
                   <select
                     value={examForm.type}
                     onChange={(e) => setExamForm({ ...examForm, type: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 p-2.5 rounded-xl bg-white"
+                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="quiz">امتحان حصة (سريع)</option>
                     <option value="comprehensive">امتحان شامل</option>
@@ -1690,11 +1950,11 @@ export default function ExamsAndAssignments() {
 
                 {/* Term */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">الفصل الدراسي</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الفصل الدراسي</label>
                   <select
                     value={examForm.term}
                     onChange={(e) => setExamForm({ ...examForm, term: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 p-2.5 rounded-xl bg-white"
+                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="first_term">الفصل الأول</option>
                     <option value="second_term">الفصل الثاني</option>
@@ -1704,11 +1964,11 @@ export default function ExamsAndAssignments() {
 
               {/* Class Group */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">موجه لطلاب المجموعة الدراسية</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">موجه لطلاب المجموعة الدراسية</label>
                 <select
                   value={examForm.class_id}
                   onChange={(e) => setExamForm({ ...examForm, class_id: e.target.value })}
-                  className="w-full text-right text-xs border border-slate-200 p-2.5 rounded-xl bg-white"
+                  className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
@@ -1719,39 +1979,39 @@ export default function ExamsAndAssignments() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Max Score */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">درجة الامتحان من كام</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">درجة الامتحان من كام</label>
                   <input
                     type="number"
                     min={1}
                     max={100}
                     value={examForm.max_score}
                     onChange={(e) => setExamForm({ ...examForm, max_score: Number(e.target.value) })}
-                    className="w-full text-center border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-xs"
+                    className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 font-mono font-bold text-xs"
                   />
                 </div>
 
                 {/* Duration */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">مدة الامتحان (بالدقائق)</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">مدة الامتحان (بالدقائق)</label>
                   <input
                     type="number"
                     min={5}
                     max={180}
                     value={examForm.duration_mins}
                     onChange={(e) => setExamForm({ ...examForm, duration_mins: Number(e.target.value) })}
-                    className="w-full text-center border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-xs"
+                    className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 font-mono font-bold text-xs"
                   />
                 </div>
               </div>
 
               {/* Exam Date */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">تاريخ إجراء الامتحان</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تاريخ إجراء الامتحان</label>
                 <input
                   type="date"
                   value={examForm.date}
                   onChange={(e) => setExamForm({ ...examForm, date: e.target.value })}
-                  className="w-full text-center border border-slate-200 rounded-xl p-2.5 text-xs font-mono font-bold"
+                  className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono font-bold"
                 />
               </div>
 
@@ -1779,7 +2039,7 @@ export default function ExamsAndAssignments() {
                         term: 'first_term'
                       });
                     }}
-                    className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    className="py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
                   >
                     إلغاء
                   </button>
@@ -1793,14 +2053,14 @@ export default function ExamsAndAssignments() {
           <div className="lg:col-span-7 space-y-4">
             
             {/* Search filter */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-3xs flex items-center gap-3">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
               <div className="relative flex-1">
                 <input
                   type="text"
                   placeholder="ابحث باسم الامتحان، تصنيفه، أو اسم المجموعة..."
                   value={examSearch}
                   onChange={(e) => setExamSearch(e.target.value)}
-                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-hidden"
+                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -1811,7 +2071,7 @@ export default function ExamsAndAssignments() {
             {/* List */}
             <div className="space-y-3 max-h-[500px] overflow-y-auto no-scrollbar">
               {filteredExams.length === 0 ? (
-                <div className="bg-white p-12 rounded-2xl border border-gray-100 text-center text-slate-400 text-xs">
+                <div className="bg-white dark:bg-slate-800 p-12 rounded-2xl border border-gray-100 dark:border-gray-700 text-center text-slate-400 text-xs">
                   لم يتم العثور على أي امتحانات مضافة تتطابق مع البحث.
                 </div>
               ) : (
@@ -1820,20 +2080,20 @@ export default function ExamsAndAssignments() {
                   const gradedCount = examGrades.filter(g => g.exam_id === exam.id).length;
 
                   return (
-                    <div key={exam.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs hover:border-slate-200 transition-all flex items-center justify-between gap-4">
+                    <div key={exam.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex items-center justify-between gap-4">
                       <div className="space-y-1.5 text-right">
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-slate-800 text-sm">{exam.name}</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">{exam.name}</span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black ${
                             exam.type === 'comprehensive' ? 'bg-rose-50 text-[#C0152A] border border-rose-100' : 'bg-blue-50 text-[#0D5C8C] border border-blue-100'
                           }`}>
                             { {quiz: 'امتحان حصة', comprehensive: 'امتحان شامل', monthly: 'اختبار شهري', midterm: 'منتصف الفصل', final: 'اختبار نهائي' }[exam.type] || 'امتحان مخصص'}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 font-sans">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
                           <span className="font-bold text-[#0D5C8C]">{cls ? cls.name : 'بدون مجموعة'}</span>
                           <span>•</span>
-                          <span>الدرجة من: <strong className="text-amber-600">{exam.max_score}</strong></span>
+                          <span>الدرجة من: <strong className="text-amber-600 dark:text-amber-400">{exam.max_score}</strong></span>
                           <span>•</span>
                           <span>المدة: <strong>{exam.duration_mins} د</strong></span>
                           <span>•</span>
@@ -1856,22 +2116,22 @@ export default function ExamsAndAssignments() {
                               triggerPrintPDF();
                             }, 100);
                           }}
-                          className="p-2 bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-lg border border-amber-200 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                          className="p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                           title="تصدير كشف PDF / طباعة"
                         >
-                          <Printer className="w-4 h-4 text-amber-600" />
+                          <Printer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           <span className="hidden sm:inline">طباعة PDF</span>
                         </button>
                         <button
                           onClick={() => handleEditExamClick(exam)}
-                          className="p-2 bg-slate-50 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-100 transition-all cursor-pointer"
+                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="تعديل"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setExamToDelete(exam)}
-                          className="p-2 bg-slate-50 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-100 transition-all cursor-pointer"
+                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1896,10 +2156,10 @@ export default function ExamsAndAssignments() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Create/Edit Assignment Form (5 columns) */}
-          <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-            <div className="border-b border-gray-100 pb-2 flex items-center gap-1.5">
+          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+            <div className="border-b border-gray-100 dark:border-gray-700 pb-2 flex items-center gap-1.5">
               <Calendar className="w-5 h-5 text-amber-500" />
-              <h3 className="font-extrabold text-slate-800 text-xs">
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs">
                 {editingAssignmentId ? 'تعديل الواجب الدراسي' : 'إضافة واجب يومي جديد'}
               </h3>
             </div>
@@ -1908,13 +2168,13 @@ export default function ExamsAndAssignments() {
               
               {/* Assignment Title / Description */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">موضوع أو صفحات الواجب</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">موضوع أو صفحات الواجب</label>
                 <textarea
                   rows={2}
                   placeholder="مثال: حل صفحة 12 و 13 بكتاب المدرسة، أو واجب شرح اسم الفاعل صـ 40"
                   value={assignmentForm.title}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
-                  className="w-full text-right border border-slate-200 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
+                  className="w-full text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
                   dir="rtl"
                 />
               </div>
@@ -1922,24 +2182,24 @@ export default function ExamsAndAssignments() {
               <div className="grid grid-cols-2 gap-4">
                 {/* Max Score */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">درجة الواجب (مثلاً من 10)</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">درجة الواجب (مثلاً من 10)</label>
                   <input
                     type="number"
                     min={1}
                     max={100}
                     value={assignmentForm.max_score}
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, max_score: Number(e.target.value) })}
-                    className="w-full text-center border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-xs"
+                    className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 font-mono font-bold text-xs"
                   />
                 </div>
 
                 {/* Term */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700">الفصل الدراسي</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الفصل الدراسي</label>
                   <select
                     value={assignmentForm.term}
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, term: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 p-2.5 rounded-xl bg-white"
+                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="first_term">الفصل الدراسي الأول</option>
                     <option value="second_term">الفصل الدراسي الثاني</option>
@@ -1949,11 +2209,11 @@ export default function ExamsAndAssignments() {
 
               {/* Class Group */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">مخصص لطلاب المجموعة</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">مخصص لطلاب المجموعة</label>
                 <select
                   value={assignmentForm.class_id}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, class_id: e.target.value })}
-                  className="w-full text-right text-xs border border-slate-200 p-2.5 rounded-xl bg-white"
+                  className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
@@ -1963,12 +2223,12 @@ export default function ExamsAndAssignments() {
 
               {/* Due Date */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">تاريخ تسليم الواجب المطلوب</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تاريخ تسليم الواجب المطلوب</label>
                 <input
                   type="date"
                   value={assignmentForm.due_date}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, due_date: e.target.value })}
-                  className="w-full text-center border border-slate-200 rounded-xl p-2.5 text-xs font-mono font-bold"
+                  className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono font-bold"
                 />
               </div>
 
@@ -1994,7 +2254,7 @@ export default function ExamsAndAssignments() {
                         term: 'first_term'
                       });
                     }}
-                    className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    className="py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
                   >
                     إلغاء
                   </button>
@@ -2008,14 +2268,14 @@ export default function ExamsAndAssignments() {
           <div className="lg:col-span-7 space-y-4">
             
             {/* Search filter */}
-            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-3xs flex items-center gap-3">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
               <div className="relative flex-1">
                 <input
                   type="text"
                   placeholder="ابحث بموضوع الواجب، اسم المجموعة..."
                   value={assignmentSearch}
                   onChange={(e) => setAssignmentSearch(e.target.value)}
-                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-hidden"
+                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -2026,7 +2286,7 @@ export default function ExamsAndAssignments() {
             {/* List */}
             <div className="space-y-3 max-h-[500px] overflow-y-auto no-scrollbar">
               {filteredAssignments.length === 0 ? (
-                <div className="bg-white p-12 rounded-2xl border border-gray-100 text-center text-slate-400 text-xs">
+                <div className="bg-white dark:bg-slate-800 p-12 rounded-2xl border border-gray-100 dark:border-gray-700 text-center text-slate-400 text-xs">
                   لم يتم إضافة واجبات تتطابق مع البحث الحالي بعد.
                 </div>
               ) : (
@@ -2035,15 +2295,15 @@ export default function ExamsAndAssignments() {
                   const gradedCount = assignmentGrades.filter(g => g.assignment_id === asg.id && g.completed).length;
 
                   return (
-                    <div key={asg.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs hover:border-slate-200 transition-all flex items-center justify-between gap-4">
+                    <div key={asg.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex items-center justify-between gap-4">
                       <div className="space-y-1.5 text-right flex-1">
                         <div>
-                          <span className="font-extrabold text-slate-800 text-sm block leading-relaxed">{asg.title}</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm block leading-relaxed">{asg.title}</span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 font-sans">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
                           <span className="font-bold text-[#0D5C8C]">{cls ? cls.name : 'بدون مجموعة'}</span>
                           <span>•</span>
-                          <span>الدرجة القصوى: <strong className="text-amber-600">{asg.max_score}</strong></span>
+                          <span>الدرجة القصوى: <strong className="text-amber-600 dark:text-amber-400">{asg.max_score}</strong></span>
                           <span>•</span>
                           <span>تاريخ التسليم: <strong>{asg.due_date}</strong></span>
                         </div>
@@ -2064,22 +2324,22 @@ export default function ExamsAndAssignments() {
                               triggerPrintPDF();
                             }, 100);
                           }}
-                          className="p-2 bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-lg border border-amber-200 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                          className="p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                           title="تصدير كشف PDF / طباعة"
                         >
-                          <Printer className="w-4 h-4 text-amber-600" />
+                          <Printer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                           <span className="hidden sm:inline">طباعة PDF</span>
                         </button>
                         <button
                           onClick={() => handleEditAssignmentClick(asg)}
-                          className="p-2 bg-slate-50 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-slate-100 transition-all cursor-pointer"
+                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="تعديل"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setAssignmentToDelete(asg)}
-                          className="p-2 bg-slate-50 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-100 transition-all cursor-pointer"
+                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -2105,20 +2365,20 @@ export default function ExamsAndAssignments() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
             >
-              <div className="flex items-center gap-3 text-red-600">
-                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-950 text-sm">حذف الامتحان نهائياً</h3>
-                  <p className="text-[11px] text-slate-500 font-sans font-medium">سيتم إزالة كافة السجلات والدرجات المرتبطة</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans font-medium">سيتم إزالة كافة السجلات والدرجات المرتبطة</p>
                 </div>
               </div>
 
-              <div className="text-xs text-slate-700 leading-relaxed font-sans space-y-1.5 py-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <p>هل أنت متأكد من رغبتك في حذف الامتحان: <strong className="text-red-700">"{examToDelete.name}"</strong>؟</p>
+              <div className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-sans space-y-1.5 py-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                <p>هل أنت متأكد من رغبتك في حذف الامتحان: <strong className="text-red-700 dark:text-red-300">"{examToDelete.name}"</strong>؟</p>
                 <p className="text-[10px] text-slate-400">تحذير: سيؤدي هذا الإجراء لحذف هذا الامتحان وجميع تقارير درجات الطلاب المسجلة له بشكل نهائي.</p>
               </div>
 
@@ -2126,7 +2386,7 @@ export default function ExamsAndAssignments() {
                 <button
                   type="button"
                   onClick={() => setExamToDelete(null)}
-                  className="px-4 py-2 border border-gray-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-xs font-bold cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -2151,20 +2411,20 @@ export default function ExamsAndAssignments() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl border border-gray-100 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
             >
-              <div className="flex items-center gap-3 text-red-600">
-                <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-950 text-sm">حذف الواجب الدراسي نهائياً</h3>
-                  <p className="text-[11px] text-slate-500 font-sans font-medium">سيتم إزالة كافة السجلات والتسليمات المرتبطة</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans font-medium">سيتم إزالة كافة السجلات والتسليمات المرتبطة</p>
                 </div>
               </div>
 
-              <div className="text-xs text-slate-700 leading-relaxed font-sans space-y-1.5 py-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <p>هل أنت متأكد من رغبتك في حذف الواجب الدراسي: <strong className="text-red-700">"{assignmentToDelete.title}"</strong>؟</p>
+              <div className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-sans space-y-1.5 py-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                <p>هل أنت متأكد من رغبتك في حذف الواجب الدراسي: <strong className="text-red-700 dark:text-red-300">"{assignmentToDelete.title}"</strong>؟</p>
                 <p className="text-[10px] text-slate-400">تحذير: سيؤدي هذا الإجراء لحذف الواجب الدراسي وجميع سجلات استلام وتسليم الواجب الخاصة بالطلاب بشكل نهائي.</p>
               </div>
 
@@ -2172,7 +2432,7 @@ export default function ExamsAndAssignments() {
                 <button
                   type="button"
                   onClick={() => setAssignmentToDelete(null)}
-                  className="px-4 py-2 border border-gray-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold cursor-pointer"
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-xs font-bold cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -2197,7 +2457,7 @@ export default function ExamsAndAssignments() {
               initial={{ scale: 0.92, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 15 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-slate-800 shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-right"
+              className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-slate-800 shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-right"
             >
               {/* Modal Header */}
               <div className="p-5 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between border-b border-purple-800/50 shrink-0">
@@ -2230,7 +2490,7 @@ export default function ExamsAndAssignments() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100">
+              <div className="p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-100 dark:text-slate-100">
                 {isAiAnalyzing ? (
                   <div className="py-16 flex flex-col items-center justify-center text-center space-y-4">
                     <div className="relative">
@@ -2240,7 +2500,7 @@ export default function ExamsAndAssignments() {
                       <Loader2 className="w-20 h-20 text-indigo-500 animate-spin absolute -top-2 -left-2" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-base text-slate-800 dark:text-slate-100">
+                      <h4 className="font-extrabold text-base text-slate-800 dark:text-slate-100 dark:text-slate-100">
                         جاري معالجة الكشف وتحليل الدرجات...
                       </h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
@@ -2259,7 +2519,7 @@ export default function ExamsAndAssignments() {
 
               {/* Modal Footer */}
               {!isAiAnalyzing && aiAnalysisResult && (
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-end gap-2 shrink-0">
+                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 flex flex-wrap items-center justify-end gap-2 shrink-0">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -2268,9 +2528,9 @@ export default function ExamsAndAssignments() {
                         setAiCopied(true);
                         setTimeout(() => setAiCopied(false), 2000);
                       }}
-                      className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                     >
-                      {aiCopied ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-500" />}
+                      {aiCopied ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                       <span>{aiCopied ? 'تم النسخ!' : 'نسخ التقرير'}</span>
                     </button>
 
@@ -2306,7 +2566,7 @@ export default function ExamsAndAssignments() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 dark:border-slate-800"
+              className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 dark:border-slate-700 dark:border-slate-800"
             >
               <div className="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -2329,7 +2589,7 @@ export default function ExamsAndAssignments() {
 
               <div className="p-6 space-y-4 text-right">
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
                     <span>الطالب/ة: <strong className="text-emerald-700 dark:text-emerald-400 font-extrabold">{whatsAppModalStudent.student.name}</strong></span>
                     <span className="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-rose-200 dark:border-rose-800">
                       إجمالي الغياب: {whatsAppModalStudent.count} مرات
@@ -2356,16 +2616,16 @@ export default function ExamsAndAssignments() {
                     rows={6}
                     value={customWhatsAppMsg}
                     onChange={(e) => setCustomWhatsAppMsg(e.target.value)}
-                    className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-sans text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500 leading-relaxed"
+                    className="w-full p-3 bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-sans text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500 leading-relaxed"
                     dir="rtl"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 justify-end">
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 justify-end">
                   <button
                     type="button"
                     onClick={() => setWhatsAppModalStudent(null)}
-                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
                   >
                     إلغاء
                   </button>

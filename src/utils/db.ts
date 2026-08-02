@@ -54,6 +54,9 @@ function loadFromStorage<T>(key: string, defaultVal: T): T {
 
 function saveToStorage<T>(key: string, data: T) {
   localStorage.setItem(key, JSON.stringify(data));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key } }));
+  }
 }
 
 // SIMULATE TIME STAMP

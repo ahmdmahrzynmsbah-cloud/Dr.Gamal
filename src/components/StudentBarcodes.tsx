@@ -6,12 +6,43 @@
 import React, { useState, useEffect } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Filter, Printer, QrCode, CheckCircle, X, Users, BookOpen } from 'lucide-react';
+import {  Search, Filter, Printer, QrCode, CheckCircle, X, Users, BookOpen , RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Barcode from './Barcode';
+import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
 export default function StudentBarcodes() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printTargetStudents, setPrintTargetStudents] = useState<Student[]>([]);
+  
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingText, setProcessingText] = useState('');
+
+  const handleProcessAction = (text: string, onComplete: () => void) => {
+    setIsProcessing(true);
+    setProcessingProgress(0);
+    setProcessingText(text);
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 20) + 10;
+      if (progress >= 100) {
+        progress = 100;
+        setProcessingProgress(progress);
+        clearInterval(interval);
+        
+        setTimeout(() => {
+          setIsProcessing(false);
+          setProcessingProgress(0);
+          onComplete();
+        }, 400);
+      } else {
+        setProcessingProgress(progress);
+      }
+    }, 150);
+  };
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   
   // Search & Filters state
@@ -28,6 +59,10 @@ export default function StudentBarcodes() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useSamsDbSync(() => {
+    loadData();
+  });
 
   const loadData = () => {
     // Only get active/suspended students, skip archived
@@ -66,6 +101,13 @@ export default function StudentBarcodes() {
   };
 
   const handlePrintSingle = (student: Student) => {
+    handleProcessAction('جاري تجهيز بطاقة الطالب...', () => {
+      setPrintTargetStudents([student]);
+      setShowPrintModal(true);
+    });
+  };
+
+  const old_handlePrintSingle_ignored = (student: Student) => {
     const classroom = classes.find(c => c.id === student.class_id);
     const scheduleDays = classroom?.schedule_days || '';
     const scheduleTime = classroom?.schedule_time || '';
@@ -258,6 +300,14 @@ export default function StudentBarcodes() {
 
   const handlePrintBulk = (selectedStudentsList: Student[]) => {
     if (selectedStudentsList.length === 0) return;
+    handleProcessAction('جاري تجهيز بطاقات الطلاب للطباعة...', () => {
+      setPrintTargetStudents(selectedStudentsList);
+      setShowPrintModal(true);
+    });
+  };
+
+  const old_handlePrintBulk_ignored = (selectedStudentsList: Student[]) => {
+    if (selectedStudentsList.length === 0) return;
     
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) {
@@ -444,6 +494,7 @@ export default function StudentBarcodes() {
               direction: ltr !important;
               display: block !important;
               text-align: center !important;
+import { useSamsDbSync } from '../hooks/useSamsDbSync';
             }
           </style>
         </head>
@@ -476,8 +527,106 @@ export default function StudentBarcodes() {
     ];
   };
 
+  if (showPrintModal && printTargetStudents.length > 0) {
+    return (
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4 gap-4">
+          <button 
+            onClick={() => setShowPrintModal(false)}
+            className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-2 font-bold text-sm cursor-pointer"
+          >
+            <X className="w-5 h-5" /> رجوع
+          </button>
+          <button 
+            onClick={() => window.print()}
+            className="px-5 py-2.5 bg-slate-800 text-white hover:bg-slate-700 rounded-xl flex items-center gap-2 font-bold text-sm cursor-pointer shadow-md w-full md:w-auto justify-center"
+          >
+            <Printer className="w-5 h-5" /> طباعة الملصقات / حفظ PDF
+          </button>
+        </div>
+
+        <div id="printable-group-roster" className="bg-white dark:bg-slate-800">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 p-4 print:grid-cols-3 print:gap-4 print:p-0">
+            {printTargetStudents.map(student => {
+              const classroom = classes.find(c => c.id === student.class_id);
+              return (
+                <div key={student.id} className="border-2 border-slate-800 rounded-xl p-4 flex flex-col items-center text-center page-break-inside-avoid shadow-sm print:shadow-none bg-white dark:bg-slate-800">
+                  <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">الدكتور في اللغة العربية</h3>
+                  <div className="w-full mt-2 mb-3">
+                    <p className="font-black text-slate-900 dark:text-slate-50 text-base">{student.name}</p>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">المجموعة: {classroom?.name || 'غير محدد'}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-1">
+                      {classroom?.schedule_days || 'غير محدد'} | {classroom?.schedule_time ? `الساعة ${classroom.schedule_time}` : 'غير محدد'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded-lg w-full">
+                    <Barcode 
+                      value={student.registration_id} 
+                      width={1.5} 
+                      height={40} 
+                      showText={true} 
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6" dir="rtl">
+
+      {/* Global Processing Progress Overlay */}
+      <AnimatePresence>
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            dir="rtl"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/40 rounded-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                >
+                  <RefreshCw className="w-8 h-8 text-amber-500" />
+                </motion.div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${processingProgress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 font-mono">
+                  <span>{processingProgress}%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       
       {/* Header Panel */}
       <div className="bg-[#0D5C8C] text-white p-6 rounded-2xl shadow-xs relative overflow-hidden">
@@ -510,7 +659,7 @@ export default function StudentBarcodes() {
       </div>
 
       {/* Filter and Control Panel */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-3xs space-y-4">
+      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-3xs space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search bar */}
           <div className="relative">
@@ -522,12 +671,12 @@ export default function StudentBarcodes() {
               placeholder="ابحث باسم الطالب، رقم القيد، أو الهاتف..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#0D5C8C] focus:bg-white rounded-xl text-xs outline-none transition-all font-sans"
+              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800 rounded-xl text-xs outline-none transition-all font-sans"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -542,7 +691,7 @@ export default function StudentBarcodes() {
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#0D5C8C] focus:bg-white rounded-xl text-xs outline-none transition-all cursor-pointer appearance-none"
+              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800 rounded-xl text-xs outline-none transition-all cursor-pointer appearance-none"
             >
               <option value="all">كل المجموعات الدراسية</option>
               {classes.map(cls => (
@@ -559,7 +708,7 @@ export default function StudentBarcodes() {
             <select
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value)}
-              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#0D5C8C] focus:bg-white rounded-xl text-xs outline-none transition-all cursor-pointer appearance-none"
+              className="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800 rounded-xl text-xs outline-none transition-all cursor-pointer appearance-none"
             >
               <option value="all">كل الصفوف الدراسية</option>
               {getGradeLevels().map(lvl => (
@@ -570,19 +719,19 @@ export default function StudentBarcodes() {
         </div>
 
         {/* Dynamic Card Format Selector */}
-        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-700 block">شكل بطاقة قيد الطالب:</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">شكل بطاقة قيد الطالب:</span>
             <p className="text-[10px] text-slate-400">اختر التنسيق المفضل للطباعة والعرض لسهولة مسحه بالهاتف أو بالمسدس الليزر.</p>
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/50 self-start sm:self-auto shrink-0">
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/50 self-start sm:self-auto shrink-0">
             <button
               type="button"
               onClick={() => setRenderType('both')}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 renderType === 'both' 
                   ? 'bg-[#0D5C8C] text-white shadow-3xs' 
-                  : 'text-slate-600 hover:text-slate-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
               }`}
             >
               الكل (باركود + QR)
@@ -593,7 +742,7 @@ export default function StudentBarcodes() {
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 renderType === 'qrcode' 
                   ? 'bg-[#0D5C8C] text-white shadow-3xs' 
-                  : 'text-slate-600 hover:text-slate-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
               }`}
             >
               رمز QR فقط
@@ -604,7 +753,7 @@ export default function StudentBarcodes() {
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 renderType === 'barcode' 
                   ? 'bg-[#0D5C8C] text-white shadow-3xs' 
-                  : 'text-slate-600 hover:text-slate-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
               }`}
             >
               باركود خطي فقط
@@ -613,16 +762,16 @@ export default function StudentBarcodes() {
         </div>
 
         {/* Bulk Action Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="select-all-barcodes"
               checked={filteredStudents.length > 0 && selectedStudents.length === filteredStudents.length}
               onChange={handleSelectAllToggle}
-              className="rounded border-gray-300 text-[#0D5C8C] focus:ring-[#0D5C8C] w-4 h-4 cursor-pointer"
+              className="rounded border-gray-300 dark:border-gray-600 text-[#0D5C8C] focus:ring-[#0D5C8C] w-4 h-4 cursor-pointer"
             />
-            <label htmlFor="select-all-barcodes" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+            <label htmlFor="select-all-barcodes" className="text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer select-none">
               {selectedStudents.length === filteredStudents.length ? 'إلغاء تحديد الكل' : `تحديد كل المصفين للطباعة (${filteredStudents.length})`}
             </label>
           </div>
@@ -642,7 +791,7 @@ export default function StudentBarcodes() {
                 </button>
                 <button
                   onClick={() => setSelectedStudents([])}
-                  className="px-3 py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                  className="px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
                 >
                   إلغاء التحديد
                 </button>
@@ -652,7 +801,7 @@ export default function StudentBarcodes() {
             <button
               onClick={() => handlePrintBulk(filteredStudents)}
               disabled={filteredStudents.length === 0}
-              className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-xs font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>طباعة كل المصفين ({filteredStudents.length})</span>
@@ -663,7 +812,7 @@ export default function StudentBarcodes() {
 
       {/* Visual Barcode Grid */}
       {filteredStudents.length === 0 ? (
-        <div className="bg-white p-12 text-center rounded-2xl border border-slate-100 text-slate-400 text-xs flex flex-col items-center justify-center gap-3">
+        <div className="bg-white dark:bg-slate-800 p-12 text-center rounded-2xl border border-slate-100 dark:border-slate-700 text-slate-400 text-xs flex flex-col items-center justify-center gap-3">
           <QrCode className="w-12 h-12 opacity-35 text-slate-400" />
           <p className="font-bold">لا يوجد طلاب يطابقون خيارات التصفية أو البحث الحالية.</p>
           <p className="text-[10px] text-slate-400">تأكد من اختيار المجموعة الصحيحة أو كتابة استعلام بحث دقيق.</p>
@@ -678,10 +827,10 @@ export default function StudentBarcodes() {
               <div
                 key={student.id}
                 onClick={() => handleSelectToggle(student.id)}
-                className={`relative p-4 rounded-2xl border bg-white transition-all duration-200 cursor-pointer select-none flex flex-col justify-between ${
+                className={`relative p-4 rounded-2xl border bg-white dark:bg-slate-800 transition-all duration-200 cursor-pointer select-none flex flex-col justify-between ${
                   isSelected 
                     ? 'border-[#0D5C8C] shadow-xs ring-1 ring-[#0D5C8C]' 
-                    : 'border-slate-100 hover:border-slate-300 hover:shadow-2xs'
+                    : 'border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:shadow-2xs'
                 }`}
               >
                 {/* Selection indicator and group badge */}
@@ -695,7 +844,7 @@ export default function StudentBarcodes() {
                   </span>
                   
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-[#0D5C8C] bg-sky-50 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-bold text-[#0D5C8C] bg-sky-50 dark:bg-sky-900/40 px-2 py-0.5 rounded-md">
                       {classroom?.name || 'بدون مجموعة'}
                     </span>
                     
@@ -704,7 +853,7 @@ export default function StudentBarcodes() {
                       className={`w-4.5 h-4.5 rounded-md flex items-center justify-center border transition-all ${
                         isSelected 
                           ? 'bg-[#0D5C8C] border-[#0D5C8C] text-white' 
-                          : 'border-slate-300 bg-white'
+                          : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                       }`}
                     >
                       {isSelected && <CheckCircle className="w-3.5 h-3.5 fill-current text-white stroke-[#0D5C8C]" />}
@@ -714,12 +863,12 @@ export default function StudentBarcodes() {
 
                 {/* Name and ID */}
                 <div className="space-y-1 text-center mb-4">
-                  <h4 className="text-xs font-bold text-slate-800 line-clamp-1">{student.name}</h4>
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 line-clamp-1">{student.name}</h4>
                   <p className="text-[10px] text-slate-400 font-medium">{student.grade_level}</p>
                 </div>
 
                 {/* Visual Barcode Rendering */}
-                <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100 flex flex-col items-center justify-center gap-1.5">
+                <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-1.5">
                   <div id={`print-barcode-view-${student.id}`} className="w-full">
                     {/* Width adjusted for better rendering in grid */}
                     <Barcode value={student.registration_id} height={32} showText={true} renderType={renderType} />
@@ -727,8 +876,8 @@ export default function StudentBarcodes() {
                 </div>
 
                 {/* Individual Action Footer */}
-                <div className="mt-3.5 pt-3.5 border-t border-slate-50 flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-mono font-bold text-slate-500">
+                <div className="mt-3.5 pt-3.5 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
                     ID: {student.registration_id}
                   </span>
                   <button

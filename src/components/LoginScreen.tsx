@@ -8,9 +8,12 @@ import { Sparkles, Key, User, ShieldCheck, GraduationCap } from 'lucide-react';
 
 interface LoginScreenProps {
   onLoginSuccess: (role: 'teacher' | 'secretary', name: string, userId?: string) => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
-export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+import ThemeToggle from './ThemeToggle';
+export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onToggleDarkMode }: LoginScreenProps) {
   const [role, setRole] = useState<'teacher' | 'secretary'>('teacher');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -75,6 +78,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-gray-150 shadow-lg overflow-hidden animate-fade-in">
         
         {/* Banner with customized elegant "الدكتور" branding */}
+        <div className="absolute top-4 left-4 z-50">
+          {onToggleDarkMode && (
+            <div className="bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/20">
+              <ThemeToggle isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
+            </div>
+          )}
+        </div>
         <div className="bg-[#0D5C8C] p-8 text-center relative overflow-hidden flex flex-col items-center justify-center">
           {/* Subtle background decoration */}
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full" />

@@ -510,6 +510,8 @@ export default function App() {
   if (!currentUserRole) {
     return (
       <LoginScreen
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onLoginSuccess={(role, name, userId) => {
           if (userId) localStorage.setItem('sams_logged_in_id', userId);
           setCurrentUserId(userId || null);

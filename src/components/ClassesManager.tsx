@@ -158,7 +158,7 @@ export default function ClassesManager() {
     parent_phone: '',
     grade_level: 'الأول الإعدادي',
     birth_date: '2016-01-01',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active' as 'active' | 'suspended' | 'archived', national_id: ''
   });
 
   // Calculate attendance statistics for a student

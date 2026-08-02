@@ -136,14 +136,14 @@ export default function AttendanceTracker() {
   const filteredStudents = useMemo(() => {
     if (!selectedClass) return []; // Don't show students if no class is selected
     return students.filter(s => {
-      const matchesClass = selectedClass === 'all' || s.class_id === selectedClass;
+      const matchesClass = s.class_id === selectedClass;
       const matchesSearch = !searchTerm || s.name.includes(searchTerm) || s.registration_id.includes(searchTerm);
       return matchesClass && matchesSearch;
     });
   }, [students, selectedClass, searchTerm]);
 
   const markUnscannedAsAbsent = () => {
-    if (selectedClass === 'all') {
+    if (!selectedClass) {
       alert("يرجى اختيار مجموعة محددة أولاً لتسجيل الغياب.");
       return;
     }
@@ -324,7 +324,7 @@ export default function AttendanceTracker() {
                 className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
               >
                 <option value="" disabled>اختر المجموعة...</option>
-                <option value="all">جميع المجموعات</option>
+                
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -372,7 +372,7 @@ export default function AttendanceTracker() {
                 <tr>
                   <th className="px-4 py-3">الطالب</th>
                   <th className="px-4 py-3">رقم القيد</th>
-                  {selectedClass === 'all' && <th className="px-4 py-3">المجموعة</th>}
+                  
                   <th className="px-4 py-3 text-center">حالة اليوم</th>
                   <th className="px-4 py-3 text-center">إجراءات</th>
                 </tr>
@@ -387,9 +387,7 @@ export default function AttendanceTracker() {
                     <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-colors">
                       <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{student.name}</td>
                       <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{student.registration_id}</td>
-                      {selectedClass === 'all' && (
-                        <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300">{classObj?.name || '-'}</td>
-                      )}
+                      
                       <td className="px-4 py-3 text-center">
                         {status === 'present' && <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-md text-xs font-bold"><Check className="w-3.5 h-3.5" /> حاضر</span>}
                         {status === 'absent' && <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-700 dark:text-rose-300 px-2.5 py-1 rounded-md text-xs font-bold"><X className="w-3.5 h-3.5" /> غائب</span>}
@@ -448,7 +446,7 @@ export default function AttendanceTracker() {
           </div>
           <div className="text-left">
             <div className="text-xl font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300">
-              {selectedClass === 'all' ? 'جميع المجموعات' : classes.find(c => c.id === selectedClass)?.name}
+              {classes.find(c => c.id === selectedClass)?.name || ''}
             </div>
           </div>
         </div>
@@ -459,9 +457,7 @@ export default function AttendanceTracker() {
             <tr className="bg-slate-100 border-b-2 border-slate-800">
               <th className="py-3 px-4 font-bold text-slate-900">اسم الطالب</th>
               <th className="py-3 px-4 font-bold text-slate-900">كود الطالب</th>
-              {selectedClass === 'all' && (
-                <th className="py-3 px-4 font-bold text-slate-900">المجموعة</th>
-              )}
+              
               <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">حاضر</th>
               <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">غائب</th>
               <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">مستأذن</th>
@@ -478,9 +474,7 @@ export default function AttendanceTracker() {
                   <tr key={student.id}>
                     <td className="py-2 px-4 font-bold text-slate-900">{student.name}</td>
                     <td className="py-2 px-4 text-slate-700 font-mono">{student.registration_id}</td>
-                    {selectedClass === 'all' && (
-                      <td className="py-2 px-4 text-slate-700">{classObj?.name || '-'}</td>
-                    )}
+                    
                     <td className="py-2 px-2 text-center align-middle">
                       <div className="w-5 h-5 border-[1.5px] border-slate-400 mx-auto rounded-sm flex items-center justify-center text-slate-900 font-bold">
                         {status === 'present' && '✓'}
@@ -501,7 +495,7 @@ export default function AttendanceTracker() {
               })
             ) : (
               <tr>
-                <td colSpan={selectedClass === 'all' ? 6 : 5} className="py-8 text-center text-slate-500 font-bold">
+                <td colSpan={5} className="py-8 text-center text-slate-500 font-bold">
                   {selectedClass === '' ? 'يرجى اختيار مجموعة أولاً' : 'لا يوجد طلاب في هذه المجموعة'}
                 </td>
               </tr>

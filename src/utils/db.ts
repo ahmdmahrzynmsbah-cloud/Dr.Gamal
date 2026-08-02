@@ -654,5 +654,72 @@ export const samsDb = {
     const assignments = this.getAssignments();
     const assignTitle = assignments.find(a => a.id === grade.assignment_id)?.title || grade.assignment_id;
     addAuditLog('UPDATE', 'assignment_grades', updated.id, `رصد واجب الطالب (${studentName}) لـ (${assignTitle}): ${grade.completed ? `تم التسليم (الدرجة: ${grade.score})` : 'لم يتم التسليم'}`);
-  }
+  },
+
+  // Merge duplicates
+  mergeStudents(keepId: string, deleteIds: string[]) {
+    if (!deleteIds.length) return;
+
+    // 1. Update Attendance
+    const attendance = loadFromStorage<Attendance[]>(KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
+    let changedAttendance = false;
+    attendance.forEach(a => {
+      if (deleteIds.includes(a.student_id)) {
+        a.student_id = keepId;
+        changedAttendance = true;
+      }
+    });
+    if (changedAttendance) saveToStorage(KEYS.ATTENDANCE, attendance);
+
+    // 2. Update Fees
+    const fees = loadFromStorage<FeePayment[]>(KEYS.FEES, INITIAL_FEES);
+    let changedFees = false;
+    fees.forEach(f => {
+      if (deleteIds.includes(f.student_id)) {
+        f.student_id = keepId;
+        changedFees = true;
+      }
+    });
+    if (changedFees) saveToStorage(KEYS.FEES, fees);
+
+    // 3. Update Grades
+    const grades = loadFromStorage<Grade[]>(KEYS.GRADES, INITIAL_GRADES);
+    let changedGrades = false;
+    grades.forEach(g => {
+      if (deleteIds.includes(g.student_id)) {
+        g.student_id = keepId;
+        changedGrades = true;
+      }
+    });
+    if (changedGrades) saveToStorage(KEYS.GRADES, grades);
+
+    // 4. Update Exam Grades
+    const examGrades = loadFromStorage<ExamGrade[]>(KEYS.EXAM_GRADES, []);
+    let changedExamGrades = false;
+    examGrades.forEach(g => {
+      if (deleteIds.includes(g.student_id)) {
+        g.student_id = keepId;
+        changedExamGrades = true;
+      }
+    });
+    if (changedExamGrades) saveToStorage(KEYS.EXAM_GRADES, examGrades);
+
+    // 5. Update Assignment Grades
+    const assignmentGrades = loadFromStorage<AssignmentGrade[]>(KEYS.ASSIGNMENT_GRADES, []);
+    let changedAssignmentGrades = false;
+    assignmentGrades.forEach(g => {
+      if (deleteIds.includes(g.student_id)) {
+        g.student_id = keepId;
+        changedAssignmentGrades = true;
+      }
+    });
+    if (changedAssignmentGrades) saveToStorage(KEYS.ASSIGNMENT_GRADES, assignmentGrades);
+
+    // 6. Delete the old students
+    deleteIds.forEach(id => {
+      this.permanentlyDeleteStudent(id);
+    });
+
+    addAuditLog('UPDATE', 'students', keepId, `تم دمج بيانات الطلاب وحذف النسخ المكررة (${deleteIds.join(', ')})`);
+  },
 };

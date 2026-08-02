@@ -4,6 +4,7 @@ import { Student, ClassRoom } from '../types';
 import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
+import DuplicateStudentsChecker from './DuplicateStudentsChecker';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
 export default function StudentsList() {
@@ -22,6 +23,7 @@ export default function StudentsList() {
 
   // Archive modal states
   const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [showDuplicatesModal, setShowDuplicatesModal] = useState(false);
   const [archivedSearchTerm, setArchivedSearchTerm] = useState('');
   const [archivedStudentToPermanentDelete, setArchivedStudentToPermanentDelete] = useState<Student | null>(null);
   
@@ -281,6 +283,16 @@ export default function StudentsList() {
   }, [students, searchTerm, classFilter, statusFilter]);
 
 
+  if (showDuplicatesModal) {
+    return (
+      <DuplicateStudentsChecker 
+        students={students} 
+        onClose={() => setShowDuplicatesModal(false)} 
+        onRefresh={loadData} 
+      />
+    );
+  }
+
   if (showArchiveModal) {
     return (
       <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -521,6 +533,15 @@ export default function StudentsList() {
         </div>
         
         <div className="flex items-center gap-3">
+          <button 
+            type="button"
+            onClick={() => setShowDuplicatesModal(true)}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+            title="فحص البيانات المكررة ودمجها"
+          >
+            <Users className="w-4 h-4 text-white" />
+            <span className="hidden sm:inline">البيانات المكررة</span>
+          </button>
           <button 
             type="button"
             onClick={() => setShowArchiveModal(true)}

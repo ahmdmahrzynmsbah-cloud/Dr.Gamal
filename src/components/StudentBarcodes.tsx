@@ -556,7 +556,7 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
                     <p className="font-black text-slate-900 dark:text-slate-50 text-base">{student.name}</p>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">المجموعة: {classroom?.name || 'غير محدد'}</p>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-1">
-                      {classroom?.schedule_days || 'غير محدد'} | {classroom?.schedule_time ? `الساعة ${classroom.schedule_time}` : 'غير محدد'}
+                      {classroom?.schedule_time || classroom?.schedule_days || 'غير محدد'}
                     </p>
                   </div>
                   <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded-lg w-full">

@@ -558,7 +558,7 @@ export default function ExamsAndAssignments() {
       const entry = tempGrades[student.id];
       if (entry) {
         if (!entry.flag && (entry.score < 0 || entry.score > maxLimit)) {
-          setErrorMsg(`خطأ: الدرجة المدخلة للطالب (${student.name}) هي ${entry.score} وتتجاوز الحد الأقصى المسموح به لـ (${activeEvaluationObj.name || activeEvaluationObj.title}) وهو ${maxLimit} درجة.`);
+          setErrorMsg(`خطأ: الدرجة المدخلة للطالب (${student.name}) هي ${entry.score} وتتجاوز الحد الأقصى المسموح به لـ (${(activeEvaluationObj as any).name || (activeEvaluationObj as any).title}) وهو ${maxLimit} درجة.`);
           hasValidationError = true;
           break;
         }
@@ -580,7 +580,7 @@ export default function ExamsAndAssignments() {
           teacher_notes: entry.notes
         });
       });
-      setSuccessMsg(`تم رصد وحفظ درجات الامتحان (${activeEvaluationObj.name}) لجميع طلاب المجموعة بنجاح!`);
+      setSuccessMsg(`تم رصد وحفظ درجات الامتحان (${(activeEvaluationObj as any).name}) لجميع طلاب المجموعة بنجاح!`);
     } else {
       groupStudents.forEach(student => {
         const entry = tempGrades[student.id] || { score: 0, flag: false, notes: '' };
@@ -593,7 +593,7 @@ export default function ExamsAndAssignments() {
           teacher_notes: entry.notes
         });
       });
-      setSuccessMsg(`تم رصد وحفظ تقييم واجب اليوم (${activeEvaluationObj.title}) لجميع طلاب المجموعة بنجاح!`);
+      setSuccessMsg(`تم رصد وحفظ تقييم واجب اليوم (${(activeEvaluationObj as any).title}) لجميع طلاب المجموعة بنجاح!`);
     }
 
     loadAllData();

@@ -59,6 +59,7 @@ export default function ClassesManager() {
     name: '',
     schedule_days: '',
     schedule_time: '',
+    day_times: {} as Record<string, string>,
     grade_level: 'الأول الإعدادي'
   });
 
@@ -265,20 +266,36 @@ export default function ClassesManager() {
       setErrorText('يرجى تحديد أيام المجموعة الدراسية.');
       return;
     }
-    if (!classForm.schedule_time || classForm.schedule_time.trim() === '') {
-      setErrorText('يرجى تحديد وقت المجموعة الدراسية.');
+    const daysArr = classForm.schedule_days.split('، ').filter(Boolean);
+    const missingTimes = daysArr.some(day => !classForm.day_times[day] || classForm.day_times[day].trim() === '');
+    if (missingTimes) {
+      setErrorText('يرجى تحديد وقت المجموعة لكل يوم تم اختياره.');
       return;
     }
+    
     if (!classForm.grade_level) {
       setErrorText('يرجى تحديد الصف الدراسي للمجموعة.');
       return;
     }
 
+    const formattedScheduleTime = daysArr.map(day => {
+      const rawTime = classForm.day_times[day];
+      if (rawTime) {
+         const [h, m] = rawTime.split(':');
+         const hInt = parseInt(h, 10);
+         const ampm = hInt >= 12 ? 'م' : 'ص';
+         let h12 = hInt % 12;
+         if (h12 === 0) h12 = 12;
+         return `${day} (${h12}:${m} ${ampm})`;
+      }
+      return `${day} (--)`;
+    }).join(' | ');
+
     const newCls: ClassRoom = {
       id: `c-${Date.now()}`,
       name: classForm.name,
       schedule_days: classForm.schedule_days,
-      schedule_time: classForm.schedule_time,
+      schedule_time: formattedScheduleTime,
       capacity: 0,
       grade_level: classForm.grade_level
     };
@@ -288,6 +305,7 @@ export default function ClassesManager() {
       name: '',
       schedule_days: '',
       schedule_time: '',
+      day_times: {},
       grade_level: 'الأول الإعدادي'
     });
     setShowAddClass(false);
@@ -643,7 +661,7 @@ export default function ClassesManager() {
                     </div>
                     <div>
                       <span className="text-slate-500 dark:text-slate-400 block text-[10px]">المواعيد والجدول:</span>
-                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.schedule_days} - {selectedClassForStudents.schedule_time}</strong>
+                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days}</strong>
                     </div>
                     <div>
                       <span className="text-slate-500 dark:text-slate-400 block text-[10px]">عدد الطلاب:</span>
@@ -806,7 +824,7 @@ export default function ClassesManager() {
 أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - سنتر اللغة العربية،
 تحية طيبة وبعد،
 
-نود إحاطتكم بجدول مواعيد المجموعة (${selectedClassForStudents.schedule_days || 'المحددة'} - ${selectedClassForStudents.schedule_time || ''}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
+نود إحاطتكم بجدول مواعيد المجموعة (${selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days || 'المحددة'}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
 
 شاكرين لكم حسن التعاون.`;
                   setGroupWhatsAppMsg(defaultBroadcastMsg);
@@ -844,7 +862,7 @@ export default function ClassesManager() {
           <div className="flex flex-wrap items-center gap-4 text-xs pt-3 border-t border-white/10 font-sans">
             <div className="flex items-center gap-1.5 text-sky-100">
               <Calendar className="w-4 h-4 text-amber-300" />
-              <span>المواعيد: <strong>{selectedClassForStudents.schedule_days || 'غير محدد'}</strong> ({selectedClassForStudents.schedule_time || ''})</span>
+              <span>المواعيد: <strong>{selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days || "غير محدد"}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-sky-100">
               <Users className="w-4 h-4 text-emerald-300" />
@@ -1843,16 +1861,36 @@ export default function ClassesManager() {
                 ))}
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">وقت المجموعة *</label>
-              <input
-                type="text"
-                value={classForm.schedule_time}
-                onChange={(e) => setClassForm({ ...classForm, schedule_time: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
-                placeholder="أدخل وقت المواعيد..."
-                required
-              />
+            <div className="space-y-1 md:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أوقات المجموعة للأيام المحددة *</label>
+              {(classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : []).length === 0 ? (
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                  الرجاء تحديد أيام المجموعة أولاً...
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                  {(classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : []).map(day => (
+                    <div key={day} className="flex items-center gap-3">
+                      <span className="w-16 text-xs font-bold text-slate-700 dark:text-slate-200">{day}</span>
+                      <input
+                        type="time"
+                        value={classForm.day_times?.[day] || ''}
+                        onChange={(e) => {
+                          setClassForm(prev => ({
+                            ...prev,
+                            day_times: {
+                              ...prev.day_times,
+                              [day]: e.target.value
+                            }
+                          }));
+                        }}
+                        className="flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -1924,7 +1962,7 @@ export default function ClassesManager() {
                     <Calendar className="w-4 h-4 text-slate-400" />
                     مواعيد المجموعة
                   </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? `${cls.schedule_days} - ${cls.schedule_time || ''}` : 'ـ لم تحدد بعد ـ'}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? cls.schedule_time || cls.schedule_days : 'ـ لم تحدد بعد ـ'}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">

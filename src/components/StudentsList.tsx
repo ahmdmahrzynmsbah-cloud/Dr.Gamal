@@ -146,7 +146,7 @@ export default function StudentsList() {
     
     let progress = 0;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 20) + 10;
+      progress += Math.floor(Math.random() * 25) + 15;
       if (progress >= 100) {
         progress = 100;
         setProcessingProgress(progress);
@@ -155,12 +155,14 @@ export default function StudentsList() {
         setTimeout(() => {
           setIsProcessing(false);
           setProcessingProgress(0);
-          onComplete();
-        }, 400);
+          setTimeout(() => {
+            onComplete();
+          }, 150);
+        }, 200);
       } else {
         setProcessingProgress(progress);
       }
-    }, 150);
+    }, 80);
   };
 
   useSamsDbSync(() => {
@@ -247,11 +249,6 @@ export default function StudentsList() {
     }
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleEditClick = (student: Student) => {
     setIsEditing(true);
     setEditId(student.id);
@@ -270,7 +267,6 @@ export default function StudentsList() {
       status: student.status
     });
     setShowAddForm(true);
-    scrollToTop();
     setErrorMessage('');
   };
 
@@ -527,7 +523,7 @@ export default function StudentsList() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print print:hidden"
             dir="rtl"
           >
             <motion.div
@@ -630,105 +626,110 @@ export default function StudentsList() {
 
       <AnimatePresence>
         {showAddForm && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-            <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6 space-y-5">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 border-b border-gray-100 dark:border-gray-700 pb-3">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
-                  <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[100] animate-fade-in overflow-y-auto" dir="rtl">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="max-w-4xl w-full my-auto">
+              <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl space-y-5">
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
+                  <button type="button" onClick={() => setShowAddForm(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
                 </div>
                 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX (اختياري)" dir="ltr" />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
+                    <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX (اختياري)" dir="ltr" />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">نوع التعليم <span className="text-rose-500">*</span></label>
-                  <select 
-                    required 
-                    name="education_type" 
-                    value={formData.education_type} 
-                    onChange={(e) => {
-                      const newEd = e.target.value as 'عام' | 'أزهر';
-                      const avail = classes.filter(c => (c.education_type || 'عام') === newEd);
-                      setFormData(prev => ({
-                        ...prev,
-                        education_type: newEd,
-                        class_id: avail.length > 0 ? avail[0].id : ''
-                      }));
-                    }} 
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
-                  >
-                    <option value="عام">عام</option>
-                    <option value="أزهر">أزهر</option>
-                  </select>
-                </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">نوع التعليم <span className="text-rose-500">*</span></label>
+                    <select 
+                      required 
+                      name="education_type" 
+                      value={formData.education_type} 
+                      onChange={(e) => {
+                        const newEd = e.target.value as 'عام' | 'أزهر';
+                        const avail = classes.filter(c => (c.education_type || 'عام') === newEd);
+                        setFormData(prev => ({
+                          ...prev,
+                          education_type: newEd,
+                          class_id: avail.length > 0 ? avail[0].id : ''
+                        }));
+                      }} 
+                      className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
+                    >
+                      <option value="عام">عام</option>
+                      <option value="أزهر">أزهر</option>
+                    </select>
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة ({formData.education_type}) <span className="text-rose-500">*</span></label>
-                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
-                    {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 ? (
-                      <option value="" disabled>-- لا توجد مجموعات ({formData.education_type}) متاحة --</option>
-                    ) : (
-                      classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).map(c => (
-                        <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>
-                      ))
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة ({formData.education_type}) <span className="text-rose-500">*</span></label>
+                    <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                      {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 ? (
+                        <option value="" disabled>-- لا توجد مجموعات ({formData.education_type}) متاحة --</option>
+                      ) : (
+                        classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).map(c => (
+                          <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>
+                        ))
+                      )}
+                    </select>
+                    {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 font-sans mt-1">
+                        ⚠️ لا توجد مجموعات معرفة لـ "{formData.education_type}". يرجى إضافة مجموعة أزهر/عام أولاً.
+                      </p>
                     )}
-                  </select>
-                  {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 && (
-                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-sans mt-1">
-                      ⚠️ لا توجد مجموعات معرفة لـ "{formData.education_type}". يرجى إضافة مجموعة أزهر/عام أولاً.
-                    </p>
-                  )}
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي <span className="text-rose-500">*</span></label>
-                  <select required name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
-                        <option value="الأول الإعدادي">الأول الإعدادي</option>
-                <option value="الثاني الإعدادي">الثاني الإعدادي</option>
-                <option value="الثالث الإعدادي">الثالث الإعدادي</option>
-                <option value="الأول الثانوي">الأول الثانوي</option>
-                <option value="الثاني الثانوي">الثاني الثانوي</option>
-                <option value="الثالث الثانوي">الثالث الثانوي</option>
-                  </select>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي <span className="text-rose-500">*</span></label>
+                    <select required name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                          <option value="الأول الإعدادي">الأول الإعدادي</option>
+                  <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+                  <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+                  <option value="الأول الثانوي">الأول الثانوي</option>
+                  <option value="الثاني الثانوي">الثاني الثانوي</option>
+                  <option value="الثالث الثانوي">الثالث الثانوي</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد <span className="text-rose-500">*</span></label>
+                    <input required type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                    <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                      <option value="active">مفعل ومنتظم</option>
+                      <option value="inactive">مجمد مؤقتاً</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر <span className="text-rose-500">*</span></label>
+                    <input required type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ) <span className="text-rose-500">*</span></label>
+                    <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد <span className="text-rose-500">*</span></label>
-                  <input required type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button type="button" onClick={() => setShowAddForm(false)} className="px-5 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl ml-3">إلغاء</button>
+                  <button type="submit" className="px-6 py-2 bg-[#1A7FAA] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0D5C8C]">
+                    {isEditing ? 'حفظ التعديلات المطبقة' : 'حفظ وتسجيل الطالب المذكور'}
+                  </button>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
-                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
-                    <option value="active">مفعل ومنتظم</option>
-                    <option value="inactive">مجمد مؤقتاً</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر <span className="text-rose-500">*</span></label>
-                  <input required type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ) <span className="text-rose-500">*</span></label>
-                  <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
-                <button type="button" onClick={() => setShowAddForm(false)} className="px-5 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl ml-3">إلغاء</button>
-                <button type="submit" className="px-6 py-2 bg-[#1A7FAA] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0D5C8C]">
-                  {isEditing ? 'حفظ التعديلات المطبقة' : 'حفظ وتسجيل الطالب المذكور'}
-                </button>
-              </div>
-            </form>
-          </motion.div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

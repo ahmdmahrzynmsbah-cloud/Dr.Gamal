@@ -121,17 +121,11 @@ export default function ParentsList() {
     setParents(Object.values(parentMap));
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleEditClick = (parent: ParentRecord) => {
     setSelectedParent(parent);
     setEditName(parent.parent_name);
     setEditPhone(parent.parent_phone);
     setShowEditForm(true);
-    scrollToTop();
     setErrorMessage('');
   };
 
@@ -278,68 +272,82 @@ export default function ParentsList() {
         </div>
       )}
 
-      {/* Edit Form Modal/Container */}
+      {/* Edit Form Modal Overlay */}
       {showEditForm && selectedParent && (
-        <div className="bg-white dark:bg-slate-800 border border-[#0D5C8C]/20 p-6 rounded-2xl shadow-sm" id="parent_edit_form_container">
-          <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-100 dark:border-slate-700 pb-2 flex items-center gap-2">
-            <Edit className="w-4 h-4" />
-            تعديل بيانات ولي الأمر: {selectedParent.parent_name}
-          </h3>
-          <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            
-            {/* Parent Name */}
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسـم ولي الأمر بالكامل <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="اسم ولي الأمر رباعي"
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
-                dir="rtl"
-                required
-              />
-            </div>
-
-            {/* Parent Phone */}
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) <span className="text-rose-500">*</span></label>
-              <input
-                type="text"
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="مثلاً: 01xxxxxxxxx"
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
-                dir="rtl"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2 flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
-              <span>سيتم تطبيق هذا التعديل تلقائياً على جميع الطلاب التابعين لهذا الرقم أو الاسم.</span>
-              <span className="font-bold text-[#0D5C8C]">الطلاب المتأثرين بالتعديل: ({selectedParent.children.length})</span>
-            </div>
-
-            <div className="md:col-span-2 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4 mt-2">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[100] animate-fade-in" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 border border-[#0D5C8C]/20 p-6 rounded-2xl shadow-2xl max-w-xl w-full my-auto" id="parent_edit_form_container">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 mb-4">
+              <h3 className="font-bold text-[#0D5C8C] text-sm flex items-center gap-2">
+                <Edit className="w-4 h-4" />
+                تعديل بيانات ولي الأمر: {selectedParent.parent_name}
+              </h3>
               <button
                 type="button"
                 onClick={() => {
                   setShowEditForm(false);
                   setSelectedParent(null);
                 }}
-                className="px-4 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-bold shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer"
               >
-                إلغاء الأمر
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-lg shrink-0 cursor-pointer"
-              >
-                حفظ التحديثات وتعميمها
+                ✕
               </button>
             </div>
+            <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              
+              {/* Parent Name */}
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسـم ولي الأمر بالكامل <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="اسم ولي الأمر رباعي"
+                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
+                  dir="rtl"
+                  required
+                />
+              </div>
 
-          </form>
+              {/* Parent Phone */}
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="مثلاً: 01xxxxxxxxx"
+                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
+                  dir="rtl"
+                  required
+                />
+              </div>
+
+              <div className="md:col-span-2 flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+                <span>سيتم تطبيق هذا التعديل تلقائياً على جميع الطلاب التابعين لهذا الرقم أو الاسم.</span>
+                <span className="font-bold text-[#0D5C8C]">الطلاب المتأثرين بالتعديل: ({selectedParent.children.length})</span>
+              </div>
+
+              <div className="md:col-span-2 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700 pt-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setSelectedParent(null);
+                  }}
+                  className="px-4 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-bold shrink-0 cursor-pointer"
+                >
+                  إلغاء الأمر
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-lg shrink-0 cursor-pointer"
+                >
+                  حفظ التحديثات وتعميمها
+                </button>
+              </div>
+
+            </form>
+          </div>
         </div>
       )}
 

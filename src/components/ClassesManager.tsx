@@ -377,7 +377,7 @@ export default function ClassesManager() {
     
     let progress = 0;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 20) + 10;
+      progress += Math.floor(Math.random() * 25) + 15;
       if (progress >= 100) {
         progress = 100;
         setProcessingProgress(progress);
@@ -386,12 +386,14 @@ export default function ClassesManager() {
         setTimeout(() => {
           setIsProcessing(false);
           setProcessingProgress(0);
-          onComplete();
-        }, 400);
+          setTimeout(() => {
+            onComplete();
+          }, 150);
+        }, 200);
       } else {
         setProcessingProgress(progress);
       }
-    }, 150);
+    }, 80);
   };
 
   useSamsDbSync(() => {
@@ -399,11 +401,18 @@ export default function ClassesManager() {
   });
 
   const loadData = () => {
-    setClasses(samsDb.getClasses());
+    const updatedClasses = samsDb.getClasses();
+    setClasses(updatedClasses);
     setStudents(samsDb.getStudents());
     setTeachers(samsDb.getTeachers());
     setSubjects(samsDb.getSubjects());
     setSchedule(samsDb.getCenterSchedule());
+
+    // Keep selectedClassForStudents synced
+    setSelectedClassForStudents(prev => {
+      if (!prev) return null;
+      return updatedClasses.find(c => c.id === prev.id) || prev;
+    });
   };
 
   const handleCreateClass = (e: React.FormEvent) => {
@@ -614,7 +623,7 @@ export default function ClassesManager() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print print:hidden"
             dir="rtl"
           >
             <motion.div
@@ -970,7 +979,7 @@ export default function ClassesManager() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print print:hidden"
             dir="rtl"
           >
             <motion.div
@@ -1393,8 +1402,6 @@ export default function ClassesManager() {
                               type="button"
                               onClick={() => {
                                 setEditingStudent(student);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
                               }}
                               className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
                               title="تعديل بيانات الطالب"
@@ -1993,7 +2000,7 @@ export default function ClassesManager() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print print:hidden"
             dir="rtl"
           >
             <motion.div

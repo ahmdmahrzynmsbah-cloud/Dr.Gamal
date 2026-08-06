@@ -27,7 +27,7 @@ export default function StudentBarcodes() {
     
     let progress = 0;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 20) + 10;
+      progress += Math.floor(Math.random() * 25) + 15;
       if (progress >= 100) {
         progress = 100;
         setProcessingProgress(progress);
@@ -36,12 +36,14 @@ export default function StudentBarcodes() {
         setTimeout(() => {
           setIsProcessing(false);
           setProcessingProgress(0);
-          onComplete();
-        }, 400);
+          setTimeout(() => {
+            onComplete();
+          }, 150);
+        }, 200);
       } else {
         setProcessingProgress(progress);
       }
-    }, 150);
+    }, 80);
   };
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   
@@ -587,7 +589,7 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print print:hidden"
             dir="rtl"
           >
             <motion.div

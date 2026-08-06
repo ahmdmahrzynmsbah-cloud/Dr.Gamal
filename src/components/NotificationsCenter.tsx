@@ -237,7 +237,6 @@ export default function NotificationsCenter() {
     setSelectedParentStudent(null);
     setDirectSmsText('');
     loadData();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSuccessInfo(''), 6000);
   };
 
@@ -303,7 +302,6 @@ export default function NotificationsCenter() {
     });
     setActiveSubTab('logs');
     loadData();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSuccessInfo(''), 5000);
   };
 

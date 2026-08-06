@@ -412,7 +412,14 @@ html.dark body {
     margin: 0.5cm;
   }
 
-  .no-print {
+  .no-print,
+  .print\:hidden,
+  [role="dialog"],
+  .fixed.backdrop-blur-sm,
+  .fixed.backdrop-blur-xs,
+  .fixed.z-\\[100\\],
+  .fixed.z-50,
+  .fixed.z-\\[999\\] {
     display: none !important;
   }
   

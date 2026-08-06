@@ -66,9 +66,73 @@ export function validateEgyptianPhone(phone: string, fieldLabel = 'رقم اله
     return null;
   }
 
-  if (!isValidEgyptianPhone(phone, isRequired)) {
-    return `عذراً، ${fieldLabel} غير صحيح. يرجى إدخال رقم مصري صحيح مكون من 11 رقم يبدأ بـ (010, 011, 012, 015) مثل: 01012345678`;
+  const normalized = normalizePhoneDigits(phone);
+  const cleaned = normalized.replace(/[\s\-\+\(\)]/g, '');
+
+  // Check for non-digit characters
+  if (!/^\d+$/.test(cleaned)) {
+    return `عذراً، ${fieldLabel} يجب أن يحتوي على أرقام فقط دون حروف أو رموز غريبة.`;
   }
 
-  return null;
+  // Case 1: Standard local mobile starting with "01"
+  if (cleaned.startsWith('01')) {
+    if (cleaned.length > 11) {
+      const extraCount = cleaned.length - 11;
+      return `عذراً، ${fieldLabel} زائد عن المطلوب (${cleaned.length} رقم). رقم المحمول المصري يتكون من 11 رقم فقط (يوجد ${extraCount} رقم زيادة).`;
+    }
+    if (cleaned.length < 11) {
+      const missingCount = 11 - cleaned.length;
+      return `عذراً، ${fieldLabel} ناقص (${cleaned.length} رقم). رقم المحمول المصري يتكون من 11 رقم (ينقصك ${missingCount} رقم).`;
+    }
+    // 11 digits check network code
+    if (!/^01[0125]/.test(cleaned)) {
+      const networkPrefix = cleaned.slice(0, 3);
+      return `عذراً، ${fieldLabel} يبدأ بـ (${networkPrefix}) وهو غير تابع لأي شبكة محمول مصرية. يجب أن يبدأ بـ (010, 011, 012, 015).`;
+    }
+    return null; // Valid 11-digit mobile
+  }
+
+  // Case 2: International Egyptian format starting with "201" or "00201"
+  if (cleaned.startsWith('201')) {
+    if (cleaned.length > 12) {
+      return `عذراً، ${fieldLabel} بالصيغة الدولية زائد عن المطلوب (${cleaned.length} رقم). الصيغة الدولية للمحمول تكون 12 رقم فقط (مثال: 201012345678).`;
+    }
+    if (cleaned.length < 12) {
+      return `عذراً، ${fieldLabel} بالصيغة الدولية ناقص (${cleaned.length} رقم). يجب أن يتكون من 12 رقم (مثال: 201012345678).`;
+    }
+    if (!/^201[0125]/.test(cleaned)) {
+      return `عذراً، كود الشبكة غير صحيح. يجب أن يبدأ الرقم بـ 2010 أو 2011 أو 2012 أو 2015.`;
+    }
+    return null;
+  }
+
+  if (cleaned.startsWith('00201')) {
+    if (cleaned.length > 14) {
+      return `عذراً، ${fieldLabel} بالصيغة الدولية زائد عن المطلوب.`;
+    }
+    if (cleaned.length < 14) {
+      return `عذراً، ${fieldLabel} بالصيغة الدولية ناقص.`;
+    }
+    if (!/^00201[0125]/.test(cleaned)) {
+      return `عذراً، كود الشبكة غير صحيح.`;
+    }
+    return null;
+  }
+
+  // Case 3: Landline starting with "0" (e.g., 02, 03, 050, 040, etc.)
+  if (cleaned.startsWith('0')) {
+    if (cleaned.length > 10) {
+      return `عذراً، ${fieldLabel} الأرضي زائد عن المطلوب. أرقام التليفون الأرضي بمصر تكون من 9 إلى 10 أرقام فقط (كود المحافظة + الرقم).`;
+    }
+    if (cleaned.length < 9) {
+      return `عذراً، ${fieldLabel} الأرضي ناقص (${cleaned.length} أرقام). أرقام التليفون الأرضي تتكون من 9 إلى 10 أرقام.`;
+    }
+    if (!/^0[234589]/.test(cleaned)) {
+      return `عذراً، كود المحافظة في ${fieldLabel} غير صحيح.`;
+    }
+    return null;
+  }
+
+  // Case 4: Invalid starting digits
+  return `عذراً، ${fieldLabel} غير صحيح. يجب أن يبدأ بـ (01) لأرقام المحمول المصرية أو بـ (02, 03..) للأرضي.`;
 }

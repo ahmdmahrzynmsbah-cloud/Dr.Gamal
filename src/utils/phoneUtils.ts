@@ -2,9 +2,36 @@
  * Utility functions for Egyptian phone number validation and normalization.
  */
 
+// Check if the input text indicates "No phone" (e.g. "لا يوجد", "غير متوفر", etc.)
+export function isNoPhoneValue(phone: string): boolean {
+  if (!phone) return false;
+  const trimmed = phone.trim().toLowerCase();
+  const noPhonePatterns = [
+    'لا يوجد',
+    'لايوجد',
+    'غير متوفر',
+    'ليس لديه',
+    'بدون',
+    'لا يملك',
+    'لايوجد هاتف',
+    'لا يوجد هاتف',
+    'لايوجد رقم',
+    'لا يوجد رقم',
+    'لايوجد محمول',
+    'لا يوجد محمول',
+    'none',
+    'n/a',
+    'no phone'
+  ];
+  return noPhonePatterns.some(pattern => trimmed.includes(pattern)) || trimmed === 'لا' || trimmed === '0';
+}
+
 // Convert Eastern Arabic / Persian numerals to Western digits (e.g., ٠١٠ -> 010)
 export function normalizePhoneDigits(phone: string): string {
   if (!phone) return '';
+  if (isNoPhoneValue(phone)) {
+    return 'لا يوجد';
+  }
   return phone
     .replace(/[٠۰]/g, '0')
     .replace(/[١۱]/g, '1')
@@ -24,6 +51,7 @@ export function normalizePhoneDigits(phone: string): string {
  * - Egyptian Mobile: 11 digits starting with 010, 011, 012, or 015
  *   (Also accepts international format starting with +201X, 201X, or 00201X)
  * - Egyptian Landline: 9-10 digits starting with 0 (e.g., 02, 03, 050, 040, 055, etc.)
+ * - Also accepts "لا يوجد" / "غير متوفر" as a valid entry
  * 
  * @param phone The input phone number string
  * @param isRequired Whether an empty phone string should be considered invalid
@@ -31,6 +59,10 @@ export function normalizePhoneDigits(phone: string): string {
 export function isValidEgyptianPhone(phone: string, isRequired = false): boolean {
   if (!phone || !phone.trim()) {
     return !isRequired;
+  }
+
+  if (isNoPhoneValue(phone)) {
+    return true;
   }
 
   const normalized = normalizePhoneDigits(phone);
@@ -61,8 +93,12 @@ export function isValidEgyptianPhone(phone: string, isRequired = false): boolean
 export function validateEgyptianPhone(phone: string, fieldLabel = 'رقم الهاتف', isRequired = false): string | null {
   if (!phone || !phone.trim()) {
     if (isRequired) {
-      return `يرجى إدخال ${fieldLabel}.`;
+      return `يرجى إدخال ${fieldLabel} أو اختيار "لا يوجد".`;
     }
+    return null;
+  }
+
+  if (isNoPhoneValue(phone)) {
     return null;
   }
 

@@ -654,8 +654,15 @@ export default function StudentsList() {
               <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xl space-y-5">
                 <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
                   <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
-                  <button type="button" onClick={() => setShowAddForm(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
+                  <button type="button" onClick={() => { setShowAddForm(false); setErrorMessage(''); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
                 </div>
+
+                {errorMessage && (
+                  <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="p-3.5 bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700 rounded-xl flex items-center gap-3 text-xs font-bold">
+                    <ShieldAlert className="w-5 h-5 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <p>{errorMessage}</p>
+                  </motion.div>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
@@ -664,8 +671,17 @@ export default function StudentsList() {
                   </div>
                   
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX (اختياري)" dir="ltr" />
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, phone: 'لا يوجد' }))}
+                        className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200/80 dark:border-amber-800/80 transition-colors"
+                      >
+                        لا يوجد هاتف
+                      </button>
+                    </div>
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX أو لا يوجد" dir="auto" />
                   </div>
 
                   <div className="space-y-1.5">
@@ -739,8 +755,17 @@ export default function StudentsList() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ) <span className="text-rose-500">*</span></label>
-                    <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ) <span className="text-rose-500">*</span></label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, parent_phone: 'لا يوجد' }))}
+                        className="text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200/80 dark:border-amber-800/80 transition-colors"
+                      >
+                        لا يوجد هاتف
+                      </button>
+                    </div>
+                    <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX أو اختر لا يوجد" dir="auto" />
                   </div>
                 </div>
 

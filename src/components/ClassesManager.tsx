@@ -1504,6 +1504,12 @@ export default function ClassesManager() {
                   }}
                   className="p-6 space-y-4 text-right"
                 >
+                  {errorText && (
+                    <div className="p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
+                      <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                      <span>{errorText}</span>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
                     <input
@@ -1633,6 +1639,12 @@ export default function ClassesManager() {
                   }}
                   className="p-6 space-y-4 text-right"
                 >
+                  {errorText && (
+                    <div className="p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
+                      <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                      <span>{errorText}</span>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب <span className="text-rose-500">*</span></label>
                     <input

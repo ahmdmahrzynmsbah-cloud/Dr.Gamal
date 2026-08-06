@@ -302,6 +302,12 @@ export default function ParentsList() {
               </button>
             </div>
             <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {errorMessage && (
+                <div className="md:col-span-2 p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
+                  <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
               
               {/* Parent Name */}
               <div className="space-y-1">

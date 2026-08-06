@@ -291,6 +291,18 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   
 
   // List matching students and teachers
@@ -699,71 +711,90 @@ export default function App() {
             </button>
           </div>
 
-          {/* Sleek Search bar */}
-          <div className="hidden md:flex relative z-50 flex-1 min-w-0 max-w-md mx-4">
+          {/* Sleek Animated Search bar */}
+          <div className="hidden md:flex relative z-50 flex-1 justify-center mx-4 max-w-xl">
             <motion.div 
               initial={false}
               animate={{ 
-                width: "100%",
-                borderColor: isSearchFocused ? '#1A7FAA' : '#E2E8F0',
-                boxShadow: isSearchFocused ? '0 10px 25px -5px rgba(26, 127, 170, 0.15), 0 8px 10px -6px rgba(26, 127, 170, 0.15)' : 'none'
+                maxWidth: isSearchFocused ? '34rem' : '22rem',
+                scale: isSearchFocused ? 1.02 : 1,
               }}
-              transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-              className="relative flex items-center bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-xl w-full"
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className="relative flex items-center rounded-2xl w-full transition-all"
             >
-              <motion.span 
+              <motion.div 
                 animate={{ 
-                  scale: isSearchFocused ? 1.1 : 1,
-                  rotate: isSearchFocused ? 10 : 0,
-                  color: isSearchFocused ? '#1A7FAA' : '#94A3B8'
+                  borderColor: isSearchFocused 
+                    ? '#1A7FAA' 
+                    : (isDarkMode ? 'rgba(51, 65, 85, 0.8)' : 'rgba(226, 232, 240, 1)'),
+                  boxShadow: isSearchFocused 
+                    ? (isDarkMode ? '0 10px 30px -5px rgba(26, 127, 170, 0.4), 0 0 0 2px rgba(26, 127, 170, 0.25)' : '0 10px 25px -5px rgba(26, 127, 170, 0.25), 0 0 0 2px rgba(26, 127, 170, 0.15)')
+                    : 'none'
                 }}
-                className="absolute right-3.5 pointer-events-none"
+                transition={{ duration: 0.2 }}
+                className="relative flex items-center bg-slate-50/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-2xl w-full py-0.5 overflow-hidden"
               >
-                <Search className="w-4 h-4" />
-              </motion.span>
-              <input 
-                type="text" 
-                value={searchQuery}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => {
-                  // Delay blur slightly so clicks on items register
-                  setTimeout(() => setIsSearchFocused(false), 200);
-                }}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="البحث السريع عن طالب، معلم، أو رقم قيد..." 
-                className="w-full flex-1 min-w-0 max-w-full bg-transparent border-none py-2 pr-10 pl-10 text-xs text-slate-700 dark:text-slate-200 outline-none focus:ring-0 placeholder:text-slate-400 text-right font-sans"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute left-3.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                <motion.span 
+                  animate={{ 
+                    scale: isSearchFocused ? 1.15 : 1,
+                    rotate: isSearchFocused ? 12 : 0,
+                    color: isSearchFocused ? '#1A7FAA' : '#94A3B8'
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="absolute right-3.5 pointer-events-none"
                 >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+                  <Search className="w-4 h-4" />
+                </motion.span>
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  value={searchQuery}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => {
+                    // Delay blur slightly so clicks on items register
+                    setTimeout(() => setIsSearchFocused(false), 200);
+                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="البحث السريع عن طالب، معلم، أو رقم قيد..." 
+                  className="w-full flex-1 min-w-0 max-w-full bg-transparent border-none py-2 pr-10 pl-16 text-xs text-slate-800 dark:text-slate-100 outline-none focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-right font-sans"
+                />
+                
+                {searchQuery ? (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute left-3.5 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <kbd className="absolute left-3.5 hidden lg:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-800/80 rounded-md border border-slate-300/50 dark:border-slate-700 pointer-events-none shadow-2xs">
+                    CTRL K
+                  </kbd>
+                )}
+              </motion.div>
             </motion.div>
 
             {/* Suggestions Dropdown Card */}
             <AnimatePresence>
               {isSearchFocused && searchQuery.trim() && (
                 <motion.div
-                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 5, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-[400px] bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden py-3 text-right z-50"
+                  initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 6, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                  className="absolute right-0 left-0 top-full mt-2 w-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-3 text-right z-50"
                   dir="rtl"
                 >
-                  <div className="space-y-4 max-h-[350px] overflow-y-auto no-scrollbar">
+                  <div className="space-y-4 max-h-[360px] overflow-y-auto no-scrollbar">
                       
                     {/* Students list */}
                     {searchResults.students.length > 0 && (
                       <div>
-                        <div className="px-4 py-1.5 text-[11px] font-bold text-[#0D5C8C] bg-slate-50/50 flex items-center justify-between">
+                        <div className="px-4 py-1.5 text-[11px] font-bold text-[#0D5C8C] dark:text-[#38bdf8] bg-slate-50/80 dark:bg-slate-900/60 flex items-center justify-between">
                           <span>الطلاب المطابقون ({searchResults.students.length})</span>
-                          <span className="text-[9px] text-slate-400 font-normal">اضغط للملف</span>
+                          <span className="text-[9px] text-slate-400 font-normal">اضغط للانتقال</span>
                         </div>
-                        <div className="divide-y divide-gray-50">
+                        <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
                           {searchResults.students.map((student) => (
                             <button
                               key={student.id}
@@ -772,17 +803,17 @@ export default function App() {
                                 setActiveTab('students');
                                 setSearchQuery('');
                               }}
-                              className="w-full px-4 py-2 text-right hover:bg-sky-50/50 transition-all flex items-center justify-between text-xs cursor-pointer group"
+                              className="w-full px-4 py-2.5 text-right hover:bg-sky-50/70 dark:hover:bg-slate-700/60 transition-all flex items-center justify-between text-xs cursor-pointer group"
                             >
                               <div className="space-y-0.5">
-                                <div className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 group-hover:text-[#0D5C8C] transition-colors">{student.name}</div>
+                                <div className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#0D5C8C] dark:group-hover:text-sky-400 transition-colors">{student.name}</div>
                                 <div className="text-[10px] text-slate-400 flex items-center gap-2 font-mono">
                                   <span>قيد: {student.registration_id}</span>
                                   <span>•</span>
                                   <span>{student.grade_level}</span>
                                 </div>
                               </div>
-                              <span className="text-[10px] text-[#0D5C8C] font-semibold bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-md">
+                              <span className="text-[10px] text-[#0D5C8C] dark:text-sky-300 font-semibold bg-blue-50 dark:bg-blue-900/40 px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-800/40">
                                 {student.status === 'active' ? 'نشط' : student.status === 'suspended' ? 'موقوف' : 'مؤجل'}
                               </span>
                             </button>
@@ -793,9 +824,9 @@ export default function App() {
 
                     {searchResults.students.length === 0 && (
                       <div className="p-6 text-center text-slate-400 text-xs space-y-2 font-sans flex flex-col items-center justify-center">
-                        <SearchX className="w-8 h-8 opacity-40" />
-                        <p>لم نعثر على أي نتائج مطابقة</p>
-                        <p className="text-[10px] text-slate-400">تأكد من كتابة الاسم أو الرقم القومي بشكل صحيح وطبق المحاولة</p>
+                        <SearchX className="w-8 h-8 opacity-40 text-slate-400" />
+                        <p className="font-bold text-slate-600 dark:text-slate-300">لم نعثر على أي نتائج مطابقة</p>
+                        <p className="text-[10px] text-slate-400">تأكد من كتابة الاسم أو الرقم القومي بشكل صحيح</p>
                       </div>
                     )}
 

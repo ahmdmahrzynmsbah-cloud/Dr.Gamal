@@ -1160,11 +1160,9 @@ export default function ClassesManager() {
                             <button
                               type="button"
                               onClick={() => {
-                                if (window.confirm(`هل تريد نقل الطالب (${student.name}) إلى أرشيف الطلاب؟`)) {
-                                  samsDb.softDeleteStudent(student.id);
-                                  loadData();
-                                  setSuccessText(`تم نقل الطالب (${student.name}) إلى الأرشيف بنجاح.`);
-                                }
+                                samsDb.softDeleteStudent(student.id);
+                                loadData();
+                                setSuccessText(`تم نقل الطالب (${student.name}) إلى الأرشيف بنجاح.`);
                               }}
                               className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-800 dark:text-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
                               title="نقل الطالب إلى الأرشيف"

@@ -190,7 +190,7 @@ export default function StudentsList() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!formData.name || !formData.phone || !formData.class_id) {
+    if (!formData.name || !formData.class_id) {
       setErrorMessage('يرجى ملء جميع الحقول الإلزامية التي تحمل النجمة (*).');
       return;
     }
@@ -641,8 +641,8 @@ export default function StudentsList() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-rose-500">*</span></label>
-                  <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX (اختياري)" dir="ltr" />
                 </div>
 
                 <div className="space-y-1.5">
@@ -703,8 +703,8 @@ export default function StudentsList() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-rose-500">*</span></label>
-                  <select required name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     <option value="active">مفعل ومنتظم</option>
                     <option value="inactive">مجمد مؤقتاً</option>
                   </select>

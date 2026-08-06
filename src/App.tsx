@@ -52,7 +52,8 @@ import ExamsAndAssignments from './components/ExamsAndAssignments';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import ThemeToggle from './components/ThemeToggle';
 import InstallPWAButton from './components/InstallPWAButton';
-import { Settings, Search, ShieldCheck } from 'lucide-react';
+import { Settings, Search, ShieldCheck, Cloud, CloudCheck, RefreshCw } from 'lucide-react';
+import { initFirebaseSync, forcePushLocalToCloud } from './utils/firebaseSync';
 import { AdminNotification } from './types';
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
@@ -144,6 +145,15 @@ export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'connected' | 'syncing' | 'error'>('connected');
+  const [isSyncingManual, setIsSyncingManual] = useState(false);
+
+  useEffect(() => {
+    initFirebaseSync((status) => {
+      setSyncStatus(status);
+      setRefreshTrigger(prev => prev + 1);
+    });
+  }, []);
 
   const [adminNotis, setAdminNotis] = useState<AdminNotification[]>([]);
   const [showNotiDropdown, setShowNotiDropdown] = useState(false);
@@ -838,6 +848,29 @@ export default function App() {
           {/* Notifications & User Details */}
           <div className="flex items-center gap-3 shrink-0 min-w-0">
             
+            {/* Cloud Real-time Sync Indicator */}
+            <div className="hidden sm:flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-2xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <CloudCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-sans">مزامنة سحابية شاطبة (جميع الأجهزة)</span>
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsSyncingManual(true);
+                  await forcePushLocalToCloud();
+                  setRefreshTrigger(prev => prev + 1);
+                  setTimeout(() => setIsSyncingManual(false), 1200);
+                }}
+                className="hover:bg-emerald-100 dark:hover:bg-emerald-900/60 p-1 rounded-lg transition-all cursor-pointer mr-1"
+                title="إعادة مزامنة ورفع كافة البيانات للسحابة فوراً"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300 ${isSyncingManual ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+
             {/* Install PWA Button */}
             <InstallPWAButton />
 

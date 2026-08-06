@@ -5,6 +5,7 @@
 
 import { Student, Teacher, ClassRoom, Subject, Grade, Attendance, ClassSchedule, FeePayment, SystemNotification, AuditLog, CenterScheduleData, Exam, Assignment, ExamGrade, AssignmentGrade } from '../types';
 import { playNotificationTone, getToneForCategory } from './audioAlerts';
+import { syncToFirebase, initFirebaseSync } from './firebaseSync';
 import {
   INITIAL_STUDENTS,
   INITIAL_TEACHERS,
@@ -57,6 +58,7 @@ function saveToStorage<T>(key: string, data: T) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key } }));
   }
+  syncToFirebase(key, data);
 }
 
 // SIMULATE TIME STAMP
@@ -278,6 +280,11 @@ export const samsDb = {
     saveToStorage(KEYS.CLASSES, filtered);
     addAuditLog('DELETE', 'classes', id, `حذف المجموعة الدراسية: ${className}`);
     return { success: true };
+  },
+
+  saveClasses(classes: ClassRoom[]) {
+    saveToStorage(KEYS.CLASSES, classes);
+    addAuditLog('UPDATE', 'classes', 'all', 'تحديث إعادة ترتيب المجموعات الدراسية');
   },
 
   getSubjects(): Subject[] {

@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "students": {
+      "title": "Students",
+      "description": "Student roster and details",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" }
+      }
+    },
+    "teachers": {
+      "title": "Teachers",
+      "description": "Teacher records",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "classes": {
+      "title": "Classes",
+      "description": "Classroom groups",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "subjects": {
+      "title": "Subjects",
+      "description": "Subject courses",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "grades": {
+      "title": "Grades",
+      "description": "Student grade records",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "attendance": {
+      "title": "Attendance",
+      "description": "Attendance logs",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "fees": {
+      "title": "Fees",
+      "description": "Fee payment records",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "System notifications",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "center_data": {
+      "title": "Center Data",
+      "description": "General configuration and schedule data",
+      "type": "collection",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    }
+  }
+}

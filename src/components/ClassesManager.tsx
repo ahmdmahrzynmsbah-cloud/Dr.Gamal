@@ -42,7 +42,9 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  Zap
+  Zap,
+  GripVertical,
+  Move
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -115,6 +117,141 @@ export default function ClassesManager() {
     (localStorage.getItem('sams_custom_header_logo_align_v2') as any) || 'right'
   );
   const [showHeaderSettings, setShowHeaderSettings] = useState(false);
+
+  // Drag and Drop States for Group Cards & Schedule Table
+  const [draggedClassIndex, setDraggedClassIndex] = useState<number | null>(null);
+  const [dragOverClassIndex, setDragOverClassIndex] = useState<number | null>(null);
+  const [draggedCardClass, setDraggedCardClass] = useState<ClassRoom | null>(null);
+  const [draggedScheduleSlot, setDraggedScheduleSlot] = useState<{ key: string; val: string } | null>(null);
+  const [dragOverScheduleSlotKey, setDragOverScheduleSlotKey] = useState<string | null>(null);
+
+  // Drag Handlers for Class Cards
+  const handleClassCardDragStart = (e: React.DragEvent, index: number, cls: ClassRoom) => {
+    setDraggedClassIndex(index);
+    setDraggedCardClass(cls);
+    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'CLASS_CARD', id: cls.id, name: cls.name, grade: cls.grade_level }));
+    e.dataTransfer.effectAllowed = 'copyMove';
+  };
+
+  const handleClassCardDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedClassIndex !== null && draggedClassIndex !== index) {
+      setDragOverClassIndex(index);
+    }
+  };
+
+  const handleClassCardDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    setDragOverClassIndex(null);
+
+    if (draggedClassIndex === null || draggedClassIndex === targetIndex) {
+      setDraggedClassIndex(null);
+      setDraggedCardClass(null);
+      return;
+    }
+
+    const newClasses = [...classes];
+    const [movedClass] = newClasses.splice(draggedClassIndex, 1);
+    newClasses.splice(targetIndex, 0, movedClass);
+
+    setClasses(newClasses);
+    samsDb.saveClasses(newClasses);
+    setDraggedClassIndex(null);
+    setDraggedCardClass(null);
+    setSuccessText('تم تحديث ترتيب المجموعات بنجاح');
+    setTimeout(() => setSuccessText(''), 3000);
+  };
+
+  // Delete a specific schedule slot
+  const handleDeleteScheduleSlot = (entryKey: string) => {
+    const currentSched = isEditingSchedule ? editingSchedule : schedule;
+    if (!currentSched) return;
+
+    const newSched: CenterScheduleData = JSON.parse(JSON.stringify(currentSched));
+    if (newSched.entries && newSched.entries[entryKey]) {
+      delete newSched.entries[entryKey];
+      if (isEditingSchedule) {
+        setEditingSchedule(newSched);
+      } else {
+        setSchedule(newSched);
+        samsDb.saveCenterSchedule(newSched);
+      }
+      setSuccessText('تم تفريغ وحذف الحصة من الجدول بنجاح');
+      setTimeout(() => setSuccessText(''), 3000);
+    }
+  };
+
+  // Drag Handlers for Schedule Table Slots
+  const handleScheduleSlotDragStart = (e: React.DragEvent, slotKey: string, val: string) => {
+    if (!val) return;
+    setDraggedScheduleSlot({ key: slotKey, val });
+    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'SCHEDULE_SLOT', key: slotKey, val }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleScheduleSlotDragOver = (e: React.DragEvent, slotKey: string) => {
+    e.preventDefault();
+    setDragOverScheduleSlotKey(slotKey);
+  };
+
+  const handleScheduleSlotDrop = (e: React.DragEvent, targetSlotKey: string) => {
+    e.preventDefault();
+    setDragOverScheduleSlotKey(null);
+
+    const dataRaw = e.dataTransfer.getData('text/plain');
+    let dataPayload: any = null;
+    try {
+      if (dataRaw) dataPayload = JSON.parse(dataRaw);
+    } catch {
+      // ignore
+    }
+
+    const currentSched = isEditingSchedule ? editingSchedule : schedule;
+    if (!currentSched) return;
+
+    const newSched: CenterScheduleData = JSON.parse(JSON.stringify(currentSched));
+    if (!newSched.entries) newSched.entries = {};
+
+    if (dataPayload?.type === 'CLASS_CARD' || draggedCardClass) {
+      const clsToAssign = draggedCardClass || (dataPayload ? { name: dataPayload.name, grade_level: dataPayload.grade } : null);
+      if (clsToAssign) {
+        newSched.entries[targetSlotKey] = `${clsToAssign.name}||${clsToAssign.grade_level}`;
+        if (isEditingSchedule) {
+          setEditingSchedule(newSched);
+        } else {
+          setSchedule(newSched);
+          samsDb.saveCenterSchedule(newSched);
+        }
+        setSuccessText(`تم إضافة موعد مجموعة (${clsToAssign.name}) في جدول الحصص بنجاح`);
+        setTimeout(() => setSuccessText(''), 3000);
+      }
+    } else if (dataPayload?.type === 'SCHEDULE_SLOT' || draggedScheduleSlot) {
+      const sourceKey = draggedScheduleSlot?.key || dataPayload?.key;
+      const sourceVal = draggedScheduleSlot?.val || dataPayload?.val;
+
+      if (sourceKey && sourceKey !== targetSlotKey && sourceVal) {
+        const targetVal = newSched.entries[targetSlotKey] || '';
+        newSched.entries[targetSlotKey] = sourceVal;
+        if (targetVal) {
+          newSched.entries[sourceKey] = targetVal;
+        } else {
+          delete newSched.entries[sourceKey];
+        }
+
+        if (isEditingSchedule) {
+          setEditingSchedule(newSched);
+        } else {
+          setSchedule(newSched);
+          samsDb.saveCenterSchedule(newSched);
+        }
+        setSuccessText('تم نقل الحصة وتعديل ترتيب المجموعات بجدول الحصص بنجاح');
+        setTimeout(() => setSuccessText(''), 3000);
+      }
+    }
+
+    setDraggedScheduleSlot(null);
+    setDraggedCardClass(null);
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2027,22 +2164,51 @@ export default function ClassesManager() {
         </div>
       )}
 
+      {/* Help banner for Drag & Drop */}
+      <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl p-3 flex items-center justify-between text-xs text-sky-900 dark:text-sky-200 font-sans">
+        <div className="flex items-center gap-2">
+          <Move className="w-4 h-4 text-[#0D5C8C]" />
+          <span><strong>خاصية تنظيم المواعيد بالسحب والإفلات:</strong> يمكنك سحب كروت المجموعات وتغيير ترتيبها، أو إفلاتها مباشرة داخل جدول أوقات المعلم لتنظيم الحصص والمواعيد بسهولة.</span>
+        </div>
+      </div>
+
       {/* Class list Grid cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {classes.map((cls) => {
+        {classes.map((cls, index) => {
           
           const currentSubjects = subjects.filter(s => s.class_id === cls.id);
           const totalHours = currentSubjects.reduce((sum, item) => sum + item.weekly_hours, 0);
+          const isBeingDragged = draggedClassIndex === index;
+          const isDragTarget = dragOverClassIndex === index;
 
           return (
-            <div key={cls.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all space-y-4" id={`classroom_card_${cls.id}`}>
+            <div
+              key={cls.id}
+              draggable={true}
+              onDragStart={(e) => handleClassCardDragStart(e, index, cls)}
+              onDragOver={(e) => handleClassCardDragOver(e, index)}
+              onDrop={(e) => handleClassCardDrop(e, index)}
+              onDragEnd={() => {
+                setDraggedClassIndex(null);
+                setDragOverClassIndex(null);
+                setDraggedCardClass(null);
+              }}
+              className={`bg-white dark:bg-slate-800 border rounded-2xl p-5 shadow-2xs hover:shadow-md transition-all space-y-4 relative ${
+                isBeingDragged ? 'opacity-40 scale-95 border-dashed border-[#0D5C8C]' : ''
+              } ${
+                isDragTarget ? 'ring-2 ring-[#0D5C8C] border-[#0D5C8C] bg-sky-50/50 dark:bg-sky-900/20' : 'border-gray-100 dark:border-gray-700'
+              }`}
+              id={`classroom_card_${cls.id}`}
+            >
               
-              <div className="flex items-center justify-between border-b border-gray-50 pb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">{cls.name}</h3>
+              <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-700/50 pb-3">
+                <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1 rounded-lg transition-colors" title="سحب لتغيير ترتيب المجموعة أو إدراجها بجدول الحصص">
+                  <GripVertical className="w-4.5 h-4.5 text-slate-400 hover:text-[#0D5C8C]" />
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name}</h3>
                   <button
+                    type="button"
                     onClick={() => setClassToDelete(cls)}
-                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer mr-1"
                     title="حذف المجموعة"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -2135,18 +2301,41 @@ export default function ClassesManager() {
 
       {/* Dynamic Week Class Schedule */}
       <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs space-y-3">
-        <div className="flex justify-between items-center">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
             أوقات المحاضرات وجدول التوزيع اليومي الأسبوعي الأساسي للمجموعات بالسنتر
           </h3>
-          {!isEditingSchedule ? (
-            <button onClick={() => { setIsEditingSchedule(true); setEditingSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null); }} className="text-xs bg-[#0D5C8C] text-white px-3 py-1.5 rounded-lg">تعديل الجدول</button>
-          ) : (
-            <div className="flex gap-2">
-              <button onClick={() => setIsEditingSchedule(false)} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg">إلغاء</button>
-              <button onClick={() => { if (editingSchedule) { samsDb.saveCenterSchedule(editingSchedule); setSchedule(editingSchedule); setIsEditingSchedule(false); } }} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1"><Check className="w-3 h-3"/> حفظ</button>
+          <div className="flex items-center gap-2">
+            {/* Trash Drop Zone */}
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const dataRaw = e.dataTransfer.getData('text/plain');
+                let payload: any = null;
+                try { if (dataRaw) payload = JSON.parse(dataRaw); } catch {}
+                const key = draggedScheduleSlot?.key || payload?.key;
+                if (key) {
+                  handleDeleteScheduleSlot(key);
+                  setDraggedScheduleSlot(null);
+                }
+              }}
+              className="border border-dashed border-red-300 dark:border-red-800 bg-red-50/60 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
+              title="اسحب أي حصة هنا لحذفها فوراً"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+              <span>إلقاء هنا للحذف</span>
             </div>
-          )}
+
+            {!isEditingSchedule ? (
+              <button onClick={() => { setIsEditingSchedule(true); setEditingSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null); }} className="text-xs bg-[#0D5C8C] text-white px-3 py-1.5 rounded-lg cursor-pointer">تعديل الجدول</button>
+            ) : (
+              <div className="flex gap-2">
+                <button onClick={() => setIsEditingSchedule(false)} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg cursor-pointer">إلغاء</button>
+                <button onClick={() => { if (editingSchedule) { samsDb.saveCenterSchedule(editingSchedule); setSchedule(editingSchedule); setIsEditingSchedule(false); } }} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"><Check className="w-3 h-3"/> حفظ</button>
+              </div>
+            )}
+          </div>
         </div>
         
         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -2210,35 +2399,90 @@ export default function ClassesManager() {
                       const currentSubject = currentSchedule?.entries?.[entryKey] || '';
                       
                       return (
-                        <td key={period.id} className={`p-3 border-r border-gray-100 ${period.isBreak ? 'bg-slate-50/50 text-slate-400' : ''}`}>
+                        <td
+                          key={period.id}
+                          onDragOver={(e) => !period.isBreak && handleScheduleSlotDragOver(e, entryKey)}
+                          onDragLeave={() => setDragOverScheduleSlotKey(null)}
+                          onDrop={(e) => !period.isBreak && handleScheduleSlotDrop(e, entryKey)}
+                          className={`p-3 border-r border-gray-100 dark:border-gray-700/50 transition-all ${
+                            period.isBreak ? 'bg-slate-50/50 dark:bg-slate-900/30 text-slate-400' : ''
+                          } ${
+                            dragOverScheduleSlotKey === entryKey
+                              ? 'bg-sky-100/80 dark:bg-sky-900/60 border-2 border-dashed border-[#0D5C8C] ring-2 ring-sky-300 scale-[1.02]'
+                              : ''
+                          }`}
+                        >
                           {isEditingSchedule && !period.isBreak ? (
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1 relative group/edit">
                               <input type="text" value={currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject} onChange={(e) => {
                                  const newSched = JSON.parse(JSON.stringify(editingSchedule));
                                  if (!newSched.entries) newSched.entries = {};
                                  const grade = currentSubject.includes('||') ? currentSubject.split('||')[1] : '';
-                                 newSched.entries[entryKey] = `${e.target.value}||${grade}`;
+                                 if (!e.target.value && !grade) {
+                                   delete newSched.entries[entryKey];
+                                 } else {
+                                   newSched.entries[entryKey] = `${e.target.value}||${grade}`;
+                                 }
                                  setEditingSchedule(newSched);
                               }} className="px-2 py-1 border rounded w-full text-xs" placeholder="اسم المجموعة" />
                               <input type="text" value={currentSubject.includes('||') ? currentSubject.split('||')[1] || '' : ''} onChange={(e) => {
                                  const newSched = JSON.parse(JSON.stringify(editingSchedule));
                                  if (!newSched.entries) newSched.entries = {};
                                  const group = currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject;
-                                 newSched.entries[entryKey] = `${group}||${e.target.value}`;
+                                 if (!group && !e.target.value) {
+                                   delete newSched.entries[entryKey];
+                                 } else {
+                                   newSched.entries[entryKey] = `${group}||${e.target.value}`;
+                                 }
                                  setEditingSchedule(newSched);
                               }} className="px-2 py-1 border rounded w-full text-[10px]" placeholder="الصف الدراسي" />
+                              {currentSubject && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteScheduleSlot(entryKey)}
+                                  className="text-[10px] text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-1 rounded font-bold transition-colors flex items-center justify-center gap-1 mt-0.5 cursor-pointer"
+                                  title="تفريغ هذا الموعد"
+                                >
+                                  <X className="w-3 h-3" /> مسح الموعد
+                                </button>
+                              )}
                             </div>
                           ) : (
-                            <div className="text-center">
+                            <div className="text-center relative group/slot">
                               {period.isBreak ? <span className="text-[10px] italic">فترة استراحة</span> : (
                                 currentSubject ? (
-                                  <div className="flex flex-col items-center">
-                                    <span className="font-bold text-xs">{currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject}</span>
-                                    {currentSubject.includes('||') && currentSubject.split('||')[1] && (
-                                      <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-1">{currentSubject.split('||')[1]}</span>
-                                    )}
+                                  <div className="relative">
+                                    <div
+                                      draggable={true}
+                                      onDragStart={(e) => handleScheduleSlotDragStart(e, entryKey, currentSubject)}
+                                      className="flex flex-col items-center cursor-grab active:cursor-grabbing hover:bg-sky-50 dark:hover:bg-slate-700/60 p-1.5 rounded-lg border border-transparent hover:border-sky-200 dark:hover:border-slate-600 transition-all group"
+                                      title="سحب لنقل أو تبديل الحصة في جدول المعلم"
+                                    >
+                                      <div className="flex items-center gap-1">
+                                        <GripVertical className="w-3 h-3 text-slate-300 group-hover:text-[#0D5C8C] transition-colors" />
+                                        <span className="font-bold text-xs">{currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject}</span>
+                                      </div>
+                                      {currentSubject.includes('||') && currentSubject.split('||')[1] && (
+                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-1 font-semibold">{currentSubject.split('||')[1]}</span>
+                                      )}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteScheduleSlot(entryKey);
+                                      }}
+                                      className="absolute -top-1.5 -left-1.5 opacity-0 group-hover/slot:opacity-100 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all shadow-xs cursor-pointer z-10"
+                                      title="حذف تفريغ الحصة من هذا الموعد"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
                                   </div>
-                                ) : <span className="text-slate-300">-</span>
+                                ) : (
+                                  <div className="text-slate-300 dark:text-slate-600 text-xs py-1 border border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded cursor-pointer">
+                                    اسحب مجموعة هنا
+                                  </div>
+                                )
                               )}
                             </div>
                           )}

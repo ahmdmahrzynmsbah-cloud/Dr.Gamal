@@ -375,15 +375,15 @@ export default function StudentsList() {
               return (
                 <div className="overflow-auto max-h-[calc(100vh-250px)]">
           <table className="w-full text-sm text-right relative border-collapse">
-              <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-extrabold border-b-2 border-slate-200 dark:border-slate-700 shadow-xs whitespace-nowrap">
-                      <tr>
-                        <th className="px-4 py-3.5 pr-6 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">م</th>
-                        <th className="px-4 py-3.5 min-w-[200px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">بيانات الطالب</th>
-                        <th className="px-4 py-3.5 min-w-[150px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">الصف الدراسي</th>
-                        <th className="px-4 py-3.5 min-w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">رقم هاتف الطالب / ولي الأمر</th>
-                        <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">إجراءات التحكم</th>
-                      </tr>
-                    </thead>
+              <thead className="sticky top-0 z-20">
+                <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
+                  <th className="px-4 py-3.5 pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
+                  <th className="px-4 py-3.5 min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                  <th className="px-4 py-3.5 min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">الصف الدراسي</th>
+                  <th className="px-4 py-3.5 min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم هاتف الطالب / ولي الأمر</th>
+                  <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
+                </tr>
+              </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 whitespace-nowrap">
                       {archivedList.map((st, index) => (
                         <tr key={st.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
@@ -777,13 +777,13 @@ export default function StudentsList() {
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-auto max-h-[calc(100vh-250px)]">
           <table className="w-full text-sm text-right relative border-collapse">
-              <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-extrabold border-b-2 border-slate-200 dark:border-slate-700 shadow-xs whitespace-nowrap">
-                <tr>
-                  <th className="px-4 py-3.5 pr-6 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">م</th>
-                  <th className="px-4 py-3.5 min-w-[200px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">بيانات الطالب</th>
-                  <th className="px-4 py-3.5 min-w-[150px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">المجموعة والصف الدراسي</th>
-                  <th className="px-4 py-3.5 min-w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">رقم ولي الأمر</th>
-                  <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">إجراءات التحكم</th>
+              <thead className="sticky top-0 z-20">
+                <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
+                  <th className="px-4 py-3.5 pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
+                  <th className="px-4 py-3.5 min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                  <th className="px-4 py-3.5 min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">المجموعة والصف الدراسي</th>
+                  <th className="px-4 py-3.5 min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم ولي الأمر</th>
+                  <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 whitespace-nowrap">

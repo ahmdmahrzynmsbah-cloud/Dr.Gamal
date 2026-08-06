@@ -116,7 +116,7 @@ let gradeFees = {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">نظام منصة الإدارة — قاعدة البيانات المحدثة لحظياً حتى تاريخ اليوم</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
         <div className="flex items-center gap-2.5 bg-[#E8192C]/5 px-4 py-2 rounded-xl text-[#C0152A] text-xs font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans">
           <Calendar className="w-4 h-4 text-[#C0152A]" />

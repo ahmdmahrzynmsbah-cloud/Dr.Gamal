@@ -62,20 +62,50 @@ export default function ParentsList() {
     loadData();
   });
 
+  const isDummyPhone = (phone: string): boolean => {
+    const clean = (phone || '').replace(/\D/g, '');
+    if (!clean || clean.length < 6) return true;
+    if (/^(\d)\1+$/.test(clean)) return true;
+    const dummyList = [
+      '01000000000', '0100000000', '0123456789', '01234567890',
+      '123456789', '0000000000', '00000000', '01111111111', '01222222222'
+    ];
+    return dummyList.includes(clean);
+  };
+
+  const getParentKey = (student: Student): string => {
+    const pName = (student.parent_name || '').trim();
+    const pPhone = (student.parent_phone || '').trim();
+    const dummy = isDummyPhone(pPhone);
+    
+    const isGenericName = !pName || pName === 'ولي أمر غير مسجل';
+
+    if (isGenericName) {
+      if (!dummy) {
+        return `phone_only_${pPhone}`;
+      }
+      return `student_indiv_${student.id}`;
+    }
+
+    const normName = pName.toLowerCase();
+    if (!dummy) {
+      return `parent_${normName}_${pPhone}`;
+    }
+    return `parent_${normName}_nodummy`;
+  };
+
   const loadData = () => {
     const studentsList = samsDb.getStudents();
     const classList = samsDb.getClasses();
     setClasses(classList);
 
-    // Group students by parent phone or name to identify unique parent records
+    // Group students correctly by parent identity
     const parentMap: Record<string, ParentRecord> = {};
     
     studentsList.forEach(student => {
       const pName = (student.parent_name || 'ولي أمر غير مسجل').trim();
       const pPhone = (student.parent_phone || '').trim();
-      
-      // Generate a unique key for grouping: prioritize phone, fallback to name
-      const key = pPhone ? pPhone : `name-${pName}`;
+      const key = getParentKey(student);
       
       if (!parentMap[key]) {
         parentMap[key] = {
@@ -122,9 +152,7 @@ export default function ParentsList() {
     let updatedCount = 0;
 
     studentsList.forEach(student => {
-      const currentPName = (student.parent_name || 'ولي أمر غير مسجل').trim();
-      const currentPPhone = (student.parent_phone || '').trim();
-      const currentKey = currentPPhone ? currentPPhone : `name-${currentPName}`;
+      const currentKey = getParentKey(student);
 
       if (currentKey === selectedParent.id) {
         const updatedStudent: Student = {

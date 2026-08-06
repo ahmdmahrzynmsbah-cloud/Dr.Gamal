@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ClassRoom, Teacher, Subject, CenterScheduleData, Student } from '../types';
-import { samsDb } from '../utils/db';
+import { samsDb, formatScheduleDisplay } from '../utils/db';
 import StudentFullReport from './StudentFullReport';
 import {
   Plus,
@@ -40,7 +40,9 @@ import {
   Image as ImageIcon,
   Sliders,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Clock,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -60,8 +62,11 @@ export default function ClassesManager() {
     schedule_days: '',
     schedule_time: '',
     day_times: {} as Record<string, string>,
-    grade_level: 'الأول الإعدادي'
+    grade_level: 'الأول الإعدادي',
+    education_type: 'عام' as 'عام' | 'أزهر'
   });
+
+  const [unifiedTime, setUnifiedTime] = useState('');
 
   const [schedule, setSchedule] = useState<CenterScheduleData | null>(null);
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
@@ -278,17 +283,28 @@ export default function ClassesManager() {
       return;
     }
 
-    const formattedScheduleTime = daysArr.map(day => {
-      const rawTime = classForm.day_times[day];
-      if (rawTime) {
-         const [h, m] = rawTime.split(':');
-         const hInt = parseInt(h, 10);
-         const ampm = hInt >= 12 ? 'م' : 'ص';
-         let h12 = hInt % 12;
-         if (h12 === 0) h12 = 12;
-         return `${day} (${h12}:${m} ${ampm})`;
+    const formatTime12 = (rawTime: string) => {
+      if (!rawTime) return '--';
+      const [h, m] = rawTime.split(':');
+      const hInt = parseInt(h, 10);
+      const ampm = hInt >= 12 ? 'م' : 'ص';
+      let h12 = hInt % 12;
+      if (h12 === 0) h12 = 12;
+      return `${h12}:${m} ${ampm}`;
+    };
+
+    const timeToDaysMap: Record<string, string[]> = {};
+    daysArr.forEach(day => {
+      const rawTime = classForm.day_times[day] || '';
+      const formattedT = formatTime12(rawTime);
+      if (!timeToDaysMap[formattedT]) {
+        timeToDaysMap[formattedT] = [];
       }
-      return `${day} (--)`;
+      timeToDaysMap[formattedT].push(day);
+    });
+
+    const formattedScheduleTime = Object.entries(timeToDaysMap).map(([t, days]) => {
+      return `${days.join(' - ')} (${t})`;
     }).join(' | ');
 
     const newCls: ClassRoom = {
@@ -297,7 +313,8 @@ export default function ClassesManager() {
       schedule_days: classForm.schedule_days,
       schedule_time: formattedScheduleTime,
       capacity: 0,
-      grade_level: classForm.grade_level
+      grade_level: classForm.grade_level,
+      education_type: classForm.education_type || 'عام'
     };
 
     samsDb.addClass(newCls);
@@ -306,8 +323,10 @@ export default function ClassesManager() {
       schedule_days: '',
       schedule_time: '',
       day_times: {},
-      grade_level: 'الأول الإعدادي'
+      grade_level: 'الأول الإعدادي',
+      education_type: 'عام'
     });
+    setUnifiedTime('');
     setShowAddClass(false);
     loadData();
   };
@@ -661,7 +680,7 @@ export default function ClassesManager() {
                     </div>
                     <div>
                       <span className="text-slate-500 dark:text-slate-400 block text-[10px]">المواعيد والجدول:</span>
-                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days}</strong>
+                      <strong className="text-slate-900 dark:text-slate-50 font-bold">{formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}</strong>
                     </div>
                     <div>
                       <span className="text-slate-500 dark:text-slate-400 block text-[10px]">عدد الطلاب:</span>
@@ -807,7 +826,8 @@ export default function ClassesManager() {
                     parent_phone: '',
                     grade_level: selectedClassForStudents.grade_level || 'الأول الإعدادي',
                     birth_date: '2016-01-01',
-                    status: 'active'
+                    status: 'active',
+                    national_id: ''
                   });
                   setShowAddStudentModal(true);
                 }}
@@ -824,7 +844,7 @@ export default function ClassesManager() {
 أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - سنتر اللغة العربية،
 تحية طيبة وبعد،
 
-نود إحاطتكم بجدول مواعيد المجموعة (${selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days || 'المحددة'}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
+نود إحاطتكم بجدول مواعيد المجموعة (${formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
 
 شاكرين لكم حسن التعاون.`;
                   setGroupWhatsAppMsg(defaultBroadcastMsg);
@@ -862,7 +882,7 @@ export default function ClassesManager() {
           <div className="flex flex-wrap items-center gap-4 text-xs pt-3 border-t border-white/10 font-sans">
             <div className="flex items-center gap-1.5 text-sky-100">
               <Calendar className="w-4 h-4 text-amber-300" />
-              <span>المواعيد: <strong>{selectedClassForStudents.schedule_time || selectedClassForStudents.schedule_days || "غير محدد"}</strong></span>
+              <span>المواعيد: <strong>{formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-sky-100">
               <Users className="w-4 h-4 text-emerald-300" />
@@ -1217,6 +1237,7 @@ export default function ClassesManager() {
                       national_id: generatedNationalId,
                       class_id: selectedClassForStudents.id,
                       grade_level: selectedClassForStudents.grade_level || newStudentForm.grade_level,
+                      education_type: selectedClassForStudents.education_type || 'عام',
                       birth_date: newStudentForm.birth_date,
                       phone: newStudentForm.phone,
                       parent_name: newStudentForm.parent_name,
@@ -1851,11 +1872,24 @@ export default function ClassesManager() {
                       checked={(classForm.schedule_days || '').includes(day)}
                       onChange={(e) => {
                         const currentDays = classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : [];
+                        let updatedDays: string[];
+                        const newTimes = { ...classForm.day_times };
+
                         if (e.target.checked) {
-                          setClassForm({ ...classForm, schedule_days: [...currentDays, day].join('، ') });
+                          updatedDays = [...currentDays, day];
+                          if (unifiedTime) {
+                            newTimes[day] = unifiedTime;
+                          }
                         } else {
-                          setClassForm({ ...classForm, schedule_days: currentDays.filter(d => d !== day).join('، ') });
+                          updatedDays = currentDays.filter(d => d !== day);
+                          delete newTimes[day];
                         }
+
+                        setClassForm({ 
+                          ...classForm, 
+                          schedule_days: updatedDays.join('، '),
+                          day_times: newTimes 
+                        });
                       }}
                     />
                     <span className="font-bold text-slate-700 dark:text-slate-200">{day}</span>
@@ -1865,34 +1899,82 @@ export default function ClassesManager() {
             </div>
             <div className="space-y-1 md:col-span-2">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أوقات المجموعة للأيام المحددة *</label>
-              {(classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : []).length === 0 ? (
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700">
-                  الرجاء تحديد أيام المجموعة أولاً...
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700">
-                  {(classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : []).map(day => (
-                    <div key={day} className="flex items-center gap-3">
-                      <span className="w-16 text-xs font-bold text-slate-700 dark:text-slate-200">{day}</span>
-                      <input
-                        type="time"
-                        value={classForm.day_times?.[day] || ''}
-                        onChange={(e) => {
-                          setClassForm(prev => ({
-                            ...prev,
-                            day_times: {
-                              ...prev.day_times,
-                              [day]: e.target.value
-                            }
-                          }));
-                        }}
-                        className="flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
-                        required
-                      />
+              {(() => {
+                const selectedDays = classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : [];
+                if (selectedDays.length === 0) {
+                  return (
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                      الرجاء تحديد أيام المجموعة أولاً...
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                }
+                return (
+                  <div className="flex flex-col gap-2 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                    {selectedDays.length >= 1 && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-sky-50/90 dark:bg-sky-950/50 rounded-xl border border-sky-200/80 dark:border-sky-800/60 mb-1">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 dark:text-sky-200">
+                          <Zap className="w-4 h-4 text-[#0D5C8C] dark:text-sky-400 shrink-0" />
+                          <span>تحديد موعد موحد لجميع الأيام المحددة:</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            value={unifiedTime}
+                            onChange={(e) => {
+                              const timeVal = e.target.value;
+                              setUnifiedTime(timeVal);
+                              if (timeVal) {
+                                const newTimes = { ...classForm.day_times };
+                                selectedDays.forEach(d => {
+                                  newTimes[d] = timeVal;
+                                });
+                                setClassForm(prev => ({ ...prev, day_times: newTimes }));
+                              }
+                            }}
+                            className="text-xs font-sans border border-sky-300 dark:border-sky-700 px-2.5 py-1 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900 font-bold text-sky-900 dark:text-sky-100 shadow-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (unifiedTime) {
+                                const newTimes = { ...classForm.day_times };
+                                selectedDays.forEach(d => {
+                                  newTimes[d] = unifiedTime;
+                                });
+                                setClassForm(prev => ({ ...prev, day_times: newTimes }));
+                              }
+                            }}
+                            className="px-3 py-1 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-lg transition-all active:scale-95 cursor-pointer shadow-xs whitespace-nowrap"
+                          >
+                            تطبيق على الكل
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedDays.map(day => (
+                      <div key={day} className="flex items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                        <span className="w-16 text-xs font-bold text-slate-700 dark:text-slate-200">{day}</span>
+                        <input
+                          type="time"
+                          value={classForm.day_times?.[day] || ''}
+                          onChange={(e) => {
+                            setClassForm(prev => ({
+                              ...prev,
+                              day_times: {
+                                ...prev.day_times,
+                                [day]: e.target.value
+                              }
+                            }));
+                          }}
+                          className="flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
+                          required
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="space-y-1">
@@ -1909,6 +1991,19 @@ export default function ClassesManager() {
                 <option value="الأول الثانوي">الأول الثانوي</option>
                 <option value="الثاني الثانوي">الثاني الثانوي</option>
                 <option value="الثالث الثانوي">الثالث الثانوي</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">نوع التعليم *</label>
+              <select
+                value={classForm.education_type}
+                onChange={(e) => setClassForm({ ...classForm, education_type: e.target.value as 'عام' | 'أزهر' })}
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800 font-bold"
+                required
+              >
+                <option value="عام">عام</option>
+                <option value="أزهر">أزهر</option>
               </select>
             </div>
 
@@ -1953,7 +2048,16 @@ export default function ClassesManager() {
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold font-sans border ${
+                    (cls.education_type || 'عام') === 'أزهر'
+                      ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                      : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                  }`}>
+                    {(cls.education_type || 'عام') === 'أزهر' ? 'أزهر' : 'عام'}
+                  </span>
+                </div>
               </div>
 
               {/* Attributes */}
@@ -1964,7 +2068,7 @@ export default function ClassesManager() {
                     <Calendar className="w-4 h-4 text-slate-400" />
                     مواعيد المجموعة
                   </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? cls.schedule_time || cls.schedule_days : 'ـ لم تحدد بعد ـ'}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? formatScheduleDisplay(cls.schedule_time, cls.schedule_days) : 'ـ لم تحدد بعد ـ'}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
@@ -2015,7 +2119,7 @@ export default function ClassesManager() {
                 >
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-sky-200" />
-                    <span>عرض طلاب المجموعة بالدقة الكاملة</span>
+                    <span>عرض طلاب المجموعة</span>
                   </div>
                   <span className="bg-white/20 text-white text-[11px] px-2.5 py-0.5 rounded-lg font-black font-sans">
                     {students.filter(s => s.class_id === cls.id).length} طالب

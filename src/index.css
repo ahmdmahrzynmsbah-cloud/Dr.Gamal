@@ -359,23 +359,33 @@ html.dark body {
   border-color: #334155 !important;
 }
 
-/* Form Inputs & Select Controls */
-.dark input[type="text"],
-.dark input[type="number"],
-.dark input[type="email"],
-.dark input[type="password"],
-.dark input[type="date"],
-.dark input[type="time"],
+/* Form Inputs & Select Controls in Dark Mode */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.bg-transparent):not(.border-none):not(.border-0),
 .dark select,
 .dark textarea {
   background-color: #0f172a !important;
   color: #f8fafc !important;
-  border-color: #334155 !important;
+  border: 1.5px solid #475569 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.bg-transparent):not(.border-none):not(.border-0):hover,
+.dark select:hover,
+.dark textarea:hover {
+  border-color: #64748b !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.bg-transparent):not(.border-none):not(.border-0):focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+  outline: none !important;
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b !important;
+  color: #94a3b8 !important;
 }
 
 .dark select option {

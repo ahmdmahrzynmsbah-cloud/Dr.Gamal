@@ -712,36 +712,34 @@ export default function App() {
           </div>
 
           {/* Sleek Animated Search bar */}
-          <div className="hidden md:flex relative z-50 flex-1 justify-center mx-4 max-w-xl">
+          <div className="hidden md:flex relative z-50 flex-1 justify-center mx-4">
             <motion.div 
               initial={false}
               animate={{ 
-                maxWidth: isSearchFocused ? '34rem' : '22rem',
-                scale: isSearchFocused ? 1.02 : 1,
+                width: isSearchFocused ? '28rem' : '20rem',
               }}
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="relative flex items-center rounded-2xl w-full transition-all"
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="relative flex items-center rounded-xl"
             >
               <motion.div 
                 animate={{ 
                   borderColor: isSearchFocused 
                     ? '#1A7FAA' 
-                    : (isDarkMode ? 'rgba(51, 65, 85, 0.8)' : 'rgba(226, 232, 240, 1)'),
+                    : (isDarkMode ? '#334155' : '#E2E8F0'),
                   boxShadow: isSearchFocused 
-                    ? (isDarkMode ? '0 10px 30px -5px rgba(26, 127, 170, 0.4), 0 0 0 2px rgba(26, 127, 170, 0.25)' : '0 10px 25px -5px rgba(26, 127, 170, 0.25), 0 0 0 2px rgba(26, 127, 170, 0.15)')
-                    : 'none'
+                    ? '0 6px 18px -4px rgba(26, 127, 170, 0.2), 0 0 0 1px #1A7FAA' 
+                    : '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
                 }}
-                transition={{ duration: 0.2 }}
-                className="relative flex items-center bg-slate-50/90 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-2xl w-full py-0.5 overflow-hidden"
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="relative flex items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl w-full py-0.5 overflow-hidden"
               >
                 <motion.span 
                   animate={{ 
-                    scale: isSearchFocused ? 1.15 : 1,
-                    rotate: isSearchFocused ? 12 : 0,
+                    scale: isSearchFocused ? 1.08 : 1,
                     color: isSearchFocused ? '#1A7FAA' : '#94A3B8'
                   }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="absolute right-3.5 pointer-events-none"
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="absolute right-3.5 pointer-events-none z-10"
                 >
                   <Search className="w-4 h-4" />
                 </motion.span>
@@ -751,23 +749,22 @@ export default function App() {
                   value={searchQuery}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => {
-                    // Delay blur slightly so clicks on items register
                     setTimeout(() => setIsSearchFocused(false), 200);
                   }}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="البحث السريع عن طالب، معلم، أو رقم قيد..." 
-                  className="w-full flex-1 min-w-0 max-w-full bg-transparent border-none py-2 pr-10 pl-16 text-xs text-slate-800 dark:text-slate-100 outline-none focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-right font-sans"
+                  className="w-full flex-1 min-w-0 max-w-full bg-transparent border-none border-0 py-2 pr-10 pl-16 text-xs text-slate-800 dark:text-slate-100 outline-none focus:outline-none focus:ring-0 focus:border-none placeholder:text-slate-400 dark:placeholder:text-slate-500 text-right font-sans"
                 />
                 
                 {searchQuery ? (
                   <button 
                     onClick={() => setSearchQuery('')}
-                    className="absolute left-3.5 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                    className="absolute left-3.5 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 z-10"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <kbd className="absolute left-3.5 hidden lg:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-800/80 rounded-md border border-slate-300/50 dark:border-slate-700 pointer-events-none shadow-2xs">
+                  <kbd className="absolute left-3.5 hidden lg:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 bg-slate-200/60 dark:bg-slate-800 rounded border border-slate-300/40 dark:border-slate-700 pointer-events-none z-10">
                     CTRL K
                   </kbd>
                 )}

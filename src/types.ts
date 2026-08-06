@@ -10,6 +10,7 @@ export interface Student {
   registration_id: string; // رقم القيد
   class_id: string; // المجموعة
   grade_level: string; // السنة الدراسية (مثلاً: الصف الأول، الثاني، الثالث)
+  education_type?: 'عام' | 'أزهر'; // نوع التعليم (عام / أزهر)
   birth_date: string; // تاريخ الميلاد
   phone: string; // الهاتف
   parent_name: string; // ولي الأمر
@@ -39,6 +40,7 @@ export interface ClassRoom {
   schedule_time?: string; // وقت المجموعة
   capacity: number; // السعة
   grade_level: string; // المستوى الدراسي
+  education_type?: 'عام' | 'أزهر'; // نوع التعليم (عام / أزهر)
 }
 
 export interface Subject {

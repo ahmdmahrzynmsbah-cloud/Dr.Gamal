@@ -15,6 +15,7 @@ export default function StudentsList() {
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [gradeLevelFilter, setGradeLevelFilter] = useState('all');
+  const [educationTypeFilter, setEducationTypeFilter] = useState('all');
 
   // Form states
   const [showAddForm, setShowAddForm] = useState(false);
@@ -118,8 +119,10 @@ export default function StudentsList() {
   
   const [formData, setFormData] = useState({
     name: '',
+    national_id: '',
     class_id: '',
     grade_level: 'الأول الإعدادي',
+    education_type: 'عام' as 'عام' | 'أزهر',
     birth_date: '2015-05-12',
     phone: '',
     parent_name: '',
@@ -168,8 +171,10 @@ export default function StudentsList() {
     setStudents(samsDb.getStudents());
     const cl = samsDb.getClasses();
     setClasses(cl);
-    if (!formData.class_id && cl.length > 0) {
-      setFormData(prev => ({ ...prev, class_id: cl[0].id }));
+    const defaultEd = formData.education_type || 'عام';
+    const avail = cl.filter(c => (c.education_type || 'عام') === defaultEd);
+    if (!formData.class_id && avail.length > 0) {
+      setFormData(prev => ({ ...prev, class_id: avail[0].id }));
     }
   };
 
@@ -191,13 +196,20 @@ export default function StudentsList() {
     }
     
     if (!isEditing) {
-      const res = samsDb.addStudent(formData);
+      const res = samsDb.addStudent({
+        ...formData,
+        national_id: formData.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000))
+      });
       if (res.success && res.student) {
         setSuccessMessage(`تم تسجيل الطالب بنجاح برقم القيد: ${res.student.registration_id}`);
+        const defaultEd = 'عام';
+        const avail = classes.filter(c => (c.education_type || 'عام') === defaultEd);
         setFormData({
           name: '',
-          class_id: classes[0]?.id || '',
+          national_id: '',
+          class_id: avail[0]?.id || '',
           grade_level: 'الأول الإعدادي',
+          education_type: 'عام',
           birth_date: '2016-01-01',
           phone: '',
           parent_name: '',
@@ -210,11 +222,13 @@ export default function StudentsList() {
         setErrorMessage(res.error || 'حدث خطأ غير متوقع أثناء تسجيل الطالب.');
       }
     } else {
+      const existingStudent = students.find(s => s.id === editId);
       const updatedStudent: Student = {
         ...formData,
+        national_id: formData.national_id || existingStudent?.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000)),
         id: editId,
-        registration_id: students.find(s => s.id === editId)?.registration_id || '20230000',
-        created_at: students.find(s => s.id === editId)?.created_at || '2023-09-01'
+        registration_id: existingStudent?.registration_id || '20230000',
+        created_at: existingStudent?.created_at || '2023-09-01'
       };
       
       const res = samsDb.updateStudent(updatedStudent);
@@ -241,10 +255,14 @@ export default function StudentsList() {
   const handleEditClick = (student: Student) => {
     setIsEditing(true);
     setEditId(student.id);
+    const studentClass = classes.find(c => c.id === student.class_id);
+    const edType = student.education_type || studentClass?.education_type || 'عام';
     setFormData({
       name: student.name,
+      national_id: student.national_id || '',
       class_id: student.class_id,
       grade_level: student.grade_level,
+      education_type: edType,
       birth_date: student.birth_date,
       phone: student.phone,
       parent_name: student.parent_name,
@@ -292,9 +310,12 @@ export default function StudentsList() {
       const matchesClass = classFilter === 'all' || s.class_id === classFilter;
       const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
       const matchesGrade = gradeLevelFilter === 'all' || s.grade_level === gradeLevelFilter;
-      return matchesSearch && matchesClass && matchesStatus && matchesGrade;
+      const studentClass = classes.find(c => c.id === s.class_id);
+      const edType = s.education_type || studentClass?.education_type || 'عام';
+      const matchesEducationType = educationTypeFilter === 'all' || edType === educationTypeFilter;
+      return matchesSearch && matchesClass && matchesStatus && matchesGrade && matchesEducationType;
     });
-  }, [students, searchTerm, classFilter, statusFilter, gradeLevelFilter]);
+  }, [students, classes, searchTerm, classFilter, statusFilter, gradeLevelFilter, educationTypeFilter]);
 
 
   if (showArchiveModal) {
@@ -577,7 +598,8 @@ export default function StudentsList() {
             onClick={() => {
               setIsEditing(false);
               setFormData({
-                name: '', class_id: classes[0]?.id || '', grade_level: 'الأول الإعدادي', 
+                name: '', national_id: '', class_id: classes[0]?.id || '', grade_level: 'الأول الإعدادي', 
+                education_type: 'عام',
                 birth_date: '2016-01-01', phone: '', parent_name: '', parent_phone: '', status: 'active'
               });
               setShowAddForm(!showAddForm);
@@ -624,10 +646,43 @@ export default function StudentsList() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة <span className="text-rose-500">*</span></label>
-                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
-                    {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>)}
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">نوع التعليم <span className="text-rose-500">*</span></label>
+                  <select 
+                    required 
+                    name="education_type" 
+                    value={formData.education_type} 
+                    onChange={(e) => {
+                      const newEd = e.target.value as 'عام' | 'أزهر';
+                      const avail = classes.filter(c => (c.education_type || 'عام') === newEd);
+                      setFormData(prev => ({
+                        ...prev,
+                        education_type: newEd,
+                        class_id: avail.length > 0 ? avail[0].id : ''
+                      }));
+                    }} 
+                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
+                  >
+                    <option value="عام">عام</option>
+                    <option value="أزهر">أزهر</option>
                   </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة ({formData.education_type}) <span className="text-rose-500">*</span></label>
+                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                    {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 ? (
+                      <option value="" disabled>-- لا توجد مجموعات ({formData.education_type}) متاحة --</option>
+                    ) : (
+                      classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>
+                      ))
+                    )}
+                  </select>
+                  {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 && (
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-sans mt-1">
+                      ⚠️ لا توجد مجموعات معرفة لـ "{formData.education_type}". يرجى إضافة مجموعة أزهر/عام أولاً.
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-1.5">
@@ -690,6 +745,11 @@ export default function StudentsList() {
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
         </div>
         <div className="flex w-full md:w-auto items-center gap-3 overflow-x-auto no-scrollbar">
+          <select value={educationTypeFilter} onChange={e => setEducationTypeFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-bold">
+            <option value="all">كل أنواع التعليم (عام / أزهر)</option>
+            <option value="عام">عام</option>
+            <option value="أزهر">أزهر</option>
+          </select>
           <select value={gradeLevelFilter} onChange={e => setGradeLevelFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
             <option value="all">كل الصفوف الدراسية</option>
             <option value="الأول الإعدادي">الأول الإعدادي</option>
@@ -752,9 +812,18 @@ export default function StudentsList() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-bold text-[#0D5C8C] text-xs bg-sky-50 dark:bg-sky-900/40 px-2 py-1 rounded-md inline-flex items-center w-fit border border-sky-100 dark:border-sky-800">
-                          {classes.find(c => c.id === student.class_id)?.name || '-'}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-[#0D5C8C] text-xs bg-sky-50 dark:bg-sky-900/40 px-2 py-1 rounded-md inline-flex items-center w-fit border border-sky-100 dark:border-sky-800">
+                            {classes.find(c => c.id === student.class_id)?.name || '-'}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${
+                            (student.education_type || classes.find(c => c.id === student.class_id)?.education_type || 'عام') === 'أزهر'
+                              ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                              : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          }`}>
+                            {(student.education_type || classes.find(c => c.id === student.class_id)?.education_type || 'عام') === 'أزهر' ? 'أزهر' : 'عام'}
+                          </span>
+                        </div>
                         <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 mr-1">{student.grade_level}</span>
                       </div>
                     </td>

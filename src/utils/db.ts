@@ -723,3 +723,48 @@ export const samsDb = {
     addAuditLog('UPDATE', 'students', keepId, `تم دمج بيانات الطلاب وحذف النسخ المكررة (${deleteIds.join(', ')})`);
   },
 };
+
+export function formatScheduleDisplay(scheduleTime?: string, scheduleDays?: string): string {
+  if (!scheduleTime || !scheduleTime.trim()) {
+    return scheduleDays || 'غير محدد';
+  }
+
+  const raw = scheduleTime.trim();
+  const items = raw.split('|').map(s => s.trim()).filter(Boolean);
+  if (items.length <= 1) {
+    return raw;
+  }
+
+  const timeToDays: Record<string, string[]> = {};
+  let validParse = true;
+
+  for (const item of items) {
+    const match = item.match(/^(.+?)\s*[\(:]\s*(.+?)\)?$/);
+    if (match) {
+      const day = match[1].trim();
+      let time = match[2].trim();
+      if (time.endsWith(')')) time = time.slice(0, -1).trim();
+
+      if (!timeToDays[time]) {
+        timeToDays[time] = [];
+      }
+      if (!timeToDays[time].includes(day)) {
+        timeToDays[time].push(day);
+      }
+    } else {
+      validParse = false;
+      break;
+    }
+  }
+
+  if (!validParse) {
+    return raw;
+  }
+
+  const groupedParts = Object.entries(timeToDays).map(([time, days]) => {
+    return `${days.join(' - ')} (${time})`;
+  });
+
+  return groupedParts.join(' | ');
+}
+

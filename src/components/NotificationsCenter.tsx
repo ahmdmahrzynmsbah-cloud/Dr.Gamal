@@ -538,14 +538,14 @@ export default function NotificationsCenter() {
               </h3>
               
               {/* Search filter input */}
-              <div className="relative w-full sm:w-80">
+              <div className="relative flex-1 min-w-[200px] max-w-full sm:w-80 sm:flex-none">
                 <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3" />
                 <input
                   type="text"
                   placeholder="ابحث باسم الأب، اسم الطالب، رقم القيد..."
                   value={parentSearchTerm}
                   onChange={(e) => setParentSearchTerm(e.target.value)}
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2 rounded-lg focus:outline-none focus:border-[#0D5C8C] text-right"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2 rounded-lg focus:outline-none focus:border-[#0D5C8C] text-right"
                 />
               </div>
             </div>
@@ -689,7 +689,7 @@ export default function NotificationsCenter() {
                       onChange={(e) => setDirectSmsText(e.target.value)}
                       rows={4}
                       placeholder="اكتب رسالتك لولي الأمر بالتفصيل هنا..."
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-[#0D5C8C] text-right min-h-[100px]"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-[#0D5C8C] text-right min-h-[100px]"
                       required
                     />
                   </div>
@@ -737,7 +737,7 @@ export default function NotificationsCenter() {
                   value={broadcastFormData.title}
                   onChange={(e) => setBroadcastFormData({ ...broadcastFormData, title: e.target.value })}
                   placeholder="مثال: موعد تسليم الأنشطة المجموعةية لشهر مارس"
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 text-right"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 text-right"
                   required
                 />
               </div>
@@ -747,7 +747,7 @@ export default function NotificationsCenter() {
                 <select
                   value={broadcastFormData.category}
                   onChange={(e) => setBroadcastFormData({ ...broadcastFormData, category: e.target.value as SystemNotification['category'] })}
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
                 >
                   <option value="sms">رسائل SMS جماعية لهواتف أولياء الأمور</option>
                   <option value="system">لوحة الإشعارات العامة داخل النظام</option>
@@ -761,7 +761,7 @@ export default function NotificationsCenter() {
                 <select
                   value={broadcastFormData.recipient_type}
                   onChange={(e) => setBroadcastFormData({ ...broadcastFormData, recipient_type: e.target.value as SystemNotification['recipient_type'] })}
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
                 >
                   <option value="parents">أولياء أمور الطلاب فقط</option>
                   <option value="all">الجميع (أولياء أمور، طلاب)</option>
@@ -795,7 +795,7 @@ export default function NotificationsCenter() {
                 onChange={(e) => setBroadcastFormData({ ...broadcastFormData, message: e.target.value })}
                 rows={4}
                 placeholder="يرجى كتابة نص البيان الموجه بدقة ووضوح..."
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 text-right min-h-[90px]"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 text-right min-h-[90px]"
                 required
               />
             </div>

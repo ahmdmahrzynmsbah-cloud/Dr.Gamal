@@ -91,11 +91,17 @@ export default function ParentsList() {
     setParents(Object.values(parentMap));
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleEditClick = (parent: ParentRecord) => {
     setSelectedParent(parent);
     setEditName(parent.parent_name);
     setEditPhone(parent.parent_phone);
     setShowEditForm(true);
+    scrollToTop();
     setErrorMessage('');
   };
 
@@ -323,7 +329,7 @@ export default function ParentsList() {
               placeholder="ابحث باسم ولي الأمر، هاتف، أو اسم الطالب..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full font-sans text-xs border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right"
+              className="w-full min-w-0 max-w-full flex-1 font-sans text-xs border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right"
               dir="rtl"
             />
           </div>

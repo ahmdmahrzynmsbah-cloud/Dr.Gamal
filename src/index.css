@@ -9,7 +9,7 @@
 }
 
 /* Base smooth transitions */
-body, div, header, aside, main, section, button, input, select, textarea {
+button, input, select, textarea {
   transition-property: color, background-color, border-color, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
@@ -55,20 +55,20 @@ body, div, header, aside, main, section, button, input, select, textarea {
 }
 
 /* Custom dark scrollbar for the scanner terminal log */
-.custom-scrollbar::-webkit-scrollbar {
+.removed-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
+.removed-scrollbar::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.5);
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.removed-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(51, 65, 85, 0.8);
   border-radius: 4px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.removed-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(71, 85, 105, 1);
 }
-.custom-scrollbar {
+.removed-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(51, 65, 85, 0.8) rgba(15, 23, 42, 0.5);
 }
@@ -458,4 +458,18 @@ html.dark body {
 .markdown-body strong {
   font-weight: 800;
   color: inherit;
+}
+
+/* Global scrollbar hiding while maintaining smooth scroll */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+html {
+  scroll-behavior: smooth;
 }

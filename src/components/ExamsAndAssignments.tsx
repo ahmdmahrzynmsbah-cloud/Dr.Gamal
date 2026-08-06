@@ -457,8 +457,8 @@ export default function ExamsAndAssignments() {
       class_id: exam.class_id,
       term: exam.term
     });
-    // Scroll to top of tab
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Delete Exam
@@ -524,6 +524,7 @@ export default function ExamsAndAssignments() {
       term: asg.term
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Delete Assignment
@@ -1653,7 +1654,7 @@ export default function ExamsAndAssignments() {
                                       }
                                     }));
                                   }}
-                                  className="w-full text-right border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:bg-slate-800 focus:bg-white dark:bg-slate-800 rounded-xl p-2 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                                  className="w-full min-w-[200px] max-w-full flex-1 text-right border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:bg-slate-800 focus:bg-white dark:bg-slate-800 rounded-xl p-2 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
                                   dir="rtl"
                                 />
                               ) : (
@@ -1806,7 +1807,7 @@ export default function ExamsAndAssignments() {
                   placeholder="مثال: امتحان الحصة الأولى، امتحان البلاغة الشامل"
                   value={examForm.name}
                   onChange={(e) => setExamForm({ ...examForm, name: e.target.value })}
-                  className="w-full text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
                   dir="rtl"
                 />
               </div>
@@ -1818,7 +1819,7 @@ export default function ExamsAndAssignments() {
                   <select
                     value={examForm.type}
                     onChange={(e) => setExamForm({ ...examForm, type: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="quiz">امتحان حصة (سريع)</option>
                     <option value="comprehensive">امتحان شامل</option>
@@ -1834,7 +1835,7 @@ export default function ExamsAndAssignments() {
                   <select
                     value={examForm.term}
                     onChange={(e) => setExamForm({ ...examForm, term: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="first_term">الفصل الأول</option>
                     <option value="second_term">الفصل الثاني</option>
@@ -1848,7 +1849,7 @@ export default function ExamsAndAssignments() {
                 <select
                   value={examForm.class_id}
                   onChange={(e) => setExamForm({ ...examForm, class_id: e.target.value })}
-                  className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
@@ -1934,13 +1935,13 @@ export default function ExamsAndAssignments() {
             
             {/* Search filter */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-[200px] max-w-full">
                 <input
                   type="text"
                   placeholder="ابحث باسم الامتحان، تصنيفه، أو اسم المجموعة..."
                   value={examSearch}
                   onChange={(e) => setExamSearch(e.target.value)}
-                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
@@ -2054,7 +2055,7 @@ export default function ExamsAndAssignments() {
                   placeholder="مثال: حل صفحة 12 و 13 بكتاب المدرسة، أو واجب شرح اسم الفاعل صـ 40"
                   value={assignmentForm.title}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
-                  className="w-full text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
                   dir="rtl"
                 />
               </div>
@@ -2079,7 +2080,7 @@ export default function ExamsAndAssignments() {
                   <select
                     value={assignmentForm.term}
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, term: e.target.value as any })}
-                    className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="first_term">الفصل الدراسي الأول</option>
                     <option value="second_term">الفصل الدراسي الثاني</option>
@@ -2093,7 +2094,7 @@ export default function ExamsAndAssignments() {
                 <select
                   value={assignmentForm.class_id}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, class_id: e.target.value })}
-                  className="w-full text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
@@ -2149,13 +2150,13 @@ export default function ExamsAndAssignments() {
             
             {/* Search filter */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-[200px] max-w-full">
                 <input
                   type="text"
                   placeholder="ابحث بموضوع الواجب، اسم المجموعة..."
                   value={assignmentSearch}
                   onChange={(e) => setAssignmentSearch(e.target.value)}
-                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
+                  className="w-full min-w-[200px] max-w-full flex-1 text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />

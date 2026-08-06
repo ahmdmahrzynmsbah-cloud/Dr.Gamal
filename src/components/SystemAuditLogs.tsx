@@ -209,16 +209,16 @@ export default function SystemAuditLogs() {
         {/* Advanced Filter Box */}
         <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-slate-50/50 space-y-4">
           
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
             {/* Search Input */}
-            <div className="relative w-full md:max-w-md">
+            <div className="relative flex-1 min-w-[200px] max-w-full md:max-w-md">
               <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3.5" />
               <input
                 type="text"
                 placeholder="ابحث باسم الطالب، نوع الإجراء، أو الموظف، أو اليوم..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-4 py-3 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 bg-white dark:bg-slate-800 hover:border-slate-300 dark:border-slate-600 focus:border-[#0D5C8C] focus:ring-1 focus:ring-[#0D5C8C] outline-none transition-all"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-4 py-3 rounded-xl text-slate-700 dark:text-slate-200 placeholder-slate-400 bg-white dark:bg-slate-800 hover:border-slate-300 dark:border-slate-600 focus:border-[#0D5C8C] focus:ring-1 focus:ring-[#0D5C8C] outline-none transition-all"
               />
             </div>
 
@@ -275,7 +275,7 @@ export default function SystemAuditLogs() {
               <select
                 value={actorFilter}
                 onChange={(e) => setActorFilter(e.target.value)}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none hover:border-slate-300 dark:border-slate-600 transition-all cursor-pointer"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none hover:border-slate-300 dark:border-slate-600 transition-all cursor-pointer"
               >
                 <option value="all">كل المستخدمين</option>
                 <option value="admin">الإدارة والأكاديمي</option>
@@ -291,7 +291,7 @@ export default function SystemAuditLogs() {
               <select
                 value={tableFilter}
                 onChange={(e) => setTableFilter(e.target.value)}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none hover:border-slate-300 dark:border-slate-600 transition-all cursor-pointer"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none hover:border-slate-300 dark:border-slate-600 transition-all cursor-pointer"
               >
                 <option value="all">كل الأقسام والجداول</option>
                 <option value="students">شؤون الطلاب (Students)</option>

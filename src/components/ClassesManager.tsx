@@ -552,7 +552,7 @@ export default function ClassesManager() {
                               value={printHeaderTitle}
                               onChange={(e) => updatePrintTitle(e.target.value)}
                               placeholder="مثال: سنتر التفوق للتعليم"
-                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-bold text-slate-900 dark:text-slate-50 focus:outline-none focus:border-amber-500"
+                              className="w-full min-w-[200px] max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-bold text-slate-900 dark:text-slate-50 focus:outline-none focus:border-amber-500"
                             />
                           </div>
                           <div>
@@ -562,7 +562,7 @@ export default function ClassesManager() {
                               value={printHeaderSubtitle}
                               onChange={(e) => updatePrintSubtitle(e.target.value)}
                               placeholder="مثال: سجل كشوفات المجموعات التعليمية"
-                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+                              className="w-full min-w-[200px] max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2 font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                             />
                           </div>
                         </div>
@@ -575,7 +575,7 @@ export default function ClassesManager() {
                               value={printHeaderContact}
                               onChange={(e) => updatePrintContact(e.target.value)}
                               placeholder="مثال: هاتف: 01000000000 - الفرع الرئيسي"
-                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 text-[11px] text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+                              className="w-full min-w-[200px] max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 text-[11px] text-slate-700 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                             />
                           </div>
                           <div>
@@ -929,15 +929,15 @@ export default function ClassesManager() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative w-full md:w-96">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row flex-wrap items-center justify-between gap-4">
+          <div className="relative w-full md:w-96 max-w-full min-w-[200px]">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={studentSearchTerm}
               onChange={(e) => setStudentSearchTerm(e.target.value)}
               placeholder="ابحث باسم الطالب، رقم القيد، أو هاتف ولي الأمر..."
-              className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+              className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
             />
           </div>
 
@@ -1145,7 +1145,11 @@ export default function ClassesManager() {
                             {/* Edit Student */}
                             <button
                               type="button"
-                              onClick={() => setEditingStudent(student)}
+                              onClick={() => {
+                                setEditingStudent(student);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
                               className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
                               title="تعديل بيانات الطالب"
                             >
@@ -1238,7 +1242,7 @@ export default function ClassesManager() {
                       required
                       value={newStudentForm.name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                       placeholder="أدخل اسم الطالب..."
                     />
                   </div>
@@ -1250,7 +1254,7 @@ export default function ClassesManager() {
                         type="text"
                         value={newStudentForm.phone}
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                        className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="01xxxxxxxxx"
                       />
                     </div>
@@ -1261,7 +1265,7 @@ export default function ClassesManager() {
                         required
                         value={newStudentForm.parent_phone}
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                        className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="01xxxxxxxxx"
                       />
                     </div>
@@ -1273,7 +1277,7 @@ export default function ClassesManager() {
                       type="text"
                       value={newStudentForm.parent_name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                       placeholder="اسم ولي الأمر..."
                     />
                   </div>
@@ -1345,7 +1349,7 @@ export default function ClassesManager() {
                       required
                       value={editingStudent.name}
                       onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                     />
                   </div>
 
@@ -1356,7 +1360,7 @@ export default function ClassesManager() {
                         type="text"
                         value={editingStudent.phone || ''}
                         onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                       />
                     </div>
                     <div>
@@ -1365,7 +1369,7 @@ export default function ClassesManager() {
                         type="text"
                         value={editingStudent.parent_phone || ''}
                         onChange={(e) => setEditingStudent({ ...editingStudent, parent_phone: e.target.value })}
-                        className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                       />
                     </div>
                   </div>
@@ -1376,7 +1380,7 @@ export default function ClassesManager() {
                       type="text"
                       value={editingStudent.parent_name || ''}
                       onChange={(e) => setEditingStudent({ ...editingStudent, parent_name: e.target.value })}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                     />
                   </div>
 
@@ -1385,7 +1389,7 @@ export default function ClassesManager() {
                     <select
                       value={editingStudent.status}
                       onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value as any })}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600 bg-white dark:bg-slate-800"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600 bg-white dark:bg-slate-800"
                     >
                       <option value="active">نشط بالسنتر</option>
                       <option value="inactive">موقوف</option>
@@ -1447,7 +1451,7 @@ export default function ClassesManager() {
                     <select
                       value={targetClassIdForTransfer}
                       onChange={(e) => setTargetClassIdForTransfer(e.target.value)}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-sky-600 bg-white dark:bg-slate-800"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-sky-600 bg-white dark:bg-slate-800"
                     >
                       <option value="">-- اختر مجموعة من القائمة --</option>
                       {classes.filter(c => c.id !== selectedClassForStudents.id).map(cls => (
@@ -1525,7 +1529,7 @@ export default function ClassesManager() {
                       rows={6}
                       value={groupWhatsAppMsg}
                       onChange={(e) => setGroupWhatsAppMsg(e.target.value)}
-                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-3 rounded-2xl focus:outline-hidden focus:border-emerald-600 leading-relaxed"
+                      className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-3 rounded-2xl focus:outline-hidden focus:border-emerald-600 leading-relaxed"
                     />
                   </div>
 
@@ -1600,7 +1604,7 @@ export default function ClassesManager() {
                     value={archivedSearchTerm}
                     onChange={(e) => setArchivedSearchTerm(e.target.value)}
                     placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
+                    className="w-full min-w-[200px] max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
                   />
                 </div>
 
@@ -1832,7 +1836,7 @@ export default function ClassesManager() {
                 type="text"
                 value={classForm.name}
                 onChange={(e) => setClassForm({ ...classForm, name: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
                 placeholder="اسم المجموعة"
                 required
               />
@@ -1898,7 +1902,7 @@ export default function ClassesManager() {
               <select
                 value={classForm.grade_level}
                 onChange={(e) => setClassForm({ ...classForm, grade_level: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
+                className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
                 required
               >
                 <option value="الأول الإعدادي">الأول الإعدادي</option>

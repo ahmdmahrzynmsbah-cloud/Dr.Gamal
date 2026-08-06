@@ -269,7 +269,7 @@ export default function AttendanceTracker() {
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar">
               {recentScans.map((scan, i) => (
                 <div key={i} className={`p-3 rounded-xl border flex items-center justify-between ${
                   scan.status === 'success' ? 'bg-slate-800/50 border-emerald-500/30' : 'bg-slate-800/30 border-amber-500/30'
@@ -325,7 +325,7 @@ export default function AttendanceTracker() {
               )}
             </div>
             
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+            <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full">
               <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 h-10 px-3 w-full sm:w-auto shrink-0">
                 <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400 ml-2 shrink-0" />
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-200 select-none hidden md:inline-block ml-2">
@@ -366,14 +366,14 @@ export default function AttendanceTracker() {
                 ))}
               </select>
 
-              <div className="relative w-full sm:flex-1">
+              <div className="relative flex-1 min-w-[200px] max-w-full sm:flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="بحث عن طالب..."
-                  className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pr-9 pl-3 h-10 text-xs focus:border-[#1A7FAA] outline-hidden text-slate-700 dark:text-slate-200 font-bold placeholder:text-slate-400"
+                  className="w-full min-w-0 max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pr-9 pl-3 h-10 text-xs focus:border-[#1A7FAA] outline-hidden text-slate-700 dark:text-slate-200 font-bold placeholder:text-slate-400"
                 />
               </div>
             </div>

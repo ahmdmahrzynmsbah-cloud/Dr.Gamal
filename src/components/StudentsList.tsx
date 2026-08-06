@@ -15,6 +15,7 @@ export default function StudentsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [gradeLevelFilter, setGradeLevelFilter] = useState('all');
 
   // Form states
   const [showAddForm, setShowAddForm] = useState(false);
@@ -234,6 +235,11 @@ export default function StudentsList() {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleEditClick = (student: Student) => {
     setIsEditing(true);
     setEditId(student.id);
@@ -248,6 +254,7 @@ export default function StudentsList() {
       status: student.status
     });
     setShowAddForm(true);
+    scrollToTop();
     setErrorMessage('');
   };
 
@@ -257,9 +264,9 @@ export default function StudentsList() {
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      handleProcessAction("جاري الحذف النهائي...", () => {
-        samsDb.permanentlyDeleteStudent(studentToDelete.id);
-        setSuccessMessage('تم حذف الطالب نهائياً بنجاح.');
+      handleProcessAction("جاري أرشفة الطالب...", () => {
+        samsDb.softDeleteStudent(studentToDelete.id);
+        setSuccessMessage('تم أرشفة الطالب بنجاح.');
         setStudentToDelete(null);
         loadData();
         if (selectedProfile?.id === studentToDelete.id) {
@@ -278,9 +285,10 @@ export default function StudentsList() {
       const matchesSearch = s.name.includes(searchTerm) || s.registration_id.includes(searchTerm);
       const matchesClass = classFilter === 'all' || s.class_id === classFilter;
       const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-      return matchesSearch && matchesClass && matchesStatus;
+      const matchesGrade = gradeLevelFilter === 'all' || s.grade_level === gradeLevelFilter;
+      return matchesSearch && matchesClass && matchesStatus && matchesGrade;
     });
-  }, [students, searchTerm, classFilter, statusFilter]);
+  }, [students, searchTerm, classFilter, statusFilter, gradeLevelFilter]);
 
 
   if (showDuplicatesModal) {
@@ -348,49 +356,74 @@ export default function StudentsList() {
               }
 
               return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {archivedList.map(st => (
-                    <div key={st.id} className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-sans hover:border-amber-200 dark:hover:border-amber-700 transition-colors">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="font-bold text-slate-900 dark:text-white text-sm">{st.name}</span>
-                          <span className="text-[10px] bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md font-mono font-bold border border-amber-200 dark:border-amber-800">
-                            {st.registration_id}
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-3">
-                          <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
-                          <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        {/* Restore */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            samsDb.restoreStudent(st.id);
-                            loadData();
-                            setSuccessMessage(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
-                          }}
-                          className="px-3 py-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                          <span>استعادة</span>
-                        </button>
-
-                        {/* Permanent Delete */}
-                        <button
-                          type="button"
-                          onClick={() => setArchivedStudentToPermanentDelete(st)}
-                          className="px-3 py-2 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span>حذف نهائي</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-auto max-h-[calc(100vh-250px)]">
+          <table className="w-full text-sm text-right">
+              <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold shadow-sm whitespace-nowrap">
+                      <tr>
+                        <th className="px-4 py-4 pr-6">م</th>
+                        <th className="px-4 py-4 min-w-[200px]">بيانات الطالب</th>
+                        <th className="px-4 py-4 min-w-[150px]">الصف الدراسي</th>
+                        <th className="px-4 py-4 min-w-[140px]">رقم هاتف الطالب / ولي الأمر</th>
+                        <th className="px-4 py-4 text-left pl-6 min-w-[160px]">إجراءات التحكم</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 whitespace-nowrap">
+                      {archivedList.map((st, index) => (
+                        <tr key={st.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-4 py-3 pr-6 text-xs text-slate-400 font-mono">
+                            {(index + 1).toString().padStart(2, '0')}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0 text-amber-500 font-bold text-lg">
+                                <Archive className="w-5 h-5 opacity-50" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{st.name}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{st.registration_id}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col gap-1">
+                              <span className="font-bold text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col gap-1 text-slate-600 dark:text-slate-400">
+                              <span className="flex items-center gap-1 font-mono text-xs"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-left pl-6">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  samsDb.restoreStudent(st.id);
+                                  loadData();
+                                  setSuccessMessage(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
+                                }}
+                                className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>استعادة</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setArchivedStudentToPermanentDelete(st)}
+                                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>حذف نهائي</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               );
             })()}
@@ -595,24 +628,24 @@ export default function StudentsList() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
-                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+                  <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
                 </div>
                 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-rose-500">*</span></label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة <span className="text-rose-500">*</span></label>
-                  <select name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>)}
                   </select>
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي</label>
-                  <select name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي <span className="text-rose-500">*</span></label>
+                  <select required name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                         <option value="الأول الإعدادي">الأول الإعدادي</option>
                 <option value="الثاني الإعدادي">الثاني الإعدادي</option>
                 <option value="الثالث الإعدادي">الثالث الإعدادي</option>
@@ -623,26 +656,26 @@ export default function StudentsList() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد</label>
-                  <input type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد <span className="text-rose-500">*</span></label>
+                  <input required type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد</label>
-                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-rose-500">*</span></label>
+                  <select required name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
                     <option value="active">مفعل ومنتظم</option>
                     <option value="inactive">مجمد مؤقتاً</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر</label>
-                  <input type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر <span className="text-rose-500">*</span></label>
+                  <input required type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ)</label>
-                  <input type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">رقم هاتف ولي الأمر (للطوارئ) <span className="text-rose-500">*</span></label>
+                  <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX" dir="ltr" />
                 </div>
               </div>
 
@@ -658,18 +691,27 @@ export default function StudentsList() {
       </AnimatePresence>
 
       {/* Control Tools Filters */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96 shrink-0">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96 flex-1 min-w-[200px]">
           <input 
             type="text" 
             placeholder="البحث بالاسم المذكور أو بكود التسجيل..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none"
+            className="w-full min-w-[200px] max-w-full flex-1 pr-10 pl-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
         </div>
         <div className="flex w-full md:w-auto items-center gap-3 overflow-x-auto no-scrollbar">
+          <select value={gradeLevelFilter} onChange={e => setGradeLevelFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
+            <option value="all">كل الصفوف الدراسية</option>
+            <option value="الأول الإعدادي">الأول الإعدادي</option>
+            <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+            <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+            <option value="الأول الثانوي">الأول الثانوي</option>
+            <option value="الثاني الثانوي">الثاني الثانوي</option>
+            <option value="الثالث الثانوي">الثالث الثانوي</option>
+          </select>
           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
             <Filter className="w-3.5 h-3.5 text-slate-400" />
             <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
@@ -686,9 +728,9 @@ export default function StudentsList() {
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-[calc(100vh-250px)]">
           <table className="w-full text-sm text-right">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold border-b border-gray-100 dark:border-gray-700 whitespace-nowrap">
+              <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold shadow-sm whitespace-nowrap">
                 <tr>
                   <th className="px-4 py-4 pr-6">م</th>
                   <th className="px-4 py-4 min-w-[200px]">بيانات الطالب</th>
@@ -759,8 +801,8 @@ export default function StudentsList() {
                         <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors" title="تعديل">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-lg transition-colors cursor-pointer" title="حذف الطالب">
-                          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" title="أرشفة الطالب">
+                          <Archive className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                         </button>
                       </div>
                     </td>
@@ -885,18 +927,18 @@ export default function StudentsList() {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden space-y-4"
             >
-              <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
-                <div className="p-3 bg-red-50 dark:bg-red-900/40 rounded-2xl">
-                  <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <div className="flex items-center gap-3 text-orange-600 dark:text-orange-400">
+                <div className="p-3 bg-orange-50 dark:bg-orange-900/40 rounded-2xl">
+                  <Archive className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد حذف الطالب</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">حذف سجل الطالب نهائياً من السنتر</p>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد أرشفة الطالب</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">نقل سجل الطالب إلى الأرشيف</p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans bg-red-50/50 p-3.5 rounded-xl border border-red-100 dark:border-red-800">
-                هل أنت متأكد من رغبتك في حذف الطالب <strong className="text-slate-900 dark:text-slate-50">"{studentToDelete.name}"</strong> نهائياً؟ سيتم مسح كافة بياناته ولن تتمكن من استعادتها.
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans bg-orange-50/50 dark:bg-orange-900/20 p-3.5 rounded-xl border border-orange-100 dark:border-orange-800">
+                هل أنت متأكد من رغبتك في أرشفة الطالب <strong className="text-slate-900 dark:text-slate-50">"{studentToDelete.name}"</strong>؟ سيتم نقله إلى الأرشيف ولن يظهر في القوائم النشطة.
               </p>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
@@ -910,9 +952,9 @@ export default function StudentsList() {
                 <button
                   type="button"
                   onClick={confirmDelete}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-black transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-black transition-colors cursor-pointer"
                 >
-                  تأكيد الحذف النهائي 🗑️
+                  تأكيد الأرشفة 📦
                 </button>
               </div>
             </motion.div>

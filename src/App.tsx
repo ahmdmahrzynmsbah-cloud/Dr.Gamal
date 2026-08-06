@@ -291,14 +291,7 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  
 
   // List matching students and teachers
   const allStudents = useMemo(() => samsDb.getStudents(), [refreshTrigger]);
@@ -682,13 +675,13 @@ export default function App() {
       </aside>
 
       {/* Main Content Area Container */}
-      <div className="flex-1 flex flex-col h-full print:h-auto overflow-hidden print:overflow-visible">
+      <div className="flex-1 flex flex-col h-full print:h-auto overflow-hidden print:overflow-visible w-full max-w-full min-w-0">
         
         {/* Upper Main Header inside the content wrapper */}
-        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden">
+        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden w-full max-w-full min-w-0">
           
           {/* Logo and Branding section (User Customizable) */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0 min-w-0">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg lg:hidden cursor-pointer"
@@ -707,24 +700,24 @@ export default function App() {
           </div>
 
           {/* Sleek Search bar */}
-          <div className="hidden md:block relative z-50">
+          <div className="hidden md:flex relative z-50 flex-1 min-w-0 max-w-md mx-4">
             <motion.div 
               initial={false}
               animate={{ 
-                width: isSearchFocused ? 384 : 280,
+                width: "100%",
                 borderColor: isSearchFocused ? '#1A7FAA' : '#E2E8F0',
                 boxShadow: isSearchFocused ? '0 10px 25px -5px rgba(26, 127, 170, 0.15), 0 8px 10px -6px rgba(26, 127, 170, 0.15)' : 'none'
               }}
               transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-              className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-xl py-2 px-3.5"
+              className="relative flex items-center bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-xl w-full"
             >
               <motion.span 
                 animate={{ 
-                  scale: isSearchFocused ? 1.2 : 1,
-                  rotate: isSearchFocused ? 15 : 0,
+                  scale: isSearchFocused ? 1.1 : 1,
+                  rotate: isSearchFocused ? 10 : 0,
                   color: isSearchFocused ? '#1A7FAA' : '#94A3B8'
                 }}
-                className="shrink-0 cursor-pointer"
+                className="absolute right-3.5 pointer-events-none"
               >
                 <Search className="w-4 h-4" />
               </motion.span>
@@ -738,12 +731,12 @@ export default function App() {
                 }}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="البحث السريع عن طالب، معلم، أو رقم قيد..." 
-                className="w-full bg-transparent border-none text-xs text-slate-700 dark:text-slate-200 outline-none focus:ring-0 placeholder:text-slate-400 text-right font-sans"
+                className="w-full flex-1 min-w-0 max-w-full bg-transparent border-none py-2 pr-10 pl-10 text-xs text-slate-700 dark:text-slate-200 outline-none focus:ring-0 placeholder:text-slate-400 text-right font-sans"
               />
               {searchQuery && (
                 <button 
                   onClick={() => setSearchQuery('')}
-                  className="text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                  className="absolute left-3.5 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -815,7 +808,7 @@ export default function App() {
           {/* Info badges, User details */}
           
           {/* Notifications & User Details */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0 min-w-0">
             
             {/* Install PWA Button */}
             <InstallPWAButton />
@@ -841,7 +834,7 @@ export default function App() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 top-full mt-2 w-[350px] bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]"
+                    className="absolute left-0 top-full mt-2 w-[350px] max-w-[90vw] -right-20 md:left-0 md:right-auto bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]"
                     dir="rtl"
                   >
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">

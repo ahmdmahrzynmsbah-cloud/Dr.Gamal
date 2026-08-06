@@ -120,6 +120,8 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
     setFormData({ name: user.name, password: user.password, role: user.role, permissions: user.permissions || [] });
     setEditingId(user.id);
     setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

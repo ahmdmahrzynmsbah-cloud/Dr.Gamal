@@ -758,7 +758,7 @@ export default function FeesTracker() {
               <select
                 value={generalPayData.student_id}
                 onChange={(e) => setGeneralPayData({ ...generalPayData, student_id: e.target.value })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
                 required
               >
                 <option value="">-- اختر الطالب --</option>
@@ -776,7 +776,7 @@ export default function FeesTracker() {
                 max={15000}
                 value={generalPayData.amount}
                 onChange={(e) => setGeneralPayData({ ...generalPayData, amount: Number(e.target.value) })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 text-right"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 text-right"
                 required
               />
             </div>
@@ -786,7 +786,7 @@ export default function FeesTracker() {
               <select
                 value={generalPayData.category}
                 onChange={(e) => setGeneralPayData({ ...generalPayData, category: e.target.value as FeePayment['category'] })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
               >
                 <option value="tuition">اشتراك الشهر الدراسي (Tuition)</option>
                 <option value="bus">اشتراك الباص ونقل السنتر</option>
@@ -800,7 +800,7 @@ export default function FeesTracker() {
               <select
                 value={generalPayData.payment_method}
                 onChange={(e) => setGeneralPayData({ ...generalPayData, payment_method: e.target.value as FeePayment['payment_method'] })}
-                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
               >
                 <option value="cash">نقدي (Cash)</option>
                 <option value="card">دفع إلكتروني (POS/فيزا)</option>
@@ -814,7 +814,7 @@ export default function FeesTracker() {
                 <select
                   value={generalPayData.month}
                   onChange={(e) => setGeneralPayData({ ...generalPayData, month: e.target.value })}
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+                  className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
                 >
                   {MONTHS_LIST.map(m => (
                     <option key={m} value={m}>{m}</option>
@@ -897,7 +897,7 @@ export default function FeesTracker() {
                   setSelectedGrade(e.target.value);
                   setSelectedClass('all');
                 }}
-                className="w-full text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
               >
                 {["الأول الإعدادي","الثاني الإعدادي","الثالث الإعدادي","الأول الثانوي","الثاني الثانوي","الثالث الثانوي"].map(g => (
                   <option key={g} value={g}>{g}</option>
@@ -910,7 +910,7 @@ export default function FeesTracker() {
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
               >
                 <option value="all">جميع المجموعات (للصف المحدد)</option>
                 {classes.filter(c => c.grade_level === selectedGrade).map(c => (
@@ -924,7 +924,7 @@ export default function FeesTracker() {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
               >
                 {MONTHS_LIST.map(m => (
                   <option key={m} value={m}>{m}</option>
@@ -941,7 +941,7 @@ export default function FeesTracker() {
                   placeholder="ابحث عن طالب بالمجموعة..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
+                  className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
                 />
               </div>
             </div>
@@ -1362,7 +1362,7 @@ export default function FeesTracker() {
                   max={5000}
                   value={quickPayAmount}
                   onChange={(e) => setQuickPayAmount(Number(e.target.value))}
-                  className="w-full text-xs font-sans font-extrabold border border-slate-300 dark:border-slate-600 dark:border-slate-600 px-3 py-2.5 rounded-lg text-[#0D5C8C] text-right focus:border-[#0D5C8C] focus:outline-hidden"
+                  className="w-full min-w-0 max-w-full flex-1 text-xs font-sans font-extrabold border border-slate-300 dark:border-slate-600 dark:border-slate-600 px-3 py-2.5 rounded-lg text-[#0D5C8C] text-right focus:border-[#0D5C8C] focus:outline-hidden"
                   required
                 />
               </div>
@@ -1653,7 +1653,7 @@ export default function FeesTracker() {
                   rows={6}
                   value={whatsAppMessage}
                   onChange={(e) => setWhatsAppMessage(e.target.value)}
-                  className="w-full text-xs font-sans p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:bg-white dark:bg-slate-800 focus:outline-hidden leading-relaxed"
+                  className="w-full min-w-0 max-w-full flex-1 text-xs font-sans p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:bg-white dark:bg-slate-800 focus:outline-hidden leading-relaxed"
                 />
               </div>
 

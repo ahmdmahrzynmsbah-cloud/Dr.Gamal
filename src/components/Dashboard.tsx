@@ -12,15 +12,15 @@ interface DashboardProps {
   onNavigateToTab: (tabId: string) => void;
 }
 
+
 export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  
   const students = samsDb.getStudents();
   const teachers = samsDb.getTeachers();
   const classes = samsDb.getClasses();

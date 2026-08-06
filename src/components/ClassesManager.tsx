@@ -58,6 +58,16 @@ export default function ClassesManager() {
   const [errorText, setErrorText] = useState('');
   const [successText, setSuccessText] = useState('');
   const [classToDelete, setClassToDelete] = useState<ClassRoom | null>(null);
+  const [editingClass, setEditingClass] = useState<ClassRoom | null>(null);
+  const [editClassForm, setEditClassForm] = useState({
+    name: '',
+    schedule_days: '',
+    schedule_time: '',
+    day_times: {} as Record<string, string>,
+    grade_level: 'الأول الإعدادي',
+    education_type: 'عام' as 'عام' | 'أزهر'
+  });
+  const [editUnifiedTime, setEditUnifiedTime] = useState('');
   
   const [classForm, setClassForm] = useState({
     name: '',
@@ -466,6 +476,85 @@ export default function ClassesManager() {
     setUnifiedTime('');
     setShowAddClass(false);
     loadData();
+  };
+
+  const startEditingClass = (cls: ClassRoom) => {
+    setErrorText('');
+    setEditingClass(cls);
+    setEditClassForm({
+      name: cls.name,
+      schedule_days: cls.schedule_days || '',
+      schedule_time: cls.schedule_time || '',
+      day_times: {},
+      grade_level: cls.grade_level || 'الأول الإعدادي',
+      education_type: cls.education_type || 'عام'
+    });
+    setEditUnifiedTime('');
+  };
+
+  const handleUpdateClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorText('');
+
+    if (!editingClass) return;
+
+    if (!editClassForm.name.trim()) {
+      setErrorText('يرجى تحديد اسم للمجموعة الدراسية.');
+      return;
+    }
+    if (!editClassForm.schedule_days || editClassForm.schedule_days.trim() === '') {
+      setErrorText('يرجى تحديد أيام المجموعة الدراسية.');
+      return;
+    }
+
+    const daysArr = editClassForm.schedule_days.split('، ').filter(Boolean);
+    let formattedScheduleTime = editClassForm.schedule_time;
+
+    const missingTimes = daysArr.some(day => !editClassForm.day_times[day] || editClassForm.day_times[day].trim() === '');
+    if (!missingTimes && daysArr.length > 0) {
+      const formatTime12 = (rawTime: string) => {
+        if (!rawTime) return '--';
+        const [h, m] = rawTime.split(':');
+        const hInt = parseInt(h, 10);
+        const ampm = hInt >= 12 ? 'م' : 'ص';
+        let h12 = hInt % 12;
+        if (h12 === 0) h12 = 12;
+        return `${h12}:${m} ${ampm}`;
+      };
+
+      const timeToDaysMap: Record<string, string[]> = {};
+      daysArr.forEach(day => {
+        const rawTime = editClassForm.day_times[day] || '';
+        const formattedT = formatTime12(rawTime);
+        if (!timeToDaysMap[formattedT]) {
+          timeToDaysMap[formattedT] = [];
+        }
+        timeToDaysMap[formattedT].push(day);
+      });
+
+      formattedScheduleTime = Object.entries(timeToDaysMap).map(([t, days]) => {
+        return `${days.join(' - ')} (${t})`;
+      }).join(' | ');
+    }
+
+    const updatedCls: ClassRoom = {
+      ...editingClass,
+      name: editClassForm.name.trim(),
+      schedule_days: editClassForm.schedule_days,
+      schedule_time: formattedScheduleTime || editingClass.schedule_time,
+      grade_level: editClassForm.grade_level,
+      education_type: editClassForm.education_type || 'عام'
+    };
+
+    const res = samsDb.updateClass(updatedCls);
+    if (res.success) {
+      setSuccessText(`تم تعديل بيانات المجموعة الدراسية (${updatedCls.name}) بنجاح`);
+      setTimeout(() => setSuccessText(''), 3000);
+      setEditingClass(null);
+      loadData();
+    } else {
+      setErrorText(res.error || 'حدث خطأ أثناء تعديل المجموعة.');
+    }
   };
 
   // Dedicated Group Students Full View Render
@@ -2208,8 +2297,16 @@ export default function ClassesManager() {
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name}</h3>
                     <button
                       type="button"
+                      onClick={() => startEditingClass(cls)}
+                      className="p-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded transition-all cursor-pointer mr-1"
+                      title="تعديل بيانات المجموعة"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setClassToDelete(cls)}
-                      className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer mr-1"
+                      className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer"
                       title="حذف المجموعة"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -2487,6 +2584,220 @@ export default function ClassesManager() {
 
       {/* Custom Delete Confirmation Modal */}
       <AnimatePresence>
+        {/* Edit Class Modal */}
+        {editingClass && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-2xl w-full p-6 text-right space-y-4 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
+                <div className="flex items-center gap-2 text-[#0D5C8C] dark:text-sky-400">
+                  <Edit className="w-5 h-5" />
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">تعديل بيانات المجموعة الدراسية ({editingClass.name})</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingClass(null)}
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateClass} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسم المجموعة الدراسية <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      value={editClassForm.name}
+                      onChange={(e) => setEditClassForm({ ...editClassForm, name: e.target.value })}
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الصف الدراسي <span className="text-rose-500">*</span></label>
+                    <select
+                      value={editClassForm.grade_level}
+                      onChange={(e) => setEditClassForm({ ...editClassForm, grade_level: e.target.value })}
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
+                      required
+                    >
+                      <option value="الأول الإعدادي">الأول الإعدادي</option>
+                      <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+                      <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+                      <option value="الأول الثانوي">الأول الثانوي</option>
+                      <option value="الثاني الثانوي">الثاني الثانوي</option>
+                      <option value="الثالث الثانوي">الثالث الثانوي</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">نوع التعليم <span className="text-rose-500">*</span></label>
+                    <select
+                      value={editClassForm.education_type}
+                      onChange={(e) => setEditClassForm({ ...editClassForm, education_type: e.target.value as 'عام' | 'أزهر' })}
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900 font-bold"
+                      required
+                    >
+                      <option value="عام">عام</option>
+                      <option value="أزهر">أزهر</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">المواعيد المدونة حالياً</label>
+                    <input
+                      type="text"
+                      value={editClassForm.schedule_time}
+                      onChange={(e) => setEditClassForm({ ...editClassForm, schedule_time: e.target.value })}
+                      className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900 font-sans"
+                      placeholder="مثال: السبت - الثلاثاء (4:00 م)"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">أيام المجموعة <span className="text-rose-500">*</span></label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
+                      <label key={day} className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-md text-[11px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors">
+                        <input 
+                          type="checkbox" 
+                          className="accent-[#0D5C8C]"
+                          checked={(editClassForm.schedule_days || '').includes(day)}
+                          onChange={(e) => {
+                            const currentDays = editClassForm.schedule_days ? editClassForm.schedule_days.split('، ').filter(Boolean) : [];
+                            let updatedDays: string[];
+                            const newTimes = { ...editClassForm.day_times };
+
+                            if (e.target.checked) {
+                              updatedDays = [...currentDays, day];
+                              if (editUnifiedTime) {
+                                newTimes[day] = editUnifiedTime;
+                              }
+                            } else {
+                              updatedDays = currentDays.filter(d => d !== day);
+                              delete newTimes[day];
+                            }
+
+                            setEditClassForm({ 
+                              ...editClassForm, 
+                              schedule_days: updatedDays.join('، '),
+                              day_times: newTimes 
+                            });
+                          }}
+                        />
+                        <span className="font-bold text-slate-700 dark:text-slate-200">{day}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تحديث أوقات الأيام المحددة (تحديد موعد جديد)</label>
+                  {(() => {
+                    const selectedDays = editClassForm.schedule_days ? editClassForm.schedule_days.split('، ').filter(Boolean) : [];
+                    if (selectedDays.length === 0) {
+                      return (
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700">
+                          حدد أيام المجموعة للتحكم بأوقاتها...
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex flex-col gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                        {selectedDays.length >= 1 && (
+                          <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-sky-50/90 dark:bg-sky-950/50 rounded-xl border border-sky-200/80 dark:border-sky-800/60 mb-1">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 dark:text-sky-200">
+                              <Zap className="w-4 h-4 text-[#0D5C8C] dark:text-sky-400 shrink-0" />
+                              <span>تطبيق موعد موحد لكل الأيام:</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="time"
+                                value={editUnifiedTime}
+                                onChange={(e) => {
+                                  const timeVal = e.target.value;
+                                  setEditUnifiedTime(timeVal);
+                                  if (timeVal) {
+                                    const newTimes = { ...editClassForm.day_times };
+                                    selectedDays.forEach(d => {
+                                      newTimes[d] = timeVal;
+                                    });
+                                    setEditClassForm(prev => ({ ...prev, day_times: newTimes }));
+                                  }
+                                }}
+                                className="text-xs font-sans border border-sky-300 dark:border-sky-700 px-2.5 py-1 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900 font-bold text-sky-900 dark:text-sky-100 shadow-xs"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (editUnifiedTime) {
+                                    const newTimes = { ...editClassForm.day_times };
+                                    selectedDays.forEach(d => {
+                                      newTimes[d] = editUnifiedTime;
+                                    });
+                                    setEditClassForm(prev => ({ ...prev, day_times: newTimes }));
+                                  }
+                                }}
+                                className="px-3 py-1 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                              >
+                                تطبيق على الكل
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedDays.map(day => (
+                          <div key={day} className="flex items-center gap-3 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <span className="w-16 text-xs font-bold text-slate-700 dark:text-slate-200">{day}</span>
+                            <input
+                              type="time"
+                              value={editClassForm.day_times?.[day] || ''}
+                              onChange={(e) => {
+                                setEditClassForm(prev => ({
+                                  ...prev,
+                                  day_times: {
+                                    ...prev.day_times,
+                                    [day]: e.target.value
+                                  }
+                                }));
+                              }}
+                              className="flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-900"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setEditingClass(null)}
+                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-xs font-bold cursor-pointer"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                  >
+                    حفظ التعديلات
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
         {classToDelete && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
             <motion.div

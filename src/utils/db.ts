@@ -282,6 +282,18 @@ export const samsDb = {
     return { success: true };
   },
 
+  updateClass(cls: ClassRoom): { success: boolean; error?: string } {
+    const classes = this.getClasses();
+    const idx = classes.findIndex(c => c.id === cls.id);
+    if (idx !== -1) {
+      classes[idx] = { ...cls };
+      saveToStorage(KEYS.CLASSES, classes);
+      addAuditLog('UPDATE', 'classes', cls.id, `تحديث بيانات المجموعة الدراسية: ${cls.name}`);
+      return { success: true };
+    }
+    return { success: false, error: 'المجموعة الدراسية غير موجودة.' };
+  },
+
   saveClasses(classes: ClassRoom[]) {
     saveToStorage(KEYS.CLASSES, classes);
     addAuditLog('UPDATE', 'classes', 'all', 'تحديث إعادة ترتيب المجموعات الدراسية');

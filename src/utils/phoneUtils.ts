@@ -23,7 +23,7 @@ export function isNoPhoneValue(phone: string): boolean {
     'n/a',
     'no phone'
   ];
-  return noPhonePatterns.some(pattern => trimmed.includes(pattern)) || trimmed === 'لا' || trimmed === '0';
+  return noPhonePatterns.some(pattern => trimmed.includes(pattern));
 }
 
 // Convert Eastern Arabic / Persian numerals to Western digits (e.g., ٠١٠ -> 010)

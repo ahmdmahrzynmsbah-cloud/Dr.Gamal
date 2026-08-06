@@ -5,6 +5,7 @@ import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
 
 export default function StudentsList() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -181,10 +182,15 @@ export default function StudentsList() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const name = e.target.name;
+    let val = e.target.value;
+    if (name === 'phone' || name === 'parent_phone') {
+      val = normalizePhoneDigits(val);
+    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: val
+    }));
   };
 
   const executeAddOrUpdate = (e: React.FormEvent) => {
@@ -196,11 +202,28 @@ export default function StudentsList() {
       setErrorMessage('يرجى ملء جميع الحقول الإلزامية التي تحمل النجمة (*).');
       return;
     }
+
+    const parentPhoneErr = validateEgyptianPhone(formData.parent_phone, 'هاتف ولي الأمر', true);
+    if (parentPhoneErr) {
+      setErrorMessage(parentPhoneErr);
+      return;
+    }
+    const studentPhoneErr = validateEgyptianPhone(formData.phone, 'هاتف الطالب', false);
+    if (studentPhoneErr) {
+      setErrorMessage(studentPhoneErr);
+      return;
+    }
+
+    const cleanedFormData = {
+      ...formData,
+      phone: normalizePhoneDigits(formData.phone),
+      parent_phone: normalizePhoneDigits(formData.parent_phone)
+    };
     
     if (!isEditing) {
       const res = samsDb.addStudent({
-        ...formData,
-        national_id: formData.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000))
+        ...cleanedFormData,
+        national_id: cleanedFormData.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000))
       });
       if (res.success && res.student) {
         setSuccessMessage(`تم تسجيل الطالب بنجاح برقم القيد: ${res.student.registration_id}`);
@@ -226,8 +249,8 @@ export default function StudentsList() {
     } else {
       const existingStudent = students.find(s => s.id === editId);
       const updatedStudent: Student = {
-        ...formData,
-        national_id: formData.national_id || existingStudent?.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000)),
+        ...cleanedFormData,
+        national_id: cleanedFormData.national_id || existingStudent?.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000)),
         id: editId,
         registration_id: existingStudent?.registration_id || '20230000',
         created_at: existingStudent?.created_at || '2023-09-01'

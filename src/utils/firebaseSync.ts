@@ -4,20 +4,42 @@ import { db } from '../firebase';
 const COLLECTION_NAME = 'sams_system_store';
 let isLocalUpdate = false;
 
-// Sync local data to Firestore
-export async function syncToFirebase(key: string, data: any) {
-  try {
-    isLocalUpdate = true;
-    const docRef = doc(db, COLLECTION_NAME, key);
-    await setDoc(docRef, {
-      payload: JSON.stringify(data),
-      updatedAt: Date.now()
-    }, { merge: true });
-  } catch (err) {
-    console.error(`[Firebase Sync Error] Failed to sync key ${key}:`, err);
-  } finally {
-    setTimeout(() => { isLocalUpdate = false; }, 300);
+// Per-key debounce timers and pending payloads
+const syncTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+const pendingPayloads: Record<string, any> = {};
+
+// Sync local data to Firestore with debouncing to prevent write stream exhaustion
+export function syncToFirebase(key: string, data: any) {
+  pendingPayloads[key] = data;
+
+  if (syncTimers[key]) {
+    clearTimeout(syncTimers[key]);
   }
+
+  syncTimers[key] = setTimeout(async () => {
+    delete syncTimers[key];
+    const payloadToSync = pendingPayloads[key];
+    delete pendingPayloads[key];
+
+    if (payloadToSync === undefined) return;
+
+    try {
+      isLocalUpdate = true;
+      const docRef = doc(db, COLLECTION_NAME, key);
+      await setDoc(docRef, {
+        payload: JSON.stringify(payloadToSync),
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch (err: any) {
+      if (err?.code === 'resource-exhausted' || err?.message?.includes('resource-exhausted')) {
+        console.warn(`[Firebase Sync Rate Limit] Quota or write stream queue limit for key "${key}". Throttled write.`);
+      } else {
+        console.error(`[Firebase Sync Error] Failed to sync key ${key}:`, err);
+      }
+    } finally {
+      setTimeout(() => { isLocalUpdate = false; }, 300);
+    }
+  }, 600); // 600ms debounce prevents flooding Firestore write stream during batch operations
 }
 
 // Keys to listen and sync across devices
@@ -51,46 +73,45 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
 
   if (onSyncStatusChange) onSyncStatusChange('syncing');
 
-  // Set up listeners for all data keys
-  ALL_SYNC_KEYS.forEach((key) => {
-    const docRef = doc(db, COLLECTION_NAME, key);
+  // Stagger initialization across keys to avoid firing 19 simultaneous getDoc calls
+  ALL_SYNC_KEYS.forEach((key, index) => {
+    setTimeout(() => {
+      const docRef = doc(db, COLLECTION_NAME, key);
 
-    // Initial check: If local exists but remote does not, upload local to Firestore
-    getDoc(docRef).then((snapshot) => {
-      if (!snapshot.exists()) {
-        const localVal = localStorage.getItem(key);
-        if (localVal) {
-          try {
-            setDoc(docRef, {
-              payload: localVal,
-              updatedAt: Date.now()
-            });
-          } catch (e) {
-            console.error('Error seeding firebase key:', key, e);
-          }
-        }
-      }
-    }).catch(err => console.error('Error fetching doc:', key, err));
-
-    // Real-time listener across devices
-    onSnapshot(docRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data && data.payload) {
-          const currentLocal = localStorage.getItem(key);
-          if (currentLocal !== data.payload) {
-            localStorage.setItem(key, data.payload);
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+      // Initial check: If local exists but remote does not, upload local to Firestore
+      getDoc(docRef).then((snapshot) => {
+        if (!snapshot.exists()) {
+          const localVal = localStorage.getItem(key);
+          if (localVal) {
+            try {
+              syncToFirebase(key, JSON.parse(localVal));
+            } catch (e) {
+              // Ignore JSON parse errors for non-JSON strings
             }
           }
         }
-      }
-      if (onSyncStatusChange) onSyncStatusChange('connected');
-    }, (error) => {
-      console.error(`[Firebase Sync Listener Error] ${key}:`, error);
-      if (onSyncStatusChange) onSyncStatusChange('error');
-    });
+      }).catch(err => console.warn(`[Firebase Sync Fetch Warning] ${key}:`, err?.message || err));
+
+      // Real-time listener across devices
+      onSnapshot(docRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          if (data && data.payload) {
+            const currentLocal = localStorage.getItem(key);
+            if (currentLocal !== data.payload) {
+              localStorage.setItem(key, data.payload);
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+              }
+            }
+          }
+        }
+        if (onSyncStatusChange) onSyncStatusChange('connected');
+      }, (error) => {
+        console.warn(`[Firebase Sync Listener Warning] ${key}:`, error?.message || error);
+        if (onSyncStatusChange) onSyncStatusChange('error');
+      });
+    }, index * 40); // 40ms stagger
   });
 }
 
@@ -100,13 +121,9 @@ export async function forcePushLocalToCloud() {
     const localVal = localStorage.getItem(key);
     if (localVal) {
       try {
-        const docRef = doc(db, COLLECTION_NAME, key);
-        await setDoc(docRef, {
-          payload: localVal,
-          updatedAt: Date.now()
-        });
+        syncToFirebase(key, JSON.parse(localVal));
       } catch (e) {
-        console.error('Error force pushing key:', key, e);
+        // Ignore
       }
     }
   }

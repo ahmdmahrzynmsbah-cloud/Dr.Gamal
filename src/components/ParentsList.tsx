@@ -9,6 +9,7 @@ import { Student, ClassRoom } from '../types';
 import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, Phone, User, Users, MessageSquare, Heart, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
 
 interface ParentRecord {
   id: string;
@@ -139,7 +140,15 @@ export default function ParentsList() {
       return;
     }
 
+    const phoneErr = validateEgyptianPhone(editPhone, 'رقم هاتف ولي الأمر', true);
+    if (phoneErr) {
+      setErrorMessage(phoneErr);
+      return;
+    }
+
     if (!selectedParent) return;
+
+    const cleanedPhone = normalizePhoneDigits(editPhone.trim());
 
     // We will update parent name and phone for all students previously linked to this parent
     const studentsList = samsDb.getStudents();
@@ -152,7 +161,7 @@ export default function ParentsList() {
         const updatedStudent: Student = {
           ...student,
           parent_name: editName.trim(),
-          parent_phone: editPhone.trim()
+          parent_phone: cleanedPhone
         };
         const res = samsDb.updateStudent(updatedStudent);
         if (res.success) {
@@ -314,10 +323,10 @@ export default function ParentsList() {
                 <input
                   type="text"
                   value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  placeholder="مثلاً: 01xxxxxxxxx"
-                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C] text-right"
-                  dir="rtl"
+                  onChange={(e) => setEditPhone(normalizePhoneDigits(e.target.value))}
+                  placeholder="مثال: 01012345678"
+                  className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C]"
+                  dir="ltr"
                   required
                 />
               </div>

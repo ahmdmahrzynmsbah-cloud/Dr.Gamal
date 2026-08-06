@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
 
 export default function ClassesManager() {
   const [classes, setClasses] = useState<ClassRoom[]>([]);
@@ -1464,6 +1465,21 @@ export default function ClassesManager() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!newStudentForm.name) return;
+
+                    const parentPhoneErr = validateEgyptianPhone(newStudentForm.parent_phone, 'هاتف ولي الأمر', true);
+                    if (parentPhoneErr) {
+                      setErrorText(parentPhoneErr);
+                      return;
+                    }
+                    const studentPhoneErr = validateEgyptianPhone(newStudentForm.phone, 'هاتف الطالب', false);
+                    if (studentPhoneErr) {
+                      setErrorText(studentPhoneErr);
+                      return;
+                    }
+
+                    const cleanPhone = normalizePhoneDigits(newStudentForm.phone);
+                    const cleanParentPhone = normalizePhoneDigits(newStudentForm.parent_phone);
+
                     const generatedNationalId = "30" + Math.floor(100000000000 + Math.random() * 900000000000);
                     const finalParentName = newStudentForm.parent_name.trim() || deriveParentName(newStudentForm.name);
                     const res = samsDb.addStudent({
@@ -1473,9 +1489,9 @@ export default function ClassesManager() {
                       grade_level: selectedClassForStudents.grade_level || newStudentForm.grade_level,
                       education_type: selectedClassForStudents.education_type || 'عام',
                       birth_date: newStudentForm.birth_date,
-                      phone: newStudentForm.phone,
+                      phone: cleanPhone,
                       parent_name: finalParentName,
-                      parent_phone: newStudentForm.parent_phone,
+                      parent_phone: cleanParentPhone,
                       status: newStudentForm.status
                     });
                     if (res.success && res.student) {
@@ -1502,13 +1518,14 @@ export default function ClassesManager() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
                       <input
                         type="text"
                         value={newStudentForm.phone}
-                        onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
+                        onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
-                        placeholder="01xxxxxxxxx"
+                        placeholder="مثال: 01012345678"
+                        dir="ltr"
                       />
                     </div>
                     <div>
@@ -1517,9 +1534,10 @@ export default function ClassesManager() {
                         type="text"
                         required
                         value={newStudentForm.parent_phone}
-                        onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_phone: e.target.value })}
+                        onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
-                        placeholder="01xxxxxxxxx"
+                        placeholder="مثال: 01012345678"
+                        dir="ltr"
                       />
                     </div>
                   </div>
@@ -1586,7 +1604,25 @@ export default function ClassesManager() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!editingStudent) return;
-                    const res = samsDb.updateStudent(editingStudent);
+
+                    const parentPhoneErr = validateEgyptianPhone(editingStudent.parent_phone || '', 'هاتف ولي الأمر', true);
+                    if (parentPhoneErr) {
+                      setErrorText(parentPhoneErr);
+                      return;
+                    }
+                    const studentPhoneErr = validateEgyptianPhone(editingStudent.phone || '', 'هاتف الطالب', false);
+                    if (studentPhoneErr) {
+                      setErrorText(studentPhoneErr);
+                      return;
+                    }
+
+                    const updatedStudent = {
+                      ...editingStudent,
+                      phone: normalizePhoneDigits(editingStudent.phone || ''),
+                      parent_phone: normalizePhoneDigits(editingStudent.parent_phone || '')
+                    };
+
+                    const res = samsDb.updateStudent(updatedStudent);
                     if (res.success) {
                       setSuccessText(`تم تعديل بيانات الطالب (${editingStudent.name}) بنجاح.`);
                       setEditingStudent(null);
@@ -1610,21 +1646,26 @@ export default function ClassesManager() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
                       <input
                         type="text"
                         value={editingStudent.phone || ''}
-                        onChange={(e) => setEditingStudent({ ...editingStudent, phone: e.target.value })}
+                        onChange={(e) => setEditingStudent({ ...editingStudent, phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        placeholder="مثال: 01012345678"
+                        dir="ltr"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
                       <input
                         type="text"
+                        required
                         value={editingStudent.parent_phone || ''}
-                        onChange={(e) => setEditingStudent({ ...editingStudent, parent_phone: e.target.value })}
+                        onChange={(e) => setEditingStudent({ ...editingStudent, parent_phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
+                        placeholder="مثال: 01012345678"
+                        dir="ltr"
                       />
                     </div>
                   </div>

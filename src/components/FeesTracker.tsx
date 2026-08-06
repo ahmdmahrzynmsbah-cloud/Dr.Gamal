@@ -754,7 +754,7 @@ export default function FeesTracker() {
           <form onSubmit={handleGeneralPaySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 text-right">
             
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الطالب المستفيد *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الطالب المستفيد <span className="text-rose-500">*</span></label>
               <select
                 value={generalPayData.student_id}
                 onChange={(e) => setGeneralPayData({ ...generalPayData, student_id: e.target.value })}
@@ -769,7 +769,7 @@ export default function FeesTracker() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">قيمة المبلغ المدفوع (ج.م) *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">قيمة المبلغ المدفوع (ج.م) <span className="text-rose-500">*</span></label>
               <input
                 type="number"
                 min={10}
@@ -1355,7 +1355,7 @@ export default function FeesTracker() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">قيمة الاشتراك المطلوب تحصيلها (ج.م) *</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">قيمة الاشتراك المطلوب تحصيلها (ج.م) <span className="text-rose-500">*</span></label>
                 <input
                   type="number"
                   min={0}

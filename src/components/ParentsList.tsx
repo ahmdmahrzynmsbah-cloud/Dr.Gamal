@@ -261,7 +261,7 @@ export default function ParentsList() {
             
             {/* Parent Name */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسـم ولي الأمر بالكامل *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسـم ولي الأمر بالكامل <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 value={editName}
@@ -275,7 +275,7 @@ export default function ParentsList() {
 
             {/* Parent Phone */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 value={editPhone}

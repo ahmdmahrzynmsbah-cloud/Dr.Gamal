@@ -1392,7 +1392,7 @@ export default function ClassesManager() {
                   className="p-6 space-y-4 text-right"
                 >
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب الرباعي *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       required
@@ -1415,7 +1415,7 @@ export default function ClassesManager() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر *</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
                       <input
                         type="text"
                         required
@@ -1499,7 +1499,7 @@ export default function ClassesManager() {
                   className="p-6 space-y-4 text-right"
                 >
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       required
@@ -1603,7 +1603,7 @@ export default function ClassesManager() {
                   </p>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">المجموعة الجديدة المستهدفة *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">المجموعة الجديدة المستهدفة <span className="text-rose-500">*</span></label>
                     <select
                       value={targetClassIdForTransfer}
                       onChange={(e) => setTargetClassIdForTransfer(e.target.value)}
@@ -1987,7 +1987,7 @@ export default function ClassesManager() {
           <form onSubmit={handleCreateClass} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">اسم المجموعة الدراسية *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">اسم المجموعة الدراسية <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 value={classForm.name}
@@ -1999,7 +1999,7 @@ export default function ClassesManager() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أيام المجموعة *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أيام المجموعة <span className="text-rose-500">*</span></label>
               <div className="flex flex-wrap gap-1.5">
                 {['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
                   <label key={day} className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md text-[11px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors">
@@ -2035,7 +2035,7 @@ export default function ClassesManager() {
               </div>
             </div>
             <div className="space-y-1 md:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أوقات المجموعة للأيام المحددة *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">أوقات المجموعة للأيام المحددة <span className="text-rose-500">*</span></label>
               {(() => {
                 const selectedDays = classForm.schedule_days ? classForm.schedule_days.split('، ').filter(Boolean) : [];
                 if (selectedDays.length === 0) {
@@ -2115,7 +2115,7 @@ export default function ClassesManager() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">الصف الدراسي *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">الصف الدراسي <span className="text-rose-500">*</span></label>
               <select
                 value={classForm.grade_level}
                 onChange={(e) => setClassForm({ ...classForm, grade_level: e.target.value })}
@@ -2132,7 +2132,7 @@ export default function ClassesManager() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">نوع التعليم *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 font-sans">نوع التعليم <span className="text-rose-500">*</span></label>
               <select
                 value={classForm.education_type}
                 onChange={(e) => setClassForm({ ...classForm, education_type: e.target.value as 'عام' | 'أزهر' })}
@@ -2193,7 +2193,7 @@ export default function ClassesManager() {
                 setDragOverClassIndex(null);
                 setDraggedCardClass(null);
               }}
-              className={`bg-white dark:bg-slate-800 border rounded-2xl p-5 shadow-2xs hover:shadow-md transition-all space-y-4 relative ${
+              className={`bg-white dark:bg-slate-800 border rounded-2xl p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between h-full relative ${
                 isBeingDragged ? 'opacity-40 scale-95 border-dashed border-[#0D5C8C]' : ''
               } ${
                 isDragTarget ? 'ring-2 ring-[#0D5C8C] border-[#0D5C8C] bg-sky-50/50 dark:bg-sky-900/20' : 'border-gray-100 dark:border-gray-700'
@@ -2201,78 +2201,64 @@ export default function ClassesManager() {
               id={`classroom_card_${cls.id}`}
             >
               
-              <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-700/50 pb-3">
-                <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1 rounded-lg transition-colors" title="سحب لتغيير ترتيب المجموعة أو إدراجها بجدول الحصص">
-                  <GripVertical className="w-4.5 h-4.5 text-slate-400 hover:text-[#0D5C8C]" />
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name}</h3>
-                  <button
-                    type="button"
-                    onClick={() => setClassToDelete(cls)}
-                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer mr-1"
-                    title="حذف المجموعة"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold font-sans border ${
-                    (cls.education_type || 'عام') === 'أزهر'
-                      ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                      : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                  }`}>
-                    {(cls.education_type || 'عام') === 'أزهر' ? 'أزهر' : 'عام'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Attributes */}
-              <div className="space-y-2.5 text-xs">
-                
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="flex items-center gap-1.5 font-sans">
-                    <Calendar className="w-4 h-4 text-slate-400" />
-                    مواعيد المجموعة
-                  </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{cls.schedule_days ? formatScheduleDisplay(cls.schedule_time, cls.schedule_days) : 'ـ لم تحدد بعد ـ'}</span>
-                </div>
-
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="flex items-center gap-1.5 font-sans">
-                    <User className="w-4 h-4 text-slate-400" />
-                    عدد الطلاب
-                  </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{students.filter(s => s.class_id === cls.id).length} طالب</span>
-                </div>
-
-                <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="flex items-center gap-1.5 font-sans">
-                    <BookOpen className="w-4 h-4 text-slate-400" />
-                    المحاضرات والمقررات
-                  </span>
-                  <span className="font-bold text-[#0D5C8C]">{currentSubjects.length} مقررات ({totalHours} ساعة/أسبوع)</span>
-                </div>
-
-              </div>
-
-              {/* Subjects in that group list display */}
-              <div className="pt-3 border-t border-slate-50 dark:border-slate-800 space-y-1.5">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">قائمة المواد الدراسية النشطة بالمجموعة:</p>
-                {currentSubjects.length === 0 ? (
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400 italic">يتم تدريس المحاضرات الأساسية حالياً.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1">
-                    {currentSubjects.map(sub => (
-                      <span key={sub.id} className="text-[10px] bg-[#0D5C8C]/5 text-[#0D5C8C] border border-[#0D5C8C]/10 px-2 py-0.5 rounded font-medium">
-                        {sub.name} ({sub.weekly_hours}س)
-                      </span>
-                    ))}
+              <div className="space-y-4 flex-1">
+                <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-700/50 pb-3">
+                  <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1 rounded-lg transition-colors" title="سحب لتغيير ترتيب المجموعة أو إدراجها بجدول الحصص">
+                    <GripVertical className="w-4.5 h-4.5 text-slate-400 hover:text-[#0D5C8C]" />
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setClassToDelete(cls)}
+                      className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded transition-all cursor-pointer mr-1"
+                      title="حذف المجموعة"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                )}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold font-sans">{cls.grade_level}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold font-sans border ${
+                      (cls.education_type || 'عام') === 'أزهر'
+                        ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                        : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    }`}>
+                      {(cls.education_type || 'عام') === 'أزهر' ? 'أزهر' : 'عام'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Attributes */}
+                <div className="space-y-2.5 text-xs">
+                  
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5 font-sans shrink-0">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      مواعيد المجموعة
+                    </span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 text-left mr-2">{cls.schedule_days ? formatScheduleDisplay(cls.schedule_time, cls.schedule_days) : 'ـ لم تحدد بعد ـ'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5 font-sans">
+                      <User className="w-4 h-4 text-slate-400" />
+                      عدد الطلاب
+                    </span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{students.filter(s => s.class_id === cls.id).length} طالب</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                    <span className="flex items-center gap-1.5 font-sans">
+                      <BookOpen className="w-4 h-4 text-slate-400" />
+                      المحاضرات والمقررات
+                    </span>
+                    <span className="font-bold text-[#0D5C8C]">{currentSubjects.length} مقررات ({totalHours} ساعة/أسبوع)</span>
+                  </div>
+
+                </div>
               </div>
 
               {/* Dedicated Group Students Page Trigger Button */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2 mt-4">
                 <button
                   type="button"
                   onClick={() => {

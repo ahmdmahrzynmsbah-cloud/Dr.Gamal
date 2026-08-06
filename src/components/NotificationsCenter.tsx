@@ -731,7 +731,7 @@ export default function NotificationsCenter() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">عنوان التنبيه الرئيسي للتعميم *</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">عنوان التنبيه الرئيسي للتعميم <span className="text-rose-500">*</span></label>
                 <input
                   type="text"
                   value={broadcastFormData.title}
@@ -789,7 +789,7 @@ export default function NotificationsCenter() {
             )}
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">نص الرسالة أو البيان الإخطاري بالكامل *</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">نص الرسالة أو البيان الإخطاري بالكامل <span className="text-rose-500">*</span></label>
               <textarea
                 value={broadcastFormData.message}
                 onChange={(e) => setBroadcastFormData({ ...broadcastFormData, message: e.target.value })}

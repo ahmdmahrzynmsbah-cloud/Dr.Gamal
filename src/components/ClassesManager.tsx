@@ -697,7 +697,7 @@ export default function ClassesManager() {
               </button>
               <button
                 type="button"
-                onClick={() => handleProcessAction("جاري تجهيز التقرير للطباعة...", () => window.print())}
+                onClick={() => window.print()}
                 className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
               >
                 <Printer className="w-4 h-4 text-slate-950" />

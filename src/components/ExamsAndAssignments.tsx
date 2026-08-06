@@ -619,9 +619,7 @@ export default function ExamsAndAssignments() {
   // Trigger print / export PDF of official student grade report sheet
   const triggerPrintPDF = () => {
     if (!activeEvaluationObj) return;
-    handleProcessAction('جاري تجهيز تقرير الدرجات للطباعة...', () => {
-      setShowPrintModal(true);
-    });
+    setShowPrintModal(true);
   };
 
   const old_triggerPrintPDF_ignored = () => {

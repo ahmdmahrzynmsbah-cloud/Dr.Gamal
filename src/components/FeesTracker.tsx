@@ -1515,11 +1515,9 @@ export default function FeesTracker() {
               <button
                 type="button"
                 onClick={() => {
-                  handleProcessAction("جاري تجهيز الإيصال للطباعة...", () => {
-                    setPrintTargetReceipt(selectedReceipt);
-                    setShowPrintModal(true);
-                    setSelectedReceipt(null);
-                  });
+                  setPrintTargetReceipt(selectedReceipt);
+                  setShowPrintModal(true);
+                  setSelectedReceipt(null);
                 }}
                 className="px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl cursor-pointer flex items-center gap-1.5"
               >

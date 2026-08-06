@@ -302,10 +302,8 @@ export default function StudentBarcodes() {
 
   const handlePrintBulk = (selectedStudentsList: Student[]) => {
     if (selectedStudentsList.length === 0) return;
-    handleProcessAction('جاري تجهيز بطاقات الطلاب للطباعة...', () => {
-      setPrintTargetStudents(selectedStudentsList);
-      setShowPrintModal(true);
-    });
+    setPrintTargetStudents(selectedStudentsList);
+    setShowPrintModal(true);
   };
 
   const old_handlePrintBulk_ignored = (selectedStudentsList: Student[]) => {

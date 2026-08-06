@@ -559,12 +559,13 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
                       {classroom?.schedule_time || classroom?.schedule_days || 'غير محدد'}
                     </p>
                   </div>
-                  <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded-lg w-full">
+                  <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 print:bg-white p-2 border border-slate-200 dark:border-slate-700 print:border-black rounded-lg w-full">
                     <Barcode 
                       value={student.registration_id} 
                       width={1.5} 
                       height={40} 
                       showText={true} 
+                      renderType={renderType}
                     />
                   </div>
                 </div>

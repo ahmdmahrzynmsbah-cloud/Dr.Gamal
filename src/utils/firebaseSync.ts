@@ -37,7 +37,10 @@ const ALL_SYNC_KEYS = [
   'sams_v2_assignments',
   'sams_v2_exam_grades',
   'sams_v2_assignment_grades',
-  'sams_admin_notifications'
+  'sams_admin_notifications',
+  'sams_salaries',
+  'sams_system_users',
+  'sams_grade_monthly_fees'
 ];
 
 let isInitialized = false;

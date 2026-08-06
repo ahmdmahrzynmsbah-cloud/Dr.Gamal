@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ClassRoom, Teacher, Subject, CenterScheduleData, Student } from '../types';
-import { samsDb, formatScheduleDisplay } from '../utils/db';
+import { samsDb, formatScheduleDisplay, deriveParentName } from '../utils/db';
 import StudentFullReport from './StudentFullReport';
 import {
   Plus,
@@ -1236,17 +1236,17 @@ export default function ClassesManager() {
               <p className="text-slate-400 text-xs font-sans">يمكنك إضافة طالب جديد مباشرة إلى هذه المجموعة باستخدام الزر بالأعلى.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-right border-collapse min-w-[900px]">
-                <thead className="bg-slate-100/70 text-slate-700 dark:text-slate-200 text-xs font-extrabold border-b border-slate-200 dark:border-slate-700">
+            <div className="overflow-x-auto max-h-[75vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+              <table className="w-full text-right border-collapse min-w-[900px] relative">
+                <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
-                    <th className="p-3.5">رقم القيد</th>
-                    <th className="p-3.5">اسم الطالب</th>
-                    <th className="p-3.5">هاتف الطالب وولي الأمر</th>
-                    <th className="p-3.5 text-center">إحصائيات الحضور %</th>
-                    <th className="p-3.5 text-center">الموقف المالي والرسوم</th>
-                    <th className="p-3.5 text-center">حالة القيد</th>
-                    <th className="p-3.5 text-center">العمليات والإجراءات</th>
+                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم القيد</th>
+                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب</th>
+                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">هاتف الطالب وولي الأمر</th>
+                    <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إحصائيات الحضور %</th>
+                    <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الموقف المالي والرسوم</th>
+                    <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة القيد</th>
+                    <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">العمليات والإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs font-sans text-slate-700 dark:text-slate-200">
@@ -1458,6 +1458,7 @@ export default function ClassesManager() {
                     e.preventDefault();
                     if (!newStudentForm.name) return;
                     const generatedNationalId = "30" + Math.floor(100000000000 + Math.random() * 900000000000);
+                    const finalParentName = newStudentForm.parent_name.trim() || deriveParentName(newStudentForm.name);
                     const res = samsDb.addStudent({
                       name: newStudentForm.name,
                       national_id: generatedNationalId,
@@ -1466,12 +1467,12 @@ export default function ClassesManager() {
                       education_type: selectedClassForStudents.education_type || 'عام',
                       birth_date: newStudentForm.birth_date,
                       phone: newStudentForm.phone,
-                      parent_name: newStudentForm.parent_name,
+                      parent_name: finalParentName,
                       parent_phone: newStudentForm.parent_phone,
                       status: newStudentForm.status
                     });
                     if (res.success && res.student) {
-                      setSuccessText(`تم إضافة الطالب (${res.student.name}) برقم قيد (${res.student.registration_id}) بنجاح!`);
+                      setSuccessText(`تم إضافة الطالب (${res.student.name}) برقم قيد (${res.student.registration_id}) وولى أمره (${res.student.parent_name}) بنجاح!`);
                       setShowAddStudentModal(false);
                       loadData();
                     } else {
@@ -1517,13 +1518,15 @@ export default function ClassesManager() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم ولي الأمر</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      اسم ولي الأمر <span className="text-slate-400 font-normal">(يُستخرج أوتوماتيكياً إذا تُرك فارغاً)</span>
+                    </label>
                     <input
                       type="text"
                       value={newStudentForm.parent_name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_name: e.target.value })}
                       className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
-                      placeholder="اسم ولي الأمر..."
+                      placeholder={newStudentForm.name.trim() ? `تلقائياً: ${deriveParentName(newStudentForm.name)}` : "أدخل اسم ولي الأمر..."}
                     />
                   </div>
 

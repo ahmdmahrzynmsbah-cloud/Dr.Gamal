@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, User, Plus, Search, Trash2, Calendar, FileText, CheckCircle } from 'lucide-react';
-import { addAuditLog } from '../utils/db';
+import { addAuditLog, samsDb } from '../utils/db';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
 interface UserData {
@@ -47,10 +47,7 @@ export default function SalariesManager() {
         setSecretaries(secs);
       }
       
-      const paymentsSaved = localStorage.getItem('sams_salaries');
-      if (paymentsSaved) {
-        setPayments(JSON.parse(paymentsSaved));
-      }
+      setPayments(samsDb.getSalaries());
     } catch (e) {
       console.error(e);
     }
@@ -79,7 +76,7 @@ export default function SalariesManager() {
 
     const updatedPayments = [newPayment, ...payments];
     setPayments(updatedPayments);
-    localStorage.setItem('sams_salaries', JSON.stringify(updatedPayments));
+    samsDb.saveSalaries(updatedPayments);
     
     addAuditLog('INSERT', 'salaries', newPayment.id, `صرف راتب بقيمة ${newPayment.amount} للسكرتيرة: ${newPayment.secretary_name}`);
     
@@ -89,11 +86,8 @@ export default function SalariesManager() {
 
   const confirmDelete = () => {
     if (!paymentToDelete) return;
-    const paymentId = paymentToDelete.id;
-    const updated = payments.filter(p => p.id !== paymentId);
-    setPayments(updated);
-    localStorage.setItem('sams_salaries', JSON.stringify(updated));
-    addAuditLog('DELETE', 'salaries', paymentId, `حذف سجل راتب بقيمة ${paymentToDelete.amount} للسكرتيرة: ${paymentToDelete.secretary_name}`);
+    samsDb.deleteSalaryPayment(paymentToDelete.id);
+    loadData();
     setPaymentToDelete(null);
   };
 
@@ -210,16 +204,16 @@ export default function SalariesManager() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+          <table className="w-full text-right text-sm relative border-collapse">
+            <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
               <tr>
-                <th className="p-4">السكرتيرة</th>
-                <th className="p-4">المبلغ</th>
-                <th className="p-4">عن شهر</th>
-                <th className="p-4">التاريخ</th>
-                <th className="p-4">ملاحظات</th>
-                <th className="p-4 text-center">إجراءات</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">السكرتيرة</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">عن شهر</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التاريخ</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">ملاحظات</th>
+                <th className="p-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

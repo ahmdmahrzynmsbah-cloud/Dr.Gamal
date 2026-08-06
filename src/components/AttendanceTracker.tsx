@@ -402,15 +402,15 @@ export default function AttendanceTracker() {
           </div>
 
           {/* Students Table */}
-          <div className="flex-1 overflow-auto border border-slate-100 dark:border-slate-700 rounded-xl">
-            <table className="w-full text-sm text-right">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold sticky top-0 shadow-sm">
+          <div className="flex-1 overflow-auto max-h-[65vh] border border-slate-100 dark:border-slate-700 rounded-xl">
+            <table className="w-full text-sm text-right relative border-collapse">
+              <thead className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black sticky top-0 z-20 border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
-                  <th className="px-4 py-3">الطالب</th>
-                  <th className="px-4 py-3">رقم القيد</th>
+                  <th className="px-4 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">الطالب</th>
+                  <th className="px-4 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">رقم القيد</th>
                   
-                  <th className="px-4 py-3 text-center">حالة اليوم</th>
-                  <th className="px-4 py-3 text-center">إجراءات</th>
+                  <th className="px-4 py-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">حالة اليوم</th>
+                  <th className="px-4 py-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">إجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">

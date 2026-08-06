@@ -551,15 +551,15 @@ export default function NotificationsCenter() {
             </div>
 
             {/* Parents List Table */}
-            <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl">
-              <table className="min-w-full text-right" dir="rtl">
-                <thead className="bg-[#0D5C8C]/5 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+              <table className="min-w-full text-right relative border-collapse" dir="rtl">
+                <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
-                    <th className="p-3">اسم ولي الأمر</th>
-                    <th className="p-3">الطالب التابع</th>
-                    <th className="p-3">رقم الهاتف المسجل</th>
-                    <th className="p-3">حالة إرسال الـ SMS للغياب</th>
-                    <th className="p-3 text-left">الإجراء المباشر</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم ولي الأمر</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الطالب التابع</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الهاتف المسجل</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة إرسال الـ SMS للغياب</th>
+                    <th className="p-3 text-left bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الإجراء المباشر</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">

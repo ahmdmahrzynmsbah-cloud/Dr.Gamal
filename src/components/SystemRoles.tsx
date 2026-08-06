@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, User, Plus, Check, X, Trash2, Edit2, Lock } from 'lucide-react';
+import { samsDb } from '../utils/db';
 
 interface SystemUser {
   id: string;
@@ -61,22 +62,22 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
   }, [successMsg]);
 
   const loadUsers = () => {
-    const saved = localStorage.getItem('sams_system_users');
-    if (saved) {
-      setUsers(JSON.parse(saved));
+    const saved = samsDb.getSystemUsers();
+    if (saved && saved.length > 0) {
+      setUsers(saved);
     } else {
       const defaultUsers: SystemUser[] = [
         { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
         { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
       ];
       setUsers(defaultUsers);
-      localStorage.setItem('sams_system_users', JSON.stringify(defaultUsers));
+      samsDb.saveSystemUsers(defaultUsers);
     }
   };
 
   const saveUsers = (newUsers: SystemUser[]) => {
     setUsers(newUsers);
-    localStorage.setItem('sams_system_users', JSON.stringify(newUsers));
+    samsDb.saveSystemUsers(newUsers);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -257,15 +258,16 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
       )}
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        <table className="w-full text-right text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 text-xs font-bold">
-            <tr>
-              <th className="p-4">الاسم</th>
-              <th className="p-4">نوع الصلاحية</th>
-              <th className="p-4">كلمة المرور</th>
-              <th className="p-4 text-center">الإجراءات</th>
-            </tr>
-          </thead>
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
+          <table className="w-full text-right text-sm relative border-collapse">
+            <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
+              <tr>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الاسم</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">نوع الصلاحية</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">كلمة المرور</th>
+                <th className="p-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الإجراءات</th>
+              </tr>
+            </thead>
           <tbody className="divide-y divide-gray-100">
             {users.map(u => (
               <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50">
@@ -310,6 +312,7 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
           </tbody>
         </table>
       </div>
+    </div>
 
       {userToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">

@@ -363,15 +363,15 @@ export default function ParentsList() {
         </div>
 
         {/* Database Grid */}
-        <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl">
-          <table className="min-w-full text-right" dir="rtl">
-            <thead className="bg-[#0D5C8C]/5 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+        <div className="overflow-x-auto max-h-[65vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+          <table className="min-w-full text-right relative border-collapse" dir="rtl">
+            <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
               <tr>
-                <th className="p-4">اسم ولي الأمر</th>
-                <th className="p-4">هاتف التواصل للطوارئ</th>
-                <th className="p-4">الطلاب التابعين (الأبناء)</th>
-                <th className="p-4">حالة الحضور الإجمالية للأبناء</th>
-                <th className="p-4 text-left">التحكم والإجراءات</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم ولي الأمر</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">هاتف التواصل للطوارئ</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الطلاب التابعين (الأبناء)</th>
+                <th className="p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة الحضور الإجمالية للأبناء</th>
+                <th className="p-4 text-left bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التحكم والإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs">

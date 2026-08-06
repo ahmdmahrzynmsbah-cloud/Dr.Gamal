@@ -53,7 +53,7 @@ function loadFromStorage<T>(key: string, defaultVal: T): T {
   }
 }
 
-function saveToStorage<T>(key: string, data: T) {
+export function saveToStorage<T>(key: string, data: T) {
   localStorage.setItem(key, JSON.stringify(data));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key } }));
@@ -106,6 +106,27 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
   return newLog;
 }
 
+export function deriveParentName(studentName: string): string {
+  const trimmed = (studentName || '').trim();
+  if (!trimmed) return '';
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return trimmed;
+
+  // Handle compound first names in Arabic (e.g., "عبد الرحمن", "عبد الله", "سيف الدين")
+  if (parts.length >= 3) {
+    const p0 = parts[0];
+    const p1 = parts[1];
+    if (['عبد', 'أبو', 'ابو', 'أم', 'ام'].includes(p0)) {
+      return parts.slice(2).join(' ');
+    }
+    if (['الدين', 'الإسلام', 'الاسلام'].includes(p1)) {
+      return parts.slice(2).join(' ');
+    }
+  }
+
+  return parts.slice(1).join(' ');
+}
+
 export const samsDb = {
   // SET CURRENT USER ROLE
   getCurrentRole(): 'admin' | 'principal' | 'teacher' | 'parent' | 'student' {
@@ -127,9 +148,14 @@ export const samsDb = {
   addStudent(student: Omit<Student, 'id' | 'registration_id' | 'created_at'>): { success: boolean; error?: string; student?: Student } {
     const students = this.getStudents();
 
+    const parentNameFinal = (student.parent_name && student.parent_name.trim())
+      ? student.parent_name.trim()
+      : deriveParentName(student.name);
+
     const regId = String(new Date().getFullYear()) + String(students.length + 10001).substring(1);
     const newStudent: Student = {
       ...student,
+      parent_name: parentNameFinal,
       id: `s-${Date.now()}`,
       registration_id: regId,
       created_at: getCurrentTimestamp()
@@ -472,6 +498,20 @@ export const samsDb = {
     return newPay;
   },
 
+  deleteFeePayment(id: string): boolean {
+    const list = this.getFees();
+    const paymentObj = list.find(f => f.id === id);
+    const receiptNum = paymentObj ? paymentObj.receipt_number : id;
+    const filtered = list.filter(f => f.id !== id);
+    saveToStorage(KEYS.FEES, filtered);
+    
+    const students = this.getStudents();
+    const studentObj = paymentObj ? students.find(s => s.id === paymentObj.student_id) : null;
+    const studentName = studentObj ? studentObj.name : 'طالب';
+    addAuditLog('DELETE', 'fees', id, `حذف وإلغاء إيصال السداد رقم ${receiptNum} للطالب (${studentName})`);
+    return true;
+  },
+
   // NOTIFICATIONS
   getNotifications(): SystemNotification[] {
     return loadFromStorage<SystemNotification[]>(KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
@@ -589,6 +629,11 @@ export const samsDb = {
     const examName = examObj ? examObj.name : id;
     const filtered = list.filter(e => e.id !== id);
     saveToStorage(KEYS.EXAMS, filtered);
+
+    // Clean exam grades
+    const examGrades = this.getExamGrades().filter(g => g.exam_id !== id);
+    saveToStorage(KEYS.EXAM_GRADES, examGrades);
+
     addAuditLog('DELETE', 'exams', id, `حذف الامتحان: ${examName}`);
   },
 
@@ -616,6 +661,11 @@ export const samsDb = {
     const title = assignObj ? assignObj.title : id;
     const filtered = list.filter(a => a.id !== id);
     saveToStorage(KEYS.ASSIGNMENTS, filtered);
+
+    // Clean assignment grades
+    const assignGrades = this.getAssignmentGrades().filter(g => g.assignment_id !== id);
+    saveToStorage(KEYS.ASSIGNMENT_GRADES, assignGrades);
+
     addAuditLog('DELETE', 'assignments', id, `حذف الواجب: ${title}`);
   },
 
@@ -741,6 +791,48 @@ export const samsDb = {
 
     addAuditLog('UPDATE', 'students', keepId, `تم دمج بيانات الطلاب وحذف النسخ المكررة (${deleteIds.join(', ')})`);
   },
+
+  // SALARIES CRUD
+  getSalaries(): any[] {
+    return loadFromStorage<any[]>('sams_salaries', []);
+  },
+
+  saveSalaries(salaries: any[]) {
+    saveToStorage('sams_salaries', salaries);
+  },
+
+  deleteSalaryPayment(id: string): boolean {
+    const list = this.getSalaries();
+    const filtered = list.filter(p => p.id !== id);
+    saveToStorage('sams_salaries', filtered);
+    addAuditLog('DELETE', 'salaries', id, `حذف سجل راتب`);
+    return true;
+  },
+
+  // SYSTEM USERS CRUD
+  getSystemUsers(): any[] {
+    return loadFromStorage<any[]>('sams_system_users', []);
+  },
+
+  saveSystemUsers(users: any[]) {
+    saveToStorage('sams_system_users', users);
+  },
+
+  // GRADE MONTHLY FEES CRUD
+  getGradeMonthlyFees(): Record<string, number> {
+    return loadFromStorage<Record<string, number>>('sams_grade_monthly_fees', {
+      'الأول الإعدادي': 200,
+      'الثاني الإعدادي': 200,
+      'الثالث الإعدادي': 220,
+      'الأول الثانوي': 250,
+      'الثاني الثانوي': 280,
+      'الثالث الثانوي': 350
+    });
+  },
+
+  saveGradeMonthlyFees(fees: Record<string, number>) {
+    saveToStorage('sams_grade_monthly_fees', fees);
+  }
 };
 
 export function formatScheduleDisplay(scheduleTime?: string, scheduleDays?: string): string {

@@ -59,7 +59,7 @@ import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'motion/react';
 
-import { samsDb } from './utils/db';
+import { samsDb, saveToStorage } from './utils/db';
 import { checkFeeDueDatesBackgroundService } from './utils/feeReminderService';
 
 type TabType = 'dashboard' | 'students' | 'parents' | 'barcodes' | 'classes' | 'attendance' | 'fees' | 'notifications' | 'roles' | 'audit' | 'settings' | 'exams' | 'salaries' | 'privacy';
@@ -207,7 +207,7 @@ export default function App() {
       return n;
     });
     if (updatedNotis) {
-      localStorage.setItem('sams_admin_notifications', JSON.stringify(notisData));
+      saveToStorage('sams_admin_notifications', notisData);
     }
 
     // Load initially

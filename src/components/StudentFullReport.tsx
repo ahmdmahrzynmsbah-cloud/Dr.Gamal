@@ -306,16 +306,16 @@ export default function StudentFullReport({ student, onClose }: Props) {
               سجل المدفوعات المالية
             </h3>
             {fees.length > 0 ? (
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl">
-                <table className="w-full text-sm text-right">
-                  <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+              <div className="overflow-x-auto max-h-[50vh] overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs">
+                <table className="w-full text-sm text-right relative border-collapse">
+                  <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                     <tr>
-                      <th className="px-4 py-3">التاريخ</th>
-                      <th className="px-4 py-3">المبلغ</th>
-                      <th className="px-4 py-3">النوع</th>
-                      <th className="px-4 py-3">البيان/الشهر</th>
-                      <th className="px-4 py-3">رقم الإيصال</th>
-                      <th className="px-4 py-3">طريقة الدفع</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التاريخ</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النوع</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">البيان/الشهر</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
+                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">طريقة الدفع</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">

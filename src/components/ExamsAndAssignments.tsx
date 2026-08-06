@@ -465,9 +465,6 @@ export default function ExamsAndAssignments() {
   const confirmDeleteExam = () => {
     if (examToDelete) {
       samsDb.deleteExam(examToDelete.id);
-      // Clean grades as well (optional but clean database)
-      const list = samsDb.getExamGrades().filter(g => g.exam_id !== examToDelete.id);
-      localStorage.setItem('sams_v2_exam_grades', JSON.stringify(list));
       
       setSuccessMsg('تم حذف الامتحان وسجل درجاته بنجاح!');
       setExamToDelete(null);
@@ -531,8 +528,6 @@ export default function ExamsAndAssignments() {
   const confirmDeleteAssignment = () => {
     if (assignmentToDelete) {
       samsDb.deleteAssignment(assignmentToDelete.id);
-      const list = samsDb.getAssignmentGrades().filter(g => g.assignment_id !== assignmentToDelete.id);
-      localStorage.setItem('sams_v2_assignment_grades', JSON.stringify(list));
 
       setSuccessMsg('تم حذف الواجب وسجلات الطلاب بنجاح!');
       setAssignmentToDelete(null);
@@ -1470,21 +1465,21 @@ export default function ExamsAndAssignments() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl">
-                <table className="min-w-full text-right" dir="rtl">
-                  <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+              <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+                <table className="min-w-full text-right relative border-collapse" dir="rtl">
+                  <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                     <tr>
-                      <th className="p-3">رقم القيد</th>
-                      <th className="p-3">اسم الطالب وبياناته</th>
-                      <th className="p-3 text-center w-[180px]">
+                      <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم القيد</th>
+                      <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب وبياناته</th>
+                      <th className="p-3 text-center w-[180px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
                         {gradingType === 'exam' ? 'الحضور والغياب' : 'حالة تسليم الواجب'}
                       </th>
-                      <th className="p-3 text-center w-[180px]">
+                      <th className="p-3 text-center w-[180px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
                         الدرجة المستحقة (من {activeEvaluationObj.max_score})
                       </th>
-                      <th className="p-3">ملاحظات خاصة برصد الطالب</th>
-                      <th className="p-3 text-center w-[90px]">النسبة %</th>
-                      <th className="p-3 text-center w-[160px]">تنبيهات الغياب (واتساب)</th>
+                      <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">ملاحظات خاصة برصد الطالب</th>
+                      <th className="p-3 text-center w-[90px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النسبة %</th>
+                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">تنبيهات الغياب (واتساب)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">

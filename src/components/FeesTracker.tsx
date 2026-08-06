@@ -270,7 +270,7 @@ export default function FeesTracker() {
   const handleSaveGradeFee = (gradeLevel: string, amount: number) => {
     const updated = { ...gradeFees, [gradeLevel]: amount };
     setGradeFees(updated);
-    localStorage.setItem('sams_grade_monthly_fees', JSON.stringify(updated));
+    samsDb.saveGradeMonthlyFees(updated);
     setSuccessInfo(`تم تحديث قيمة اشتراك الصف بنجاح لتصبح: ${amount} ج.م`);
     playSuccessBeep();
   };
@@ -364,18 +364,10 @@ export default function FeesTracker() {
   const confirmDeletePayment = () => {
     if (!paymentToDelete) return;
 
-    const fees = samsDb.getFees();
-    const paymentId = paymentToDelete.id;
-
-    const filtered = fees.filter(f => f.id !== paymentId);
-    localStorage.setItem('sams_v2_fees', JSON.stringify(filtered));
+    const receiptNumber = paymentToDelete.receipt_number;
+    samsDb.deleteFeePayment(paymentToDelete.id);
     
-    // Log audit
-    const student = students.find(s => s.id === paymentToDelete.student_id);
-    const studentName = student ? student.name : 'طالب';
-    addAuditLog('DELETE', 'fees', paymentId, `حذف وإلغاء إيصال السداد رقم ${paymentToDelete.receipt_number} بقيمة ${paymentToDelete.amount} ج.م للطالب (${studentName})`);
-    
-    setSuccessInfo(`تم إلغاء وحذف الإيصال رقم ${paymentToDelete.receipt_number} بنجاح.`);
+    setSuccessInfo(`تم إلغاء وحذف الإيصال رقم ${receiptNumber} بنجاح.`);
     setPaymentToDelete(null);
     loadData();
   };
@@ -1011,15 +1003,15 @@ export default function FeesTracker() {
               </div>
             </div>
 
-            <div className="overflow-x-auto border border-gray-50 rounded-xl">
-              <table className="min-w-full text-right" dir="rtl">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+              <table className="min-w-full text-right relative border-collapse" dir="rtl">
+                <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
-                    <th className="p-3 w-20">كود الطالب</th>
-                    <th className="p-3">اسم الطالب</th>
-                    <th className="p-3">حالة الشهور الفائتة ({timelineMonths.length} شهور)</th>
-                    <th className="p-3 text-center">اشتراك شهر {selectedMonth} الحالي</th>
-                    <th className="p-3 text-left">الإجراء المالي الفوري</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 w-20 whitespace-nowrap">كود الطالب</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة الشهور الفائتة ({timelineMonths.length} شهور)</th>
+                    <th className="p-3 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اشتراك شهر {selectedMonth} الحالي</th>
+                    <th className="p-3 text-left bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الإجراء المالي الفوري</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200 font-sans">
@@ -1211,18 +1203,18 @@ export default function FeesTracker() {
             <span className="text-xxs font-bold text-slate-400">إجمالي السجلات المستردة: {payments.length} إيصالات</span>
           </div>
 
-          <div className="overflow-x-auto border border-gray-50 rounded-xl">
-            <table className="min-w-full text-right" dir="rtl">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 text-xs font-bold border-b border-gray-100 dark:border-gray-700">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+            <table className="min-w-full text-right relative border-collapse" dir="rtl">
+              <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
-                  <th className="p-3">رقم الإيصال</th>
-                  <th className="p-3">اسم الطالب</th>
-                  <th className="p-3">نوع البند الرسومي</th>
-                  <th className="p-3 text-center">تفصيل الاشتراك</th>
-                  <th className="p-3 text-center">تاريخ السداد</th>
-                  <th className="p-3">المبلغ المحصل</th>
-                  <th className="p-3">طريقة السداد</th>
-                  <th className="p-3 text-left">التحكم والطباعة</th>
+                  <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
+                  <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب</th>
+                  <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">نوع البند الرسومي</th>
+                  <th className="p-3 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">تفصيل الاشتراك</th>
+                  <th className="p-3 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">تاريخ السداد</th>
+                  <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ المحصل</th>
+                  <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">طريقة السداد</th>
+                  <th className="p-3 text-left bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التحكم والطباعة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200 font-sans">

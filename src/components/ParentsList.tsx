@@ -325,14 +325,17 @@ export default function ParentsList() {
 
               {/* Parent Phone */}
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) <span className="text-rose-500">*</span></label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">رقم هاتف التواصل (واتساب / إشعارات) <span className="text-rose-500">*</span></label>
+                  <button type="button" onClick={() => setEditPhone('لا يوجد')} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                </div>
                 <input
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(normalizePhoneDigits(e.target.value))}
                   placeholder="مثال: 01012345678"
                   className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-lg focus:outline-hidden focus:border-[#0D5C8C]"
-                  dir="ltr"
+                  dir="auto"
                   required
                 />
               </div>

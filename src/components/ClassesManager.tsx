@@ -1524,18 +1524,24 @@ export default function ClassesManager() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                        <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                      </div>
                       <input
                         type="text"
                         value={newStudentForm.phone}
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="مثال: 01012345678"
-                        dir="ltr"
+                        dir="auto"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
+                        <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                      </div>
                       <input
                         type="text"
                         required
@@ -1543,7 +1549,7 @@ export default function ClassesManager() {
                         onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
                         placeholder="مثال: 01012345678"
-                        dir="ltr"
+                        dir="auto"
                       />
                     </div>
                   </div>
@@ -1658,18 +1664,24 @@ export default function ClassesManager() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                        <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                      </div>
                       <input
                         type="text"
                         value={editingStudent.phone || ''}
                         onChange={(e) => setEditingStudent({ ...editingStudent, phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                         placeholder="مثال: 01012345678"
-                        dir="ltr"
+                        dir="auto"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
+                        <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                      </div>
                       <input
                         type="text"
                         required
@@ -1677,7 +1689,7 @@ export default function ClassesManager() {
                         onChange={(e) => setEditingStudent({ ...editingStudent, parent_phone: normalizePhoneDigits(e.target.value) })}
                         className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                         placeholder="مثال: 01012345678"
-                        dir="ltr"
+                        dir="auto"
                       />
                     </div>
                   </div>

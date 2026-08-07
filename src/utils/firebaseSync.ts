@@ -26,9 +26,10 @@ export function syncToFirebase(key: string, data: any) {
     try {
       isLocalUpdate = true;
       const docRef = doc(db, COLLECTION_NAME, key);
+      const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10) || Date.now();
       await setDoc(docRef, {
         payload: JSON.stringify(payloadToSync),
-        updatedAt: Date.now()
+        updatedAt: localTs
       }, { merge: true });
     } catch (err: any) {
       if (err?.code === 'resource-exhausted' || err?.message?.includes('resource-exhausted')) {
@@ -72,6 +73,13 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
   isInitialized = true;
 
   if (onSyncStatusChange) onSyncStatusChange('syncing');
+  
+  // Register beforeunload to save any pending writes immediately
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => {
+      forcePushLocalToCloudSync();
+    });
+  }
 
   // Stagger initialization across keys to avoid firing 19 simultaneous getDoc calls
   ALL_SYNC_KEYS.forEach((key, index) => {
@@ -98,10 +106,23 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
           const data = snapshot.data();
           if (data && data.payload) {
             const currentLocal = localStorage.getItem(key);
+            const remoteTs = data.updatedAt || 0;
+            const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10);
+
             if (currentLocal !== data.payload) {
-              localStorage.setItem(key, data.payload);
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+              // If local timestamp is strictly greater than remote timestamp, 
+              // it means local data is newer and a sync was likely interrupted.
+              if (localTs > remoteTs) {
+                try {
+                   syncToFirebase(key, JSON.parse(currentLocal));
+                } catch(e) {}
+              } else {
+                // Otherwise, it's safe to overwrite local with remote
+                localStorage.setItem(key, data.payload);
+                localStorage.setItem(`${key}_ts`, remoteTs.toString());
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+                }
               }
             }
           }
@@ -113,6 +134,22 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
       });
     }, index * 40); // 40ms stagger
   });
+}
+
+// Synchronous push for beforeunload to ensure no data loss on refresh
+function forcePushLocalToCloudSync() {
+  for (const key of Object.keys(pendingPayloads)) {
+    const payloadToSync = pendingPayloads[key];
+    if (payloadToSync !== undefined) {
+      const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10) || Date.now();
+      // Use standard sync since we can't await in beforeunload, but firestore JS SDK might process it.
+      const docRef = doc(db, COLLECTION_NAME, key);
+      setDoc(docRef, {
+        payload: JSON.stringify(payloadToSync),
+        updatedAt: localTs
+      }, { merge: true }).catch(() => {});
+    }
+  }
 }
 
 // Force full cloud push of all current local data

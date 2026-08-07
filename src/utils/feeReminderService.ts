@@ -117,12 +117,22 @@ export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
     let newNotisCount = 0;
 
     for (const student of students) {
-      // Check if student has paid tuition for the target month
-      const isPaid = payments.some(
-        p => p.student_id === student.id && p.category === 'tuition' && p.month === activeMonth
-      );
+      // Calculate how many 30-day cycles (months) the student has completed since registration
+      const createdAt = new Date(student.created_at || new Date().toISOString());
+      const now = new Date();
+      const daysSinceRegistration = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      const finishedMonths = Math.floor(daysSinceRegistration / 30);
+      
+      // Count total tuition payments made by the student
+      const paidMonths = payments.filter(
+        p => p.student_id === student.id && p.category === 'tuition'
+      ).length;
 
-      if (!isPaid) {
+      // The student is due for a notification ONLY if they have finished more months than they have paid for.
+      // This ensures they are not notified until their personal month (calculated from registration date) actually finishes.
+      const isDue = finishedMonths > paidMonths;
+
+      if (isDue) {
         unpaidStudents.push(student);
 
         // Check if an automated reminder notification already exists for this student & month

@@ -55,6 +55,7 @@ function loadFromStorage<T>(key: string, defaultVal: T): T {
 
 export function saveToStorage<T>(key: string, data: T) {
   localStorage.setItem(key, JSON.stringify(data));
+  localStorage.setItem(`${key}_ts`, Date.now().toString());
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key } }));
   }

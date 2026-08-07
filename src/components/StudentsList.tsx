@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight } from "lucide-react";
+import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight, Info } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -682,6 +682,14 @@ export default function StudentsList() {
                       </button>
                     </div>
                     <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX أو لا يوجد" dir="auto" />
+                    {formData.phone !== 'لا يوجد' && (
+                      <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                        <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                        <p className="text-[10px] text-slate-500 leading-relaxed">
+                          إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setFormData(prev => ({ ...prev, phone: 'لا يوجد' }))} className="font-bold text-[#1A7FAA] hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -766,6 +774,14 @@ export default function StudentsList() {
                       </button>
                     </div>
                     <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX أو اختر لا يوجد" dir="auto" />
+                    {formData.parent_phone !== 'لا يوجد' && (
+                      <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                        <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                        <p className="text-[10px] text-slate-500 leading-relaxed">
+                          إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setFormData(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="font-bold text-[#1A7FAA] hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

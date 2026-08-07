@@ -44,7 +44,8 @@ import {
   Clock,
   Zap,
   GripVertical,
-  Move
+  Move,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -1524,10 +1525,7 @@ export default function ClassesManager() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
-                        <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
-                      </div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
                       <input
                         type="text"
                         value={newStudentForm.phone}
@@ -1536,12 +1534,17 @@ export default function ClassesManager() {
                         placeholder="مثال: 01012345678"
                         dir="auto"
                       />
+                      {newStudentForm.phone !== 'لا يوجد' && (
+                        <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                          <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, phone: 'لا يوجد' }))} className="font-bold text-[#0D5C8C] dark:text-sky-400 hover:underline">هنا</button> لتسجيله كـ "لا يوجد"
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
-                        <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
-                      </div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
                       <input
                         type="text"
                         required
@@ -1551,6 +1554,14 @@ export default function ClassesManager() {
                         placeholder="مثال: 01012345678"
                         dir="auto"
                       />
+                      {newStudentForm.parent_phone !== 'لا يوجد' && (
+                        <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                          <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setNewStudentForm(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="font-bold text-[#0D5C8C] dark:text-sky-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1676,6 +1687,14 @@ export default function ClassesManager() {
                         placeholder="مثال: 01012345678"
                         dir="auto"
                       />
+                      {editingStudent.phone !== 'لا يوجد' && (
+                        <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                          <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, phone: 'لا يوجد' }))} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1">
@@ -1691,6 +1710,14 @@ export default function ClassesManager() {
                         placeholder="مثال: 01012345678"
                         dir="auto"
                       />
+                      {editingStudent.parent_phone !== 'لا يوجد' && (
+                        <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                          <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 

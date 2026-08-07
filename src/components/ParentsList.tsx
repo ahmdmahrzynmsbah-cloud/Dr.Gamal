@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, Phone, User, Users, MessageSquare, Heart, Sparkles, Send } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, Phone, User, Users, MessageSquare, Heart, Sparkles, Send, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
@@ -338,6 +338,14 @@ export default function ParentsList() {
                   dir="auto"
                   required
                 />
+                {editPhone !== 'لا يوجد' && (
+                  <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
+                    <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                      إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditPhone('لا يوجد')} className="font-bold text-[#0D5C8C] hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="md:col-span-2 flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">

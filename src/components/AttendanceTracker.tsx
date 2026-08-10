@@ -42,6 +42,50 @@ const playErrorBuzzer = () => {
   } catch (e) {}
 };
 
+const arDayMap: Record<string, number> = {
+  'الأحد': 0,
+  'الإثنين': 1,
+  'الثلاثاء': 2,
+  'الأربعاء': 3,
+  'الخميس': 4,
+  'الجمعة': 5,
+  'السبت': 6
+};
+
+const getMonthlyScheduleDates = (dateStr: string, classScheduleDays: string | undefined) => {
+  if (!classScheduleDays) return [];
+  
+  const scheduleIndices = classScheduleDays
+    .split('، ')
+    .map(d => d.trim())
+    .filter(d => arDayMap[d] !== undefined)
+    .map(d => arDayMap[d]);
+
+  if (scheduleIndices.length === 0) return [];
+
+  const baseDate = new Date(dateStr);
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+
+  const dates = [];
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = new Date(year, month, i);
+    if (scheduleIndices.includes(d.getDay())) {
+      dates.push({
+        dateStr: [
+          year,
+          String(month + 1).padStart(2, '0'),
+          String(i).padStart(2, '0')
+        ].join('-'),
+        dayName: new Intl.DateTimeFormat('ar-EG', { weekday: 'short' }).format(d),
+        dayNum: i
+      });
+    }
+  }
+  return dates;
+};
+
 export default function AttendanceTracker() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
@@ -475,61 +519,71 @@ export default function AttendanceTracker() {
       </div>{/* PRINTABLE ATTENDANCE SHEET */}
       <div id="printable-attendance-sheet" className="hidden print:block w-full bg-white text-black">
         {/* Header */}
-        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6" dir="rtl">
+        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-4" dir="rtl">
           <div>
-            <h1 className="text-2xl font-black text-slate-900">كشف غياب وحضور المجموعات</h1>
-            <p className="text-sm font-bold text-slate-600 mt-1">تاريخ اليوم: {new Date(selectedDate).toLocaleDateString('ar-EG')}</p>
+            <h1 className="text-xl font-black text-slate-900">سجل الغياب والحضور الشهري</h1>
+            <p className="text-xs font-bold text-slate-600 mt-1">
+              عن شهر: {new Date(selectedDate).toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })}
+            </p>
           </div>
           <div className="text-left">
-            <div className="text-xl font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300">
+            <div className="text-lg font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300">
               {classes.find(c => c.id === selectedClass)?.name || ''}
             </div>
+            <p className="text-[10px] font-bold text-slate-500 mt-1">
+              مواعيد المجموعة: {classes.find(c => c.id === selectedClass)?.schedule_days || ''}
+            </p>
           </div>
         </div>
 
         {/* Table */}
-        <table className="w-full text-right border-collapse" dir="rtl">
+        <table className="w-full text-right border-collapse text-[11px]" dir="rtl">
           <thead>
             <tr className="bg-slate-100 border-b-2 border-slate-800">
-              <th className="py-3 px-4 font-bold text-slate-900">اسم الطالب</th>
-              <th className="py-3 px-4 font-bold text-slate-900">كود الطالب</th>
-                            <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">حاضر</th>
-              <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">غائب</th>
-              <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">مستأذن</th>
+              <th className="py-2 px-2 font-bold text-slate-900 border border-slate-300 w-8 text-center">م</th>
+              <th className="py-2 px-2 font-bold text-slate-900 border border-slate-300 min-w-[150px]">اسم الطالب</th>
+              {(() => {
+                const classObj = classes.find(c => c.id === selectedClass);
+                const monthlyDates = getMonthlyScheduleDates(selectedDate, classObj?.schedule_days);
+                return monthlyDates.map((md, idx) => (
+                  <th key={idx} className="py-1 px-0 font-bold text-slate-900 border border-slate-300 text-center w-8">
+                    <div className="text-[9px] text-slate-500">{md.dayName}</div>
+                    <div>{md.dayNum}</div>
+                  </th>
+                ));
+              })()}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-300">
             {filteredStudents.length > 0 ? (
-              filteredStudents.map(student => {
-                const studentAtt = attendance.find(a => a.student_id === student.id && a.date === selectedDate);
-                const status = studentAtt ? studentAtt.status : 'pending';
-                const classObj = classes.find(c => c.id === student.class_id);
-
+              filteredStudents.map((student, sIdx) => {
+                const classObj = classes.find(c => c.id === selectedClass);
+                const monthlyDates = getMonthlyScheduleDates(selectedDate, classObj?.schedule_days);
+                
                 return (
                   <tr key={student.id}>
-                    <td className="py-2 px-4 font-bold text-slate-900">{student.name}</td>
-                    <td className="py-2 px-4 text-slate-700 font-mono">{student.registration_id}</td>
-                    <td className="py-2 px-2 text-center align-middle">
-                      <div className="w-5 h-5 border-[1.5px] border-slate-400 mx-auto rounded-sm flex items-center justify-center text-slate-900 font-bold">
-                        {status === 'present' && '✓'}
-                      </div>
-                    </td>
-                    <td className="py-2 px-2 text-center align-middle">
-                      <div className="w-5 h-5 border-[1.5px] border-slate-400 mx-auto rounded-sm flex items-center justify-center text-slate-900 font-bold">
-                        {status === 'absent' && '✓'}
-                      </div>
-                    </td>
-                    <td className="py-2 px-2 text-center align-middle">
-                      <div className="w-5 h-5 border-[1.5px] border-slate-400 mx-auto rounded-sm flex items-center justify-center text-slate-900 font-bold">
-                        {status === 'excused' && '✓'}
-                      </div>
-                    </td>
+                    <td className="py-1 px-2 font-bold text-slate-900 border border-slate-300 text-center">{sIdx + 1}</td>
+                    <td className="py-1 px-2 font-bold text-slate-900 border border-slate-300">{student.name}</td>
+                    {monthlyDates.map((md, idx) => {
+                      const studentAtt = attendance.find(a => a.student_id === student.id && a.date === md.dateStr);
+                      let mark = '';
+                      if (studentAtt) {
+                        if (studentAtt.status === 'present') mark = '✓';
+                        else if (studentAtt.status === 'absent') mark = 'غ';
+                        else if (studentAtt.status === 'excused') mark = 'إ';
+                      }
+                      return (
+                        <td key={idx} className={`py-1 px-1 border border-slate-300 text-center font-bold ${mark === 'غ' ? 'text-rose-600' : 'text-slate-900'}`}>
+                           {mark}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-500 font-bold">
+                <td colSpan={20} className="py-8 text-center text-slate-500 font-bold border border-slate-300">
                   {selectedClass === '' ? 'يرجى اختيار مجموعة أولاً' : 'لا يوجد طلاب في هذه المجموعة'}
                 </td>
               </tr>
@@ -538,9 +592,9 @@ export default function AttendanceTracker() {
         </table>
 
         {/* Footer */}
-        <div className="mt-12 flex justify-between border-t border-slate-300 pt-4" dir="rtl">
-          <div className="text-sm font-bold text-slate-700">توقيع السكرتارية: ........................</div>
-          <div className="text-sm font-bold text-slate-700">توقيع الإدارة: ........................</div>
+        <div className="mt-8 flex justify-between border-t border-slate-300 pt-4" dir="rtl">
+          <div className="text-xs font-bold text-slate-700">توقيع السكرتارية: ........................</div>
+          <div className="text-xs font-bold text-slate-700">توقيع الإدارة: ........................</div>
         </div>
       </div>
 

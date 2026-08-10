@@ -696,7 +696,7 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
             >
               <option value="all">كل المجموعات الدراسية</option>
               {classes.map(cls => (
-                <option key={cls.id} value={cls.id}>{cls.name} ({cls.grade_level})</option>
+                <option key={cls.id} value={cls.id}>{cls.name} ({cls.grade_level} - {cls.education_type || 'عام'})</option>
               ))}
             </select>
           </div>

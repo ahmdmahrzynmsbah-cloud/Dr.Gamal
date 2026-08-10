@@ -1803,7 +1803,7 @@ export default function ClassesManager() {
                       <option value="">-- اختر مجموعة من القائمة --</option>
                       {classes.filter(c => c.id !== selectedClassForStudents.id).map(cls => (
                         <option key={cls.id} value={cls.id}>
-                          {cls.name} ({cls.grade_level}) - {cls.schedule_days}
+                          {cls.name} ({cls.grade_level} - {cls.education_type || 'عام'}) - {cls.schedule_days}
                         </option>
                       ))}
                     </select>

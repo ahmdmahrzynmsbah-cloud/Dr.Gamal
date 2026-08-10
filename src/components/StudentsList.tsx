@@ -721,7 +721,7 @@ export default function StudentsList() {
                         <option value="" disabled>-- لا توجد مجموعات ({formData.education_type}) متاحة --</option>
                       ) : (
                         classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).map(c => (
-                          <option key={c.id} value={c.id}>{c.name} ({c.grade_level})</option>
+                          <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>
                         ))
                       )}
                     </select>
@@ -828,7 +828,7 @@ export default function StudentsList() {
             <Filter className="w-3.5 h-3.5 text-slate-400" />
             <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
               <option value="all">كل المجموعات (الكل)</option>
-              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>)}
             </select>
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">

@@ -406,7 +406,7 @@ export default function AttendanceTracker() {
                 <option value="" disabled>اختر المجموعة...</option>
                 
                 {filteredClasses.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>
                 ))}
               </select>
 

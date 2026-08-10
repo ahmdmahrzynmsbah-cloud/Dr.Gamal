@@ -1257,7 +1257,7 @@ export default function ExamsAndAssignments() {
                   <option value="">لا توجد مجموعات</option>
                 ) : (
                   classes.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
+                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level} - {c.education_type || 'عام'})</option>
                   ))
                 )}
               </select>
@@ -1843,7 +1843,7 @@ export default function ExamsAndAssignments() {
                   className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
+                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level} - {c.education_type || 'عام'})</option>
                   ))}
                 </select>
               </div>
@@ -2088,7 +2088,7 @@ export default function ExamsAndAssignments() {
                   className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level})</option>
+                    <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level} - {c.education_type || 'عام'})</option>
                   ))}
                 </select>
               </div>

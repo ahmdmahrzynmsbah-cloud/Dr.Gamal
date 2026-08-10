@@ -908,7 +908,7 @@ export default function FeesTracker() {
               >
                 <option value="all">جميع المجموعات (للصف المحدد)</option>
                 {classes.filter(c => c.grade_level === selectedGrade).map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>
                 ))}
               </select>
             </div>

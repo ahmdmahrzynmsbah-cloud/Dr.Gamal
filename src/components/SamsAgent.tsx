@@ -62,7 +62,7 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
       const cmd = commandText.trim().toLowerCase();
 
       // Database queries
-      const students = samsDb.getStudents();
+      const students = samsDb.getVisibleStudents();
       const teachers = samsDb.getTeachers();
 
       if (cmd.includes('طالب') && (cmd.includes('أضف') || cmd.includes('اضافه') || cmd.includes('تسجيل'))) {

@@ -171,8 +171,8 @@ export default function StudentsList() {
   });
 
   const loadData = () => {
-    setStudents(samsDb.getStudents());
-    const cl = samsDb.getClasses();
+    setStudents(samsDb.getVisibleStudents());
+    const cl = samsDb.getVisibleClasses();
     setClasses(cl);
     const defaultEd = formData.education_type || 'عام';
     const avail = cl.filter(c => (c.education_type || 'عام') === defaultEd);

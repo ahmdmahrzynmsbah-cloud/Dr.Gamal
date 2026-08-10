@@ -21,9 +21,9 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   }, []);
 
   
-  const students = samsDb.getStudents();
+  const students = samsDb.getVisibleStudents();
   const teachers = samsDb.getTeachers();
-  const classes = samsDb.getClasses();
+  const classes = samsDb.getVisibleClasses();
   const fees = samsDb.getFees();
   const attendance = samsDb.getAttendance();
   const auditLogs = samsDb.getAuditLogs().slice(0, 5); // top 5 recent actions

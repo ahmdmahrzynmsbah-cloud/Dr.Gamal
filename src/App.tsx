@@ -392,9 +392,9 @@ export default function App() {
       id: 'classes_group',
       label: 'المجموعات والحصص',
       icon: <BookOpen className="w-4 h-4" />,
-      roles: ['teacher'],
+      roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'classes', label: 'المجموعات والجدول والمقررات', roles: ['teacher'] },
+        { id: 'classes', label: 'المجموعات والجدول والمقررات', roles: ['teacher', 'secretary'] },
       ]
     },
     {

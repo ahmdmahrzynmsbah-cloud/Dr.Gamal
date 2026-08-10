@@ -403,9 +403,9 @@ export default function ClassesManager() {
   });
 
   const loadData = () => {
-    const updatedClasses = samsDb.getClasses();
+    const updatedClasses = samsDb.getVisibleClasses();
     setClasses(updatedClasses);
-    setStudents(samsDb.getStudents());
+    setStudents(samsDb.getVisibleStudents());
     setTeachers(samsDb.getTeachers());
     setSubjects(samsDb.getSubjects());
     setSchedule(samsDb.getCenterSchedule());
@@ -2396,7 +2396,7 @@ export default function ClassesManager() {
                 <div className="flex items-center justify-between border-b border-gray-50 dark:border-slate-700/50 pb-3">
                   <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1 rounded-lg transition-colors" title="سحب لتغيير ترتيب المجموعة أو إدراجها بجدول الحصص">
                     <GripVertical className="w-4.5 h-4.5 text-slate-400 hover:text-[#0D5C8C]" />
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name}</h3>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{cls.name} <span className="text-[10px] text-slate-400 font-normal ml-1">({cls.education_type || 'عام'})</span></h3>
                     <button
                       type="button"
                       onClick={() => startEditingClass(cls)}

@@ -124,7 +124,7 @@ export default function NotificationsCenter() {
 
   const loadData = () => {
     setNotifications(samsDb.getNotifications());
-    setStudents(samsDb.getStudents());
+    setStudents(samsDb.getVisibleStudents());
   };
 
   const triggerLiveSmsTransmission = async (studentName: string, parentName: string, phone: string, message: string) => {

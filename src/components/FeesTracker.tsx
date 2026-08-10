@@ -237,8 +237,8 @@ export default function FeesTracker() {
 
   const loadData = () => {
     const allPayments = samsDb.getFees();
-    const allStudents = samsDb.getStudents();
-    const allClasses = samsDb.getClasses();
+    const allStudents = samsDb.getVisibleStudents();
+    const allClasses = samsDb.getVisibleClasses();
     
     setPayments(allPayments);
     setStudents(allStudents);

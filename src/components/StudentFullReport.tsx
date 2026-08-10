@@ -19,7 +19,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
 
   useEffect(() => {
     // Load class info
-    const classes = samsDb.getClasses();
+    const classes = samsDb.getVisibleClasses();
     setClassInfo(classes.find(c => c.id === student.class_id) || null);
 
     // Load attendance
@@ -147,7 +147,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">اسم الطالب</span><span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{student.name}</span></div>
                 <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">رقم القيد</span><span className="font-mono text-slate-700 dark:text-slate-200">{student.registration_id}</span></div>
                 <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">الرقم القومي</span><span className="font-mono text-slate-700 dark:text-slate-200">{student.national_id}</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">المجموعة</span><span className="font-bold text-[#1A7FAA] dark:text-sky-400">{classInfo?.name || '-'}</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">المجموعة</span><span className="font-bold text-[#1A7FAA] dark:text-sky-400">{classInfo ? `${classInfo.name} (${classInfo.education_type || 'عام'})` : '-'}</span></div>
                 <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">السنة الدراسية</span><span className="font-bold text-slate-700 dark:text-slate-200">{student.grade_level}</span></div>
                 <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">تاريخ التسجيل</span><span className="text-slate-700 dark:text-slate-200">{new Date(student.created_at).toLocaleDateString('ar-EG')}</span></div>
                 <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-800">

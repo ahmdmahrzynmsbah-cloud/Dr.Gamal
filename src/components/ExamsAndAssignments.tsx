@@ -166,8 +166,8 @@ export default function ExamsAndAssignments() {
   }, []);
 
   const loadAllData = () => {
-    const allClasses = samsDb.getClasses();
-    const allStudents = samsDb.getStudents();
+    const allClasses = samsDb.getVisibleClasses();
+    const allStudents = samsDb.getVisibleStudents();
     const allExams = samsDb.getExams();
     const allAssignments = samsDb.getAssignments();
     const allExamGrades = samsDb.getExamGrades();

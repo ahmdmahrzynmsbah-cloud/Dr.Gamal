@@ -146,6 +146,18 @@ export const samsDb = {
     return students.filter(s => !s.deleted_at);
   },
 
+  getVisibleStudents(): Student[] {
+    const students = this.getStudents();
+    const userId = localStorage.getItem('sams_logged_in_id');
+    if (userId) {
+       const user = this.getSystemUsers().find((u: any) => u.id === userId);
+       if (user && user.role === 'secretary' && user.allowed_classes && user.allowed_classes.length > 0) {
+           return students.filter(s => user.allowed_classes.includes(s.class_id));
+       }
+    }
+    return students;
+  },
+
   addStudent(student: Omit<Student, 'id' | 'registration_id' | 'created_at'>): { success: boolean; error?: string; student?: Student } {
     const students = this.getStudents();
 
@@ -287,11 +299,35 @@ export const samsDb = {
     return loadFromStorage<ClassRoom[]>(KEYS.CLASSES, INITIAL_CLASSES);
   },
 
+  getVisibleClasses(): ClassRoom[] {
+    const classes = this.getClasses();
+    const userId = localStorage.getItem('sams_logged_in_id');
+    if (userId) {
+       const user = this.getSystemUsers().find((u: any) => u.id === userId);
+       if (user && user.role === 'secretary' && user.allowed_classes && user.allowed_classes.length > 0) {
+           return classes.filter(c => user.allowed_classes.includes(c.id));
+       }
+    }
+    return classes;
+  },
+
   addClass(cls: ClassRoom) {
     const classes = this.getClasses();
     classes.push(cls);
     saveToStorage(KEYS.CLASSES, classes);
     addAuditLog('INSERT', 'classes', cls.id, `إنشاء مجموعة دراسي جديد: ${cls.name}`);
+
+    // If the creator is a secretary, add this class to their allowed_classes automatically
+    const userId = localStorage.getItem('sams_logged_in_id');
+    if (userId) {
+       const users = this.getSystemUsers();
+       const userIndex = users.findIndex((u: any) => u.id === userId);
+       if (userIndex !== -1 && users[userIndex].role === 'secretary') {
+           users[userIndex].allowed_classes = users[userIndex].allowed_classes || [];
+           users[userIndex].allowed_classes.push(cls.id);
+           this.saveSystemUsers(users);
+       }
+    }
   },
 
   deleteClass(id: string): { success: boolean; error?: string } {

@@ -68,9 +68,9 @@ export default function StudentBarcodes() {
 
   const loadData = () => {
     // Only get active/suspended students, skip archived
-    const allStudents = samsDb.getStudents().filter(s => s.status !== 'archived');
+    const allStudents = samsDb.getVisibleStudents().filter(s => s.status !== 'archived');
     setStudents(allStudents);
-    setClasses(samsDb.getClasses());
+    setClasses(samsDb.getVisibleClasses());
   };
 
   // Filter students

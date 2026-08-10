@@ -96,8 +96,8 @@ export default function ParentsList() {
   };
 
   const loadData = () => {
-    const studentsList = samsDb.getStudents();
-    const classList = samsDb.getClasses();
+    const studentsList = samsDb.getVisibleStudents();
+    const classList = samsDb.getVisibleClasses();
     setClasses(classList);
 
     // Group students correctly by parent identity
@@ -151,7 +151,7 @@ export default function ParentsList() {
     const cleanedPhone = normalizePhoneDigits(editPhone.trim());
 
     // We will update parent name and phone for all students previously linked to this parent
-    const studentsList = samsDb.getStudents();
+    const studentsList = samsDb.getVisibleStudents();
     let updatedCount = 0;
 
     studentsList.forEach(student => {

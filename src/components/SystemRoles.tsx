@@ -251,10 +251,25 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
 
             {formData.role === 'secretary' && classes.length > 0 && (
               <div className="md:col-span-3 mt-4 border-t border-slate-100 dark:border-slate-700 pt-4">
-                <label className="block text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-3 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-emerald-600" />
-                  المجموعات المسموح بإدارتها (للسكرتارية)
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-600" />
+                    المجموعات المسموح بإدارتها (للسكرتارية)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (formData.allowed_classes?.length === classes.length) {
+                        setFormData({ ...formData, allowed_classes: [] });
+                      } else {
+                        setFormData({ ...formData, allowed_classes: classes.map(c => c.id) });
+                      }
+                    }}
+                    className="text-xs font-bold text-[#0D5C8C] hover:text-[#1A7FAA] bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 px-3 py-1 rounded-lg transition-colors"
+                  >
+                    {formData.allowed_classes?.length === classes.length ? 'إلغاء تحديد الكل' : 'تحديد الكل'}
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {classes.map(cls => {
                     const isSelected = formData.allowed_classes?.includes(cls.id);

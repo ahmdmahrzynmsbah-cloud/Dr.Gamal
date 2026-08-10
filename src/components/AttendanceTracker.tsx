@@ -519,7 +519,7 @@ export default function AttendanceTracker() {
       </div>{/* PRINTABLE ATTENDANCE SHEET */}
       <div id="printable-attendance-sheet" className="hidden print:block w-full bg-white text-black">
         {/* Header */}
-        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-4" dir="rtl">
+        <div className="flex justify-between items-center border-b-4 border-slate-900 pb-4 mb-4" dir="rtl">
           <div>
             <h1 className="text-xl font-black text-slate-900">سجل الغياب والحضور الشهري</h1>
             <p className="text-xs font-bold text-slate-600 mt-1">
@@ -537,24 +537,24 @@ export default function AttendanceTracker() {
         </div>
 
         {/* Table */}
-        <table className="w-full text-right border-collapse text-[11px]" dir="rtl">
+        <table className="w-full text-right border-collapse text-[11px] border-2 border-slate-900" dir="rtl">
           <thead>
-            <tr className="bg-slate-100 border-b-2 border-slate-800">
-              <th className="py-2 px-2 font-bold text-slate-900 border border-slate-300 w-8 text-center">م</th>
-              <th className="py-2 px-2 font-bold text-slate-900 border border-slate-300 min-w-[150px]">اسم الطالب</th>
+            <tr className="bg-slate-100 border-b-2 border-slate-900">
+              <th className="py-2 px-2 font-bold text-slate-900 border-2 border-slate-900 w-8 text-center">م</th>
+              <th className="py-2 px-2 font-bold text-slate-900 border-2 border-slate-900 min-w-[150px]">اسم الطالب</th>
               {(() => {
                 const classObj = classes.find(c => c.id === selectedClass);
                 const monthlyDates = getMonthlyScheduleDates(selectedDate, classObj?.schedule_days);
                 return monthlyDates.map((md, idx) => (
-                  <th key={idx} className="py-1 px-0 font-bold text-slate-900 border border-slate-300 text-center w-8">
-                    <div className="text-[9px] text-slate-500">{md.dayName}</div>
-                    <div>{md.dayNum}</div>
+                  <th key={idx} className="py-1 px-0 font-bold text-slate-900 border-2 border-slate-900 text-center w-8">
+                    <div className="text-[9px] text-slate-600">{md.dayName}</div>
+                    <div className="text-black">{md.dayNum}</div>
                   </th>
                 ));
               })()}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-300">
+          <tbody className="divide-y-2 divide-slate-900">
             {filteredStudents.length > 0 ? (
               filteredStudents.map((student, sIdx) => {
                 const classObj = classes.find(c => c.id === selectedClass);
@@ -562,8 +562,8 @@ export default function AttendanceTracker() {
                 
                 return (
                   <tr key={student.id}>
-                    <td className="py-1 px-2 font-bold text-slate-900 border border-slate-300 text-center">{sIdx + 1}</td>
-                    <td className="py-1 px-2 font-bold text-slate-900 border border-slate-300">{student.name}</td>
+                    <td className="py-1 px-2 font-bold text-slate-900 border-2 border-slate-900 text-center">{sIdx + 1}</td>
+                    <td className="py-1 px-2 font-black text-slate-900 border-2 border-slate-900">{student.name}</td>
                     {monthlyDates.map((md, idx) => {
                       const studentAtt = attendance.find(a => a.student_id === student.id && a.date === md.dateStr);
                       let mark = '';
@@ -573,7 +573,7 @@ export default function AttendanceTracker() {
                         else if (studentAtt.status === 'excused') mark = 'إ';
                       }
                       return (
-                        <td key={idx} className={`py-1 px-1 border border-slate-300 text-center font-bold ${mark === 'غ' ? 'text-rose-600' : 'text-slate-900'}`}>
+                        <td key={idx} className={`py-1 px-1 border-2 border-slate-900 text-center font-black ${mark === 'غ' ? 'text-rose-600' : 'text-black'}`}>
                            {mark}
                         </td>
                       );
@@ -583,7 +583,7 @@ export default function AttendanceTracker() {
               })
             ) : (
               <tr>
-                <td colSpan={20} className="py-8 text-center text-slate-500 font-bold border border-slate-300">
+                <td colSpan={20} className="py-8 text-center text-slate-500 font-bold border-2 border-slate-900">
                   {selectedClass === '' ? 'يرجى اختيار مجموعة أولاً' : 'لا يوجد طلاب في هذه المجموعة'}
                 </td>
               </tr>
@@ -592,7 +592,7 @@ export default function AttendanceTracker() {
         </table>
 
         {/* Footer */}
-        <div className="mt-8 flex justify-between border-t border-slate-300 pt-4" dir="rtl">
+        <div className="mt-8 flex justify-between border-t-2 border-slate-900 pt-4" dir="rtl">
           <div className="text-xs font-bold text-slate-700">توقيع السكرتارية: ........................</div>
           <div className="text-xs font-bold text-slate-700">توقيع الإدارة: ........................</div>
         </div>

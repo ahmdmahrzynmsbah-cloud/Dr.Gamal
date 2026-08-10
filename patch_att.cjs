@@ -1,37 +1,29 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/components/AttendanceTracker.tsx', 'utf8');
+let code = fs.readFileSync('src/components/StudentFullReport.tsx', 'utf8');
 
-const targetHeader = `              <th className="py-3 px-4 font-bold text-slate-900">كود الطالب</th>
-              
-              <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">حاضر</th>`;
+const target = `                  <div key={att.id} className={\`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 \${
+                    att.status === 'present' ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-100 dark:border-emerald-800' :
+                    att.status === 'absent' ? 'bg-rose-50 dark:bg-rose-900/40 border-rose-100 dark:border-rose-800' :
+                    'bg-amber-50 dark:bg-amber-900/40 border-amber-100 dark:border-amber-800'
+                  }\`}>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{new Date(att.date).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}</span>
+                    <span className={\`text-[11px] font-extrabold px-2 py-0.5 rounded-md \${
+                      att.status === 'present' ? 'bg-emerald-200 text-emerald-800' :
+                      att.status === 'absent' ? 'bg-rose-200 text-rose-800' :
+                      'bg-amber-200 text-amber-800'
+                    }\`}>`;
 
-const newHeader = `              <th className="py-3 px-4 font-bold text-slate-900">كود الطالب</th>
-              <th className="py-3 px-4 font-bold text-slate-900 text-center w-24">اشتراك الشهر</th>
-              <th className="py-3 px-2 font-bold text-slate-900 text-center w-16">حاضر</th>`;
+const replacement = `                  <div key={att.id} className={\`p-3 rounded-xl border-2 flex flex-col items-center justify-center gap-2 \${
+                    att.status === 'present' ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-300 dark:border-emerald-800 print:border-emerald-600' :
+                    att.status === 'absent' ? 'bg-rose-50 dark:bg-rose-900/40 border-rose-300 dark:border-rose-800 print:border-rose-600' :
+                    'bg-amber-50 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 print:border-amber-600'
+                  }\`}>
+                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 print:text-black">{new Date(att.date).toLocaleDateString('ar-EG', { month: 'long', day: 'numeric' })}</span>
+                    <span className={\`text-xs font-black px-3 py-1 rounded-md print:border-2 \${
+                      att.status === 'present' ? 'bg-emerald-200 text-emerald-900 print:border-emerald-600 print:text-emerald-800' :
+                      att.status === 'absent' ? 'bg-rose-200 text-rose-900 print:border-rose-600 print:text-rose-800' :
+                      'bg-amber-200 text-amber-900 print:border-amber-600 print:text-amber-800'
+                    }\`}>`;
 
-content = content.replace(targetHeader, newHeader);
-
-const targetRow = `                    <td className="py-2 px-4 text-slate-700 font-mono">{student.registration_id}</td>
-                    
-                    <td className="py-2 px-2 text-center align-middle">`;
-
-const newRow = `                    <td className="py-2 px-4 text-slate-700 font-mono">{student.registration_id}</td>
-                    <td className="py-2 px-4 text-center align-middle">
-                      <div className="w-5 h-5 border-[1.5px] border-slate-400 mx-auto rounded-sm flex items-center justify-center"></div>
-                    </td>
-                    <td className="py-2 px-2 text-center align-middle">`;
-
-content = content.replace(targetRow, newRow);
-
-const targetFooter = `<div className="text-sm font-bold text-slate-700">توقيع المدرس: ........................</div>`;
-const newFooter = `<div className="text-sm font-bold text-slate-700">توقيع السكرتارية: ........................</div>`;
-
-content = content.replace(targetFooter, newFooter);
-
-const targetColSpan = `<td colSpan={5} className="py-8 text-center text-slate-500 font-bold">`;
-const newColSpan = `<td colSpan={6} className="py-8 text-center text-slate-500 font-bold">`;
-content = content.replace(targetColSpan, newColSpan);
-
-
-fs.writeFileSync('src/components/AttendanceTracker.tsx', content, 'utf8');
-console.log("Patched AttendanceTracker.tsx");
+code = code.replace(target, replacement);
+fs.writeFileSync('src/components/StudentFullReport.tsx', code);

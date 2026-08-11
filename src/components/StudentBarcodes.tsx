@@ -546,11 +546,15 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
         </div>
 
         <div id="printable-group-roster" className="bg-white dark:bg-slate-800">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 p-4 print:grid-cols-3 print:gap-4 print:p-0">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-4 print:grid-cols-3 print:gap-3.5 print:p-0">
             {printTargetStudents.map(student => {
               const classroom = classes.find(c => c.id === student.class_id);
               return (
-                <div key={student.id} className="border-2 border-slate-800 rounded-xl p-4 flex flex-col items-center text-center page-break-inside-avoid shadow-sm print:shadow-none bg-white dark:bg-slate-800">
+                <div 
+                  key={student.id} 
+                  className="border-2 border-slate-800 rounded-xl p-3.5 flex flex-col items-center text-center shadow-sm print:shadow-none bg-white dark:bg-slate-800 break-inside-avoid print:break-inside-avoid"
+                  style={{ breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}
+                >
                   <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">الدكتور في اللغة العربية</h3>
                   <div className="w-full mt-2 mb-3">
                     <p className="font-black text-slate-900 dark:text-slate-50 text-base">{student.name}</p>

@@ -403,19 +403,26 @@ html.dark body {
 
 /* Print Rules for Professional PDF & Document Export */
 @media print {
+  html, body, #root, #sams_root_wrapper, main {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
   body {
     background-color: white !important;
     color: black !important;
   }
 
   @page {
-    margin: 0.5cm;
+    size: A4 portrait;
+    margin: 10mm;
   }
 
   .no-print,
   .print\:hidden,
-  [role="dialog"],
-  div.fixed,
   div.backdrop-blur-sm,
   div.backdrop-blur-xs {
     display: none !important;
@@ -424,6 +431,14 @@ html.dark body {
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  .break-inside-avoid,
+  .page-break-inside-avoid,
+  .print-card-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
   }
 }
 

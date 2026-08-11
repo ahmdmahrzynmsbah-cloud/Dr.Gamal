@@ -247,13 +247,7 @@ export const samsDb = {
   },
 
   addTeacher(teacher: Omit<Teacher, 'id' | 'joined_date'>): { success: boolean; error?: string; teacher?: Teacher } {
-    if (teacher.national_id.length !== 14) {
-      return { success: false, error: 'الرقم القومي للمعلم يجب أن يكون 14 رقماً.' };
-    }
     const teachers = this.getTeachers();
-    if (teachers.some(t => t.national_id === teacher.national_id)) {
-      return { success: false, error: 'المعلم مسجل مسبقاً بنفس الرقم القومي.' };
-    }
 
     const newTeacher: Teacher = {
       ...teacher,

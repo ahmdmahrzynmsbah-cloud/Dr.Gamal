@@ -324,15 +324,14 @@ export default function App() {
       s.name.toLowerCase().includes(cleanQuery) ||
       s.registration_id.toLowerCase().includes(cleanQuery) ||
       s.phone.toLowerCase().includes(cleanQuery) ||
-      (s.parent_name && s.parent_name.toLowerCase().includes(cleanQuery)) ||
-      s.national_id.includes(cleanQuery)
+      (s.parent_phone && s.parent_phone.toLowerCase().includes(cleanQuery)) ||
+      (s.parent_name && s.parent_name.toLowerCase().includes(cleanQuery))
     ).slice(0, 5);
 
     const teachersRes = allTeachers.filter(t => 
       t.name.toLowerCase().includes(cleanQuery) ||
       t.specialization.toLowerCase().includes(cleanQuery) ||
-      t.phone.toLowerCase().includes(cleanQuery) ||
-      t.national_id.includes(cleanQuery)
+      t.phone.toLowerCase().includes(cleanQuery)
     ).slice(0, 3);
 
     return { students: studentsRes, teachers: teachersRes };
@@ -830,7 +829,7 @@ export default function App() {
                       <div className="p-6 text-center text-slate-400 text-xs space-y-2 font-sans flex flex-col items-center justify-center">
                         <SearchX className="w-8 h-8 opacity-40 text-slate-400" />
                         <p className="font-bold text-slate-600 dark:text-slate-300">لم نعثر على أي نتائج مطابقة</p>
-                        <p className="text-[10px] text-slate-400">تأكد من كتابة الاسم أو الرقم القومي بشكل صحيح</p>
+                        <p className="text-[10px] text-slate-400">تأكد من كتابة الاسم أو رقم القيد بشكل صحيح</p>
                       </div>
                     )}
 

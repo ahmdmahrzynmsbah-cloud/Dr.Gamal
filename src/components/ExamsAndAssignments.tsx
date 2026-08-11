@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { Exam, Assignment, ExamGrade, AssignmentGrade, Student, ClassRoom, Attendance } from '../types';
 import { samsDb } from '../utils/db';
+import { appendSystemSignature } from '../utils/phoneUtils';
+
 import { 
   Check,
   X,
@@ -250,13 +252,15 @@ export default function ExamsAndAssignments() {
 
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
 ولي أمر الطالب/ة المحترم: ${student.name}
-تحية طيبة وبعد من نظام الدكتور للغة العربية (SAMS)،
+تحية طيبة وبعد من إدارة الدكتور في اللغة العربية،
 
 نحيط سيادتكم علماً بتكرار غياب الطالب/ة عن الحصص والتقييمات بمجموعة (${groupName}) لأكثر من 3 مرات خلال هذا الشهر (إجمالي الغياب حتى الآن: ${count} مرات).
 
 حرصاً على المستوى الأكاديمي والتحصيل لـ (${student.name}) في مادة اللغة العربية، يرجى التكرم بانتظام الطالب والتواصل مع إدارة المركز.
 
-شاكرين لسيادتكم حسن التعاون.`;
+شاكرين لسيادتكم حسن التعاون.
+
+#سيستم الدكتور في اللغة العربية`;
 
     setCustomWhatsAppMsg(defaultMsg);
     setWhatsAppModalStudent({ student, count, dates });
@@ -280,13 +284,15 @@ export default function ExamsAndAssignments() {
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
 ولي أمر الطالب/ة: ${student.name}
 
-تحية طيبة وبعد من إدارة السنتر،
+تحية طيبة وبعد من إدارة الدكتور في اللغة العربية،
 نود إبلاغكم بنتيجة الطالب/ة في ${typeName} (${gradeContext.title}):
 
 ${resultText}
 
 يرجى الاهتمام والمتابعة مع السنتر حرصاً على المستوى الأكاديمي للطالب/ة.
-شاكرين لسيادتكم حسن التعاون.`;
+شاكرين لسيادتكم حسن التعاون.
+
+#سيستم الدكتور في اللغة العربية`;
 
     setCustomWhatsAppMsg(defaultMsg);
     setWhatsAppModalStudent({ student, gradeContext });
@@ -306,22 +312,61 @@ ${resultText}
     const currentClass = classes.find(c => c.id === selectedClassId);
     const groupName = currentClass ? currentClass.name : 'المجموعة الدراسية';
 
-    const textToSend = customText || `السلام عليكم ورحمة الله وبركاته،
+    const defaultText = `السلام عليكم ورحمة الله وبركاته،
 إلى ولي أمر الطالب/ة: ${student.name}
-تحية طيبة وبعد من إدارة المركز،
+تحية طيبة وبعد من إدارة سنتر الدكتور في اللغة العربية،
 
 نود إحاطتكم بتكرار غياب الطالب/ة بمجموعة (${groupName}) لأكثر من 3 مرات في هذا الشهر (إجمالي الغياب: ${count} مرات). يرجى المتابعة لضمان تحصيل المنهج.`;
+
+    const textToSend = appendSystemSignature(customText || defaultText);
 
     const url = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textToSend)}`;
     window.open(url, '_blank');
 
     samsDb.addAdminNotification({
       type: 'absence',
-      message: `تم توجيه تنبيه واتساب مباشر لولي أمر الطالب (${student.name}) لتكرار الغياب (${count} مرات هذا الشهر).`,
+      message: `تم توجيه تنبيه واتساب مباشر لولي أمر الطالب (${student.name}).`,
       metadata: { student_id: student.id }
     });
 
     setSuccessMsg(`تم فتح الواتساب المباشر لولي أمر الطالب (${student.name}).`);
+    setWhatsAppModalStudent(null);
+  };
+
+  // Dispatch SMS direct link
+  const handleSendSmsDirect = (student: Student, count: number, customText?: string) => {
+    const parentPhone = student.parent_phone || student.phone || '';
+    if (!parentPhone) {
+      setErrorMsg(`عذراً، لم يتم تسجيل رقم هاتف لولي أمر الطالب (${student.name}).`);
+      return;
+    }
+
+    let cleanPhone = parentPhone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('20')) {
+      cleanPhone = '0' + cleanPhone.slice(2);
+    }
+
+    const currentClass = classes.find(c => c.id === selectedClassId);
+    const groupName = currentClass ? currentClass.name : 'المجموعة الدراسية';
+
+    const defaultText = `السلام عليكم ورحمة الله وبركاته،
+إلى ولي أمر الطالب/ة: ${student.name}
+تحية طيبة وبعد من إدارة سنتر الدكتور في اللغة العربية،
+
+نود إحاطتكم بتكرار غياب الطالب/ة بمجموعة (${groupName}) لأكثر من 3 مرات في هذا الشهر (إجمالي الغياب: ${count} مرات). يرجى المتابعة لضمان تحصيل المنهج.`;
+
+    const textToSend = appendSystemSignature(customText || defaultText);
+
+    const smsUrl = `sms:${cleanPhone}?body=${encodeURIComponent(textToSend)}`;
+    window.open(smsUrl, '_self');
+
+    samsDb.addAdminNotification({
+      type: 'absence',
+      message: `تم توجيه رسالة SMS لولي أمر الطالب (${student.name}).`,
+      metadata: { student_id: student.id }
+    });
+
+    setSuccessMsg(`تم فتح تطبيق الرسائل النصية SMS لولي أمر الطالب (${student.name}).`);
     setWhatsAppModalStudent(null);
   };
 
@@ -1512,7 +1557,7 @@ ${resultText}
                       </th>
                       <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">ملاحظات خاصة برصد الطالب</th>
                       <th className="p-3 text-center w-[90px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النسبة %</th>
-                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إرسال النتيجة (واتساب)</th>
+                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إرسال النتيجة (واتساب / SMS)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">
@@ -2364,14 +2409,14 @@ ${resultText}
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 dark:border-slate-700 dark:border-slate-800"
             >
-              <div className="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
+              <div className="p-5 bg-gradient-to-r from-emerald-600 via-teal-700 to-[#0D5C8C] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-white/10 rounded-2xl">
                     <MessageCircle className="w-6 h-6 text-white fill-current" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-base">إرسال تنبيه واتساب مباشر لولي الأمر</h3>
-                    <p className="text-xs text-emerald-100 font-sans">إخطار رسمي بتكرار غياب الطالب لأكثر من 3 مرات في الشهر</p>
+                    <h3 className="font-extrabold text-base">إرسال النتيجة أو التنبيه لولي الأمر</h3>
+                    <p className="text-xs text-emerald-100 font-sans">إخطار ولي الأمر بالنتيجة أو التنبيه عبر الواتساب أو الرسائل النصية SMS</p>
                   </div>
                 </div>
                 <button
@@ -2387,9 +2432,11 @@ ${resultText}
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
                     <span>الطالب/ة: <strong className="text-emerald-700 dark:text-emerald-400 font-extrabold">{whatsAppModalStudent.student.name}</strong></span>
-                    <span className="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-rose-200 dark:border-rose-800">
-                      إجمالي الغياب: {whatsAppModalStudent.count} مرات
-                    </span>
+                    {whatsAppModalStudent.count !== undefined && (
+                      <span className="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-rose-200 dark:border-rose-800">
+                        إجمالي الغياب: {whatsAppModalStudent.count} مرات
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-slate-600 dark:text-slate-300 font-sans flex items-center justify-between">
                     <span>ولي الأمر: {whatsAppModalStudent.student.parent_name || 'غير محدد'}</span>
@@ -2417,21 +2464,29 @@ ${resultText}
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 justify-end">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 justify-end">
                   <button
                     type="button"
                     onClick={() => setWhatsAppModalStudent(null)}
-                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                    className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
                   >
                     إلغاء
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+                    onClick={() => handleSendSmsDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
+                    className="px-4 py-2.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                   >
                     <Smartphone className="w-4 h-4" />
-                    <span>فتح محادثة الواتساب المباشرة 📱</span>
+                    <span>إرسال كرسالة نصية (SMS)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <MessageCircle className="w-4 h-4 fill-current text-white" />
+                    <span>إرسال عبر الواتساب 📱</span>
                   </button>
                 </div>
               </div>

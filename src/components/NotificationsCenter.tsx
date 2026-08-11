@@ -7,6 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { SystemNotification, Student } from '../types';
 import { samsDb } from '../utils/db';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { appendSystemSignature } from '../utils/phoneUtils';
+
 import {
   Plus, 
   Check, 
@@ -220,10 +222,12 @@ export default function NotificationsCenter() {
     const parentName = selectedParentStudent.parent_name || 'ولي أمر الطالب';
     const parentPhone = selectedParentStudent.parent_phone || selectedParentStudent.phone || 'غير مسجل';
 
+    const formattedMessage = appendSystemSignature(directSmsText);
+
     // Save to global audit/notifications
     samsDb.addNotification({
       title: `رسالة SMS فورية مخصصة: ${selectedParentStudent.name}`,
-      message: directSmsText,
+      message: formattedMessage,
       category: 'sms',
       recipient_type: 'specific',
       recipient_id: selectedParentStudent.id
@@ -232,7 +236,7 @@ export default function NotificationsCenter() {
     setSuccessInfo(` تم توجيه الرسالة وإرسالها في ثوانٍ لهاتف ولي الأمر (${parentName}) على الرقم (${parentPhone})!`);
     
     // Start active live stepper animation inside Notifications Center
-    triggerLiveSmsTransmission(selectedParentStudent.name, parentName, parentPhone, directSmsText);
+    triggerLiveSmsTransmission(selectedParentStudent.name, parentName, parentPhone, formattedMessage);
     
     setSelectedParentStudent(null);
     setDirectSmsText('');
@@ -254,13 +258,14 @@ export default function NotificationsCenter() {
 
     const getParsedText = (template: string) => {
       const todayString = new Date().toISOString().split('T')[0];
-      return template
+      const parsed = template
         .replace(/{اسم_ولي_الأمر}/g, parentName)
         .replace(/{parent_name}/g, parentName)
         .replace(/{اسم_الطالب}/g, childName)
         .replace(/{student_name}/g, childName)
         .replace(/{التاريخ}/g, todayString)
         .replace(/{date}/g, todayString);
+      return appendSystemSignature(parsed);
     };
 
     const text = {
@@ -284,9 +289,11 @@ export default function NotificationsCenter() {
       return;
     }
 
+    const formattedBroadcast = appendSystemSignature(broadcastFormData.message);
+
     samsDb.addNotification({
       title: broadcastFormData.title,
-      message: broadcastFormData.message,
+      message: formattedBroadcast,
       category: broadcastFormData.category,
       recipient_type: broadcastFormData.recipient_type,
       recipient_id: broadcastFormData.recipient_id || undefined

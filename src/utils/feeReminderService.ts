@@ -45,7 +45,7 @@ export function generateWhatsAppReminderText(
   amount: number,
   gradeLevel: string
 ): string {
-  const customCenterTitle = localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة والسنتر التعليمي';
+  const customCenterTitle = localStorage.getItem('sams_custom_app_name_v2') || 'الدكتور في اللغة العربية';
   
   return `السلام عليكم ورحمة الله وبركاته 🌸
 السيد ولي أمر الطالب/ة: *${studentName}* (${parentName || 'المحترم'})
@@ -56,7 +56,10 @@ export function generateWhatsAppReminderText(
 
 يرجى التكرم بالمبادرة بالسداد عبر مقر السنتر أو وسائل الدفع المتاحة لضمان استمرار انتظام الطالب في المجموعات وتلقي الكتب والمذكرات.
 
-شاكرين لكم حسن تعاونكم ودعمكم الدائم! 🌺`;
+شاكرين لكم حسن تعاونكم ودعمكم الدائم! 🌺
+
+#سيستم الدكتور في اللغة العربية`;
+
 }
 
 /**

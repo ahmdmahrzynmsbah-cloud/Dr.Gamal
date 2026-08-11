@@ -5,7 +5,7 @@
 
 export interface Student {
   id: string; // unique identification string
-  national_id: string; // الرقم القومي (14 digits)
+  national_id?: string; // الرقم القومي (optional)
   name: string; // الاسم
   registration_id: string; // رقم القيد
   class_id: string; // المجموعة
@@ -24,7 +24,7 @@ export interface Student {
 export interface Teacher {
   id: string;
   name: string;
-  national_id: string;
+  national_id?: string;
   specialization: string; // التخصص الدراسي
   phone: string;
   email: string;

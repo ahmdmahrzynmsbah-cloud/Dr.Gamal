@@ -14,6 +14,8 @@ import {
   formatEgyptianPhoneForWhatsApp
 } from '../utils/feeReminderService';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { appendSystemSignature } from '../utils/phoneUtils';
+
 import {
   Check, 
   ShieldAlert, 
@@ -1097,7 +1099,7 @@ export default function FeesTracker() {
                                 type="button"
                                 onClick={() => {
                                   setWhatsAppStudent(student);
-                                  const confirmMsg = `السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل القسط الشهري لشهر (*${selectedMonth}*) بقيمة *${currentMonthPayment.amount} ج.م*. رقم الإيصال: *${currentMonthPayment.receipt_number}*.\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`;
+                                  const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل القسط الشهري لشهر (*${selectedMonth}*) بقيمة *${currentMonthPayment.amount} ج.م*. رقم الإيصال: *${currentMonthPayment.receipt_number}*.\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`);
                                   setWhatsAppMessage(confirmMsg);
                                   setShowWhatsAppModal(true);
                                 }}

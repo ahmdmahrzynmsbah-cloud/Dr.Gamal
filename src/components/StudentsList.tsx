@@ -222,8 +222,7 @@ export default function StudentsList() {
     
     if (!isEditing) {
       const res = samsDb.addStudent({
-        ...cleanedFormData,
-        national_id: cleanedFormData.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000))
+        ...cleanedFormData
       });
       if (res.success && res.student) {
         setSuccessMessage(`تم تسجيل الطالب بنجاح برقم القيد: ${res.student.registration_id}`);
@@ -231,7 +230,6 @@ export default function StudentsList() {
         const avail = classes.filter(c => (c.education_type || 'عام') === defaultEd);
         setFormData({
           name: '',
-          national_id: '',
           class_id: avail[0]?.id || '',
           grade_level: 'الأول الإعدادي',
           education_type: 'عام',
@@ -250,7 +248,6 @@ export default function StudentsList() {
       const existingStudent = students.find(s => s.id === editId);
       const updatedStudent: Student = {
         ...cleanedFormData,
-        national_id: cleanedFormData.national_id || existingStudent?.national_id || ("30" + Math.floor(100000000000 + Math.random() * 900000000000)),
         id: editId,
         registration_id: existingStudent?.registration_id || '20230000',
         created_at: existingStudent?.created_at || '2023-09-01'
@@ -279,7 +276,6 @@ export default function StudentsList() {
     const edType = student.education_type || studentClass?.education_type || 'عام';
     setFormData({
       name: student.name,
-      national_id: student.national_id || '',
       class_id: student.class_id,
       grade_level: student.grade_level,
       education_type: edType,
@@ -617,7 +613,7 @@ export default function StudentsList() {
             onClick={() => {
               setIsEditing(false);
               setFormData({
-                name: '', national_id: '', class_id: classes[0]?.id || '', grade_level: 'الأول الإعدادي', 
+                name: '', class_id: classes[0]?.id || '', grade_level: 'الأول الإعدادي', 
                 education_type: 'عام',
                 birth_date: '2016-01-01', phone: '', parent_name: '', parent_phone: '', status: 'active'
               });

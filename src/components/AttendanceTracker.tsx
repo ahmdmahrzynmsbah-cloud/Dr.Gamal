@@ -5,6 +5,8 @@ import { samsDb } from '../utils/db';
 import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X, MessageSquare, Send, Smartphone } from 'lucide-react';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { appendSystemSignature } from '../utils/phoneUtils';
+
 
 const playSuccessBeep = () => {
   try {
@@ -139,7 +141,7 @@ export default function AttendanceTracker() {
       .replace(/{التاريخ}/g, todayString)
       .replace(/{date}/g, todayString);
       
-    setAttendanceMessage(template);
+    setAttendanceMessage(appendSystemSignature(template));
   };
 
   const sendAttendanceMsg = async () => {
@@ -249,8 +251,8 @@ export default function AttendanceTracker() {
     const cleanCode = barcode.trim();
     if (!cleanCode) return;
 
-    // Find student by registration_id
-    const student = students.find(s => s.registration_id === cleanCode || s.national_id === cleanCode);
+    // Find student by registration_id, barcode, or id
+    const student = students.find(s => s.registration_id === cleanCode || s.barcode === cleanCode || s.id === cleanCode);
     
     if (!student) {
       playErrorBuzzer();

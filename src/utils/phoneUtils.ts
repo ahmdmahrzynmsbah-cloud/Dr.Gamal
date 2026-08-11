@@ -172,3 +172,21 @@ export function validateEgyptianPhone(phone: string, fieldLabel = 'رقم اله
   // Case 4: Invalid starting digits
   return `عذراً، ${fieldLabel} غير صحيح. يجب أن يبدأ بـ (01) لأرقام المحمول المصرية أو بـ (02, 03..) للأرضي.`;
 }
+
+/**
+ * Standard system message signature for all communications sent to parents/students.
+ */
+export const SYSTEM_SIGNATURE = '#سيستم الدكتور في اللغة العربية';
+
+/**
+ * Ensures that the system signature is attached cleanly at the end of any sent message.
+ */
+export function appendSystemSignature(message: string): string {
+  if (!message || !message.trim()) return message;
+  const trimmed = message.trim();
+  if (trimmed.includes(SYSTEM_SIGNATURE) || trimmed.includes('#سيستم_الدكتور_في_اللغة_العربية')) {
+    return trimmed;
+  }
+  return `${trimmed}\n\n${SYSTEM_SIGNATURE}`;
+}
+

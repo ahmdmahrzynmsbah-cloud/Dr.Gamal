@@ -6,6 +6,8 @@
 import React, { useState, useEffect } from 'react';
 import { ClassRoom, Teacher, Subject, CenterScheduleData, Student } from '../types';
 import { samsDb, formatScheduleDisplay, deriveParentName } from '../utils/db';
+import { appendSystemSignature } from '../utils/phoneUtils';
+
 import StudentFullReport from './StudentFullReport';
 import {
   Plus,
@@ -312,7 +314,7 @@ export default function ClassesManager() {
     parent_phone: '',
     grade_level: 'الأول الإعدادي',
     birth_date: '2016-01-01',
-    status: 'active' as 'active' | 'suspended' | 'archived', national_id: ''
+    status: 'active' as 'active' | 'suspended' | 'archived'
   });
 
   // Calculate attendance statistics for a student
@@ -1063,8 +1065,7 @@ export default function ClassesManager() {
                     parent_phone: '',
                     grade_level: selectedClassForStudents.grade_level || 'الأول الإعدادي',
                     birth_date: '2016-01-01',
-                    status: 'active',
-                    national_id: ''
+                    status: 'active'
                   });
                   setShowAddStudentModal(true);
                 }}
@@ -1078,12 +1079,14 @@ export default function ClassesManager() {
                 type="button"
                 onClick={() => {
                   const defaultBroadcastMsg = `السلام عليكم ورحمة الله وبركاته،
-أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - سنتر اللغة العربية،
+أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - سنتر الدكتور في اللغة العربية،
 تحية طيبة وبعد،
 
 نود إحاطتكم بجدول مواعيد المجموعة (${formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
 
-شاكرين لكم حسن التعاون.`;
+شاكرين لكم حسن التعاون.
+
+#سيستم الدكتور في اللغة العربية`;
                   setGroupWhatsAppMsg(defaultBroadcastMsg);
                   setShowGroupWhatsAppModal(true);
                 }}
@@ -1376,7 +1379,7 @@ export default function ClassesManager() {
                             {/* WhatsApp Direct */}
                             {student.parent_phone && (
                               <a
-                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ولي أمر الطالب/ة: ${student.name}، تحية طيبة وبعد من سنتر اللغة العربية...`)}`}
+                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر الطالب/ة: ${student.name}\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-emerald-200 dark:border-emerald-700"
@@ -1481,11 +1484,9 @@ export default function ClassesManager() {
                     const cleanPhone = normalizePhoneDigits(newStudentForm.phone);
                     const cleanParentPhone = normalizePhoneDigits(newStudentForm.parent_phone);
 
-                    const generatedNationalId = "30" + Math.floor(100000000000 + Math.random() * 900000000000);
                     const finalParentName = newStudentForm.parent_name.trim() || deriveParentName(newStudentForm.name);
                     const res = samsDb.addStudent({
                       name: newStudentForm.name,
-                      national_id: generatedNationalId,
                       class_id: selectedClassForStudents.id,
                       grade_level: selectedClassForStudents.grade_level || newStudentForm.grade_level,
                       education_type: selectedClassForStudents.education_type || 'عام',

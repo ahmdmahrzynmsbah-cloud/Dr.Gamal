@@ -517,7 +517,7 @@ export default function ParentsList() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <a
-                            href={parent.parent_phone ? `https://wa.me/${parent.parent_phone.startsWith('0') ? '2' + parent.parent_phone : parent.parent_phone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nالسيد ولي أمر الطالب/ة: (${parent.student_names.join(' - ')})\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}` : '#'}
+                            href={parent.parent_phone ? `https://wa.me/${parent.parent_phone.startsWith('0') ? '2' + parent.parent_phone : parent.parent_phone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nالسيد ولي أمر الطالب/ة: (${(parent as any).student_names?.join(' - ') || ''})\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}` : '#'}
                             target="_blank"
                             rel="noopener noreferrer"
                             title="مراسلة سريعة عبر الواتساب"
@@ -530,7 +530,7 @@ export default function ParentsList() {
                             <MessageSquare className="w-4 h-4" />
                           </a>
                           <a
-                            href={parent.parent_phone ? `sms:${parent.parent_phone}?body=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nالسيد ولي أمر الطالب/ة: (${parent.student_names.join(' - ')})\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}` : '#'}
+                            href={parent.parent_phone ? `sms:${parent.parent_phone}?body=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nالسيد ولي أمر الطالب/ة: (${(parent as any).student_names?.join(' - ') || ''})\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}` : '#'}
                             title="إرسال رسالة نصية SMS"
                             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                               parent.parent_phone 

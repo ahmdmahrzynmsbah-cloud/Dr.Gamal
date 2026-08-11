@@ -152,7 +152,7 @@ export default function StudentBarcodes() {
                 <div 
                   key={student.id} 
                   className="border-2 border-slate-800 rounded-xl p-3.5 flex flex-col items-center text-center shadow-sm print:shadow-none bg-white dark:bg-slate-800 break-inside-avoid print:break-inside-avoid"
-                  style={{ breakInside: 'avoid', pageBreakInside: 'avoid', WebkitColumnBreakInside: 'avoid' }}
+                  style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}
                 >
                   <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">الدكتور في اللغة العربية</h3>
                   <div className="w-full mt-2 mb-3">

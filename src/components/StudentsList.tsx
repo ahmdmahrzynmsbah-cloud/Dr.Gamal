@@ -118,17 +118,27 @@ export default function StudentsList() {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState('');
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    national_id?: string;
+    class_id: string;
+    grade_level: string;
+    education_type: 'عام' | 'أزهر';
+    birth_date: string;
+    phone: string;
+    parent_name: string;
+    parent_phone: string;
+    status: Student['status'];
+  }>({
     name: '',
-    national_id: '',
     class_id: '',
     grade_level: 'الأول الإعدادي',
-    education_type: 'عام' as 'عام' | 'أزهر',
+    education_type: 'عام',
     birth_date: '2015-05-12',
     phone: '',
     parent_name: '',
     parent_phone: '',
-    status: 'active' as Student['status']
+    status: 'active'
   });
 
   useEffect(() => {

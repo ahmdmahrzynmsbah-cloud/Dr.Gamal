@@ -518,12 +518,7 @@ export const samsDb = {
     const studentObj = students.find(s => s.id === payment.student_id);
     const studentName = studentObj ? studentObj.name : `كود:${payment.student_id}`;
 
-    const categoryAr = {
-      tuition: 'مصروفات دراسية',
-      bus: 'اشتراك باص',
-      uniform: 'زي مدرسي',
-      activities: 'أنشطة وخدمات'
-    }[payment.category] || 'رسوم أخرى';
+    const categoryAr = 'اشتراك الشهر الدراسي';
 
     addAuditLog('INSERT', 'fees', newPay.id, `تسجيل دفعة مالية بقيمة ${payment.amount} ج.م للطالب (${studentName}). بند الدفع: ${categoryAr}، إيصال رقم ${receipt_number}`);
     return newPay;

@@ -327,7 +327,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                       <tr key={fee.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                         <td className="px-4 py-3 font-mono text-xs">{new Date(fee.payment_date).toLocaleDateString('ar-EG')}</td>
                         <td className="px-4 py-3 font-extrabold text-amber-600 dark:text-amber-400">{fee.amount} ج.م</td>
-                        <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{fee.category === 'tuition' ? 'مصروفات دراسية' : fee.category === 'bus' ? 'اشتراك باص' : fee.category === 'uniform' ? 'زي مدرسي' : 'أنشطة'}</td>
+                        <td className="px-4 py-3 text-slate-700 dark:text-slate-200">اشتراك الشهر الدراسي</td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-bold">{fee.month || '-'}</td>
                         <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{fee.receipt_number || '-'}</td>
                         <td className="px-4 py-3">

@@ -661,11 +661,10 @@ export default function FeesTracker() {
         )}
       </AnimatePresence>
 
-      
-      {/* Title */}
+      {/* Title Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
         <div className="text-right">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <Coins className="w-5 h-5 text-[#0D5C8C]" />
             <span>نظام اشتراكات الطلاب والتحصيل الشهري</span>
           </h2>
@@ -695,7 +694,7 @@ export default function FeesTracker() {
               className="flex items-center gap-1.5 px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>تسجيل سداد رسوم عامة</span>
+              <span>تسجيل سداد اشتراك الشهر</span>
             </button>
           )}
         </div>
@@ -746,7 +745,7 @@ export default function FeesTracker() {
       {/* General Fee Recording Form (Tab 2 subform) */}
       {showGeneralPayForm && activeTab === 'all_receipts' && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs animate-slide-up">
-          <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">تسجيل إيصال سداد رسوم عامة (زي / باص / مذكرات)</h3>
+          <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">تسجيل إيصال سداد اشتراك الشهر الدراسي</h3>
           <form onSubmit={handleGeneralPaySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 text-right">
             
             <div className="space-y-1">
@@ -781,13 +780,10 @@ export default function FeesTracker() {
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">نوع البند الدراسي الرسومي</label>
               <select
                 value={generalPayData.category}
-                onChange={(e) => setGeneralPayData({ ...generalPayData, category: e.target.value as FeePayment['category'] })}
+                onChange={(e) => setGeneralPayData({ ...generalPayData, category: 'tuition' })}
                 className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
               >
                 <option value="tuition">اشتراك الشهر الدراسي (Tuition)</option>
-                <option value="bus">اشتراك الباص ونقل السنتر</option>
-                <option value="uniform">الزي المدرسي والملازم الأساسية</option>
-                <option value="activities">رحلات سنوية وأنشطة إضافية</option>
               </select>
             </div>
 
@@ -804,20 +800,18 @@ export default function FeesTracker() {
               </select>
             </div>
 
-            {generalPayData.category === 'tuition' && (
-              <div className="space-y-1 md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">سداد لاشتراك شهر:</label>
-                <select
-                  value={generalPayData.month}
-                  onChange={(e) => setGeneralPayData({ ...generalPayData, month: e.target.value })}
-                  className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
-                >
-                  {MONTHS_LIST.map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="space-y-1 md:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">سداد لاشتراك شهر:</label>
+              <select
+                value={generalPayData.month}
+                onChange={(e) => setGeneralPayData({ ...generalPayData, month: e.target.value })}
+                className="w-full min-w-0 max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800"
+              >
+                {MONTHS_LIST.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
 
             <div className="md:col-span-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-700 pt-3">
               <button
@@ -1233,28 +1227,14 @@ export default function FeesTracker() {
                       
                       {/* Category */}
                       <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                          item.category === 'tuition'
-                            ? 'bg-[#0D5C8C]/5 text-[#0D5C8C]'
-                            : item.category === 'bus'
-                            ? 'bg-amber-50 text-amber-800'
-                            : item.category === 'uniform'
-                            ? 'bg-purple-50 text-purple-850'
-                            : 'bg-emerald-50 text-emerald-800'
-                        }`}>
-                          {item.category === 'tuition'
-                            ? 'مصاريف دراسية شهري'
-                            : item.category === 'bus'
-                            ? 'باص وحافلة السنتر'
-                            : item.category === 'uniform'
-                            ? 'زي وملازم'
-                            : 'أنشطة وخدمات ترفيهية'}
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-[#0D5C8C]/5 text-[#0D5C8C]">
+                          اشتراك الشهر الدراسي
                         </span>
                       </td>
 
                       {/* Detail */}
                       <td className="p-3 text-center text-slate-500 dark:text-slate-400 font-sans">
-                        {item.category === 'tuition' ? item.month || 'اشتراك شهري' : 'ـ'}
+                        {item.month || 'اشتراك شهري'}
                       </td>
 
                       {/* Date */}
@@ -1469,23 +1449,15 @@ export default function FeesTracker() {
                 </span>
               </div>
 
-              {selectedReceipt.category === 'tuition' && (
-                <div className="flex justify-between p-1.5 border-b border-slate-200/60">
-                  <span className="text-slate-400">سداد اشتراك شهر</span>
-                  <span className="font-bold text-indigo-700 dark:text-indigo-300 underline">{selectedReceipt.month || 'ـ'}</span>
-                </div>
-              )}
+              <div className="flex justify-between p-1.5 border-b border-slate-200/60">
+                <span className="text-slate-400">سداد اشتراك شهر</span>
+                <span className="font-bold text-indigo-700 dark:text-indigo-300 underline">{selectedReceipt.month || 'ـ'}</span>
+              </div>
 
               <div className="flex justify-between p-1.5 border-b border-slate-200/60">
                 <span className="text-slate-400">بند الدفع الرسومي</span>
                 <span className="font-semibold text-slate-700 dark:text-slate-200">
-                  {selectedReceipt.category === 'tuition'
-                    ? 'اشتراك الحضور والخدمة التعليمية'
-                    : selectedReceipt.category === 'bus'
-                    ? 'باص وحافلة السنتر'
-                    : selectedReceipt.category === 'uniform'
-                    ? 'زي وملازم'
-                    : 'أنشطة وخدمات ترفيهية'}
+                  اشتراك الشهر الدراسي
                 </span>
               </div>
 

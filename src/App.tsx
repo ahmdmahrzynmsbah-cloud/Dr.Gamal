@@ -560,7 +560,7 @@ export default function App() {
       {/* Navigation Sidebar (RTL: right side) */}
       <aside className={` print:hidden 
         fixed lg:static inset-y-0 right-0 bg-[#0D5C8C] text-white flex flex-col p-0 shadow-lg z-50 lg:z-auto transition-all duration-300 border-l border-[#1A7FAA]/20 shrink-0 h-full overflow-y-auto no-scrollbar
-        ${mobileMenuOpen ? 'translate-x-0 w-64' : 'translate-x-full lg:translate-x-0'}
+        ${mobileMenuOpen ? 'translate-x-0 w-72 max-w-[85vw]' : 'translate-x-full lg:translate-x-0'}
         ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
       `}>
         
@@ -697,7 +697,7 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full print:h-auto overflow-hidden print:overflow-visible w-full max-w-full min-w-0">
         
         {/* Upper Main Header inside the content wrapper */}
-        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden w-full max-w-full min-w-0">
+        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-3 sm:px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden w-full max-w-full min-w-0">
           
           {/* Logo and Branding section (User Customizable) */}
           <div className="flex items-center gap-3 shrink-0 min-w-0">
@@ -933,7 +933,7 @@ export default function App() {
         </header>
 
         {/* Viewport scroll area containing current Tab view */}
-        <main className="flex-1 p-6 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-6">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-4 sm:space-y-6">
           <div key={activeTab} className="max-w-7xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'students' && <StudentsList />}

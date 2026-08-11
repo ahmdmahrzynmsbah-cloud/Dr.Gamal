@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, Phone, User, Users, MessageSquare, Heart, Sparkles, Send, Info } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, ShieldAlert, CheckCircle, Eye, X, Phone, User, Users, MessageSquare, Heart, Sparkles, Send, Info, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
@@ -528,6 +528,17 @@ export default function ParentsList() {
                             }`}
                           >
                             <MessageSquare className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={parent.parent_phone ? `sms:${parent.parent_phone}` : '#'}
+                            title="إرسال رسالة نصية SMS"
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              parent.parent_phone 
+                                ? 'text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/40 hover:text-sky-700' 
+                                : 'text-slate-300 pointer-events-none'
+                            }`}
+                          >
+                            <Smartphone className="w-4 h-4" />
                           </a>
                         </td>
                       </motion.tr>

@@ -1191,7 +1191,7 @@ ${resultText}
         </div>
 
         {/* Navigation sub-tabs */}
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar max-w-full shrink-0">
           <button
             onClick={() => {
               setActiveSubTab('grading');

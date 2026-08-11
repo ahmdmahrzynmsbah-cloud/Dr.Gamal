@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, ClassRoom, Attendance } from '../types';
 import { samsDb } from '../utils/db';
-import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X, MessageSquare, Send } from 'lucide-react';
+import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X, MessageSquare, Send, Smartphone } from 'lucide-react';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
@@ -201,6 +201,34 @@ export default function AttendanceTracker() {
     } catch (err: any) {
       setMsgFeedback({ type: 'error', text: err.message || 'حدث خطأ أثناء الإرسال' });
     }
+  };
+
+  const sendSmsMsg = () => {
+    if (!selectedStudentForMsg) return;
+    setMsgFeedback(null);
+    const phone = selectedStudentForMsg.student.parent_phone || selectedStudentForMsg.student.phone;
+    if (!phone) {
+      setMsgFeedback({ type: 'error', text: 'لا يوجد رقم هاتف مسجل للطالب أو ولي الأمر.' });
+      return;
+    }
+
+    let cleaned = phone.replace(/[^0-9]/g, '');
+    if (cleaned.startsWith('20')) {
+      cleaned = '0' + cleaned.slice(2);
+    }
+
+    const smsUrl = `sms:${cleaned}?body=${encodeURIComponent(attendanceMessage)}`;
+    window.open(smsUrl, '_self');
+
+    setMsgFeedback({ type: 'success', text: 'تم فتح تطبيق الرسائل النصية SMS للإرسال.' });
+    samsDb.addNotification({
+      title: `رسالة SMS حالة حضور: ${selectedStudentForMsg.student.name}`,
+      message: attendanceMessage,
+      category: 'sms',
+      recipient_type: 'specific',
+      recipient_id: selectedStudentForMsg.student.id
+    });
+    setTimeout(() => { setSelectedStudentForMsg(null); setMsgFeedback(null); }, 2000);
   };
 
   const loadData = () => {
@@ -433,16 +461,16 @@ export default function AttendanceTracker() {
         </div>
 
         {/* Left side: Group Attendance Management */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 flex flex-col h-[500px]">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px] lg:h-[500px]">
           <div className="flex flex-col mb-6 space-y-4">
-            <div className="flex justify-between items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-[#1A7FAA] dark:text-sky-400 shrink-0" />
                 مراجعة حضور المجموعات
               </h3>
 
               {selectedClass !== 'all' && (
-                <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
                   <button
                     onClick={markUnscannedAsAbsent}
                     className="h-9 px-3 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 hover:text-rose-700 border border-rose-200 dark:border-rose-700 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
@@ -595,10 +623,19 @@ export default function AttendanceTracker() {
                           {/* Send WhatsApp Msg Button */}
                           <button
                             onClick={() => handleOpenAttendanceMsg(student, status)}
-                            className="px-2 py-1.5 rounded-lg text-xs font-bold transition-colors text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 flex items-center justify-center mr-1"
-                            title="توجيه رسالة لولي الأمر بحالة الحضور"
+                            className="p-1.5 rounded-lg text-xs font-bold transition-colors text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 flex items-center justify-center cursor-pointer mr-1"
+                            title="توجيه رسالة لولي الأمر عبر الواتساب"
                           >
                             <MessageSquare className="w-4 h-4" />
+                          </button>
+
+                          {/* Send SMS Msg Button */}
+                          <button
+                            onClick={() => handleOpenAttendanceMsg(student, status)}
+                            className="p-1.5 rounded-lg text-xs font-bold transition-colors text-sky-600 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 flex items-center justify-center cursor-pointer"
+                            title="إرسال رسالة نصية SMS مباشرة"
+                          >
+                            <Smartphone className="w-4 h-4" />
                           </button>
 
                         </div>
@@ -673,13 +710,22 @@ export default function AttendanceTracker() {
               </div>
             )}
 
-            <button
-              onClick={sendAttendanceMsg}
-              className="w-full flex items-center justify-center gap-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white py-3 px-4 rounded-xl font-black transition-all active:scale-[0.98] cursor-pointer text-sm shadow-md"
-            >
-              <Send className="w-4 h-4" />
-              إرسال الرسالة الآن
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+              <button
+                onClick={sendAttendanceMsg}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-3 rounded-xl font-black transition-all active:scale-[0.98] cursor-pointer text-xs shadow-md"
+              >
+                <MessageSquare className="w-4 h-4" />
+                إرسال عبر الواتساب
+              </button>
+              <button
+                onClick={sendSmsMsg}
+                className="w-full flex items-center justify-center gap-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white py-3 px-3 rounded-xl font-black transition-all active:scale-[0.98] cursor-pointer text-xs shadow-md"
+              >
+                <Smartphone className="w-4 h-4" />
+                إرسال كرسالة نصية (SMS)
+              </button>
+            </div>
           </div>
         </div>
       )}

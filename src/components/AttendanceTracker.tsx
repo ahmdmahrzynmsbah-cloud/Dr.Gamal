@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, ClassRoom, Attendance } from '../types';
 import { samsDb } from '../utils/db';
-import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X } from 'lucide-react';
+import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X, MessageSquare, Send } from 'lucide-react';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
@@ -108,6 +108,92 @@ export default function AttendanceTracker() {
   }>>([]);
 
   const [scanFeedback, setScanFeedback] = useState<{type: 'success'|'error', msg: string} | null>(null);
+  
+  const [selectedAbsentStudent, setSelectedAbsentStudent] = useState<Student | null>(null);
+  const [absentMessage, setAbsentMessage] = useState('');
+  const [msgFeedback, setMsgFeedback] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const handleOpenAbsenceMsg = (student: Student) => {
+    setSelectedAbsentStudent(student);
+    setMsgFeedback(null);
+    
+    const parentName = student.parent_name || 'ولي الأمر العزيز';
+    const childName = student.name;
+    let template = localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.';
+    
+    const todayString = new Date().toISOString().split('T')[0];
+    
+    template = template
+      .replace(/{اسم_ولي_الأمر}/g, parentName)
+      .replace(/{parent_name}/g, parentName)
+      .replace(/{اسم_الطالب}/g, childName)
+      .replace(/{student_name}/g, childName)
+      .replace(/{التاريخ}/g, todayString)
+      .replace(/{date}/g, todayString);
+      
+    setAbsentMessage(template);
+  };
+
+  const sendAbsenceMsg = async () => {
+    if (!selectedAbsentStudent) return;
+    setMsgFeedback(null);
+    const phone = selectedAbsentStudent.parent_phone || selectedAbsentStudent.phone;
+    if (!phone) {
+      setMsgFeedback({ type: 'error', text: 'لا يوجد رقم هاتف مسجل للطالب أو ولي الأمر.' });
+      return;
+    }
+    
+    try {
+      const whatsappEnabled = localStorage.getItem('sams_whatsapp_enabled') !== 'false';
+      const cKey = localStorage.getItem('sams_callmebot_api_key') || '';
+      const uId = localStorage.getItem('sams_ultramsg_instance_id') || '';
+      const uToken = localStorage.getItem('sams_ultramsg_token') || '';
+      
+      // Fallback to manual WhatsApp link if no API config
+      if (!whatsappEnabled || (!cKey && !uId)) {
+          let cleaned = phone.replace(/[^0-9]/g, '');
+          if (cleaned.startsWith('0')) {
+            cleaned = '2' + cleaned; 
+          }
+          window.open(`https://wa.me/${cleaned}?text=${encodeURIComponent(absentMessage)}`, '_blank');
+          setMsgFeedback({ type: 'success', text: 'تم فتح واتساب للإرسال اليدوي.' });
+          setTimeout(() => { setSelectedAbsentStudent(null); setMsgFeedback(null); }, 2000);
+          return;
+      }
+  
+      const waPromise = fetch('/api/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          to: phone, 
+          message: absentMessage,
+          callmebotApiKey: cKey,
+          ultramsgInstanceId: uId,
+          ultramsgToken: uToken
+        })
+      });
+      
+      const waRes = await waPromise;
+      let waData;
+      try { waData = await waRes.json(); } catch(e) {}
+      
+      if (waRes.ok && waData?.success) {
+        setMsgFeedback({ type: 'success', text: 'تم إرسال رسالة الغياب بنجاح!' });
+        samsDb.addNotification({
+          title: `رسالة غياب: ${selectedAbsentStudent.name}`,
+          message: absentMessage,
+          category: 'sms',
+          recipient_type: 'specific',
+          recipient_id: selectedAbsentStudent.id
+        });
+        setTimeout(() => { setSelectedAbsentStudent(null); setMsgFeedback(null); }, 2000);
+      } else {
+        throw new Error(waData?.error || 'فشل الإرسال');
+      }
+    } catch (err: any) {
+      setMsgFeedback({ type: 'error', text: err.message || 'حدث خطأ أثناء الإرسال' });
+    }
+  };
 
   const loadData = () => {
     setStudents(samsDb.getVisibleStudents().filter(s => s.status !== 'archived'));
@@ -497,6 +583,16 @@ export default function AttendanceTracker() {
                           >
                             مستأذن
                           </button>
+                          
+                          {/* Send WhatsApp Msg Button */}
+                          <button
+                            onClick={() => handleOpenAbsenceMsg(student)}
+                            className="px-2 py-1.5 rounded-lg text-xs font-bold transition-colors text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 flex items-center justify-center mr-1"
+                            title="توجيه رسالة غياب لولي الأمر"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+
                         </div>
                       </td>
                     </tr>
@@ -516,7 +612,71 @@ export default function AttendanceTracker() {
         </div>
       </div>
 
-      </div>{/* PRINTABLE ATTENDANCE SHEET */}
+      </div>
+      
+      {/* SMS/WhatsApp Direct Send Modal */}
+      {selectedAbsentStudent && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-lg w-full space-y-4 animate-slide-up text-right">
+            
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-black text-[#0D5C8C] text-sm flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4" />
+                إرسال تنبيه غياب لولي الأمر
+              </h3>
+              <button 
+                 onClick={() => { setSelectedAbsentStudent(null); setMsgFeedback(null); }}
+                 className="text-slate-400 font-bold hover:text-slate-600 dark:text-slate-300 text-xs px-2 cursor-pointer"
+              >
+                إغلاق 
+              </button>
+            </div>
+
+            {/* Receiver Info Banner */}
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span className="text-slate-400 block text-[10px]">ولي الأمر المستهدف</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100">{selectedAbsentStudent.parent_name || 'ولي أمر الطالب'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">الطالب المستهدف</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{selectedAbsentStudent.name}</span>
+              </div>
+              <div className="col-span-2 pt-1 border-t border-gray-100 dark:border-gray-700">
+                <span className="text-slate-400 text-[10px] inline-block ml-1">رقم الإرسال:</span>
+                <span className="font-mono text-slate-600 dark:text-slate-300 mr-1 font-bold">{selectedAbsentStudent.parent_phone || selectedAbsentStudent.phone || 'دون رقم'}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400">نص الرسالة الموجهة:</label>
+              <textarea
+                value={absentMessage}
+                onChange={(e) => setAbsentMessage(e.target.value)}
+                rows={4}
+                className="w-full p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:border-indigo-400 font-medium text-slate-700 dark:text-slate-200 leading-relaxed shadow-inner"
+              />
+            </div>
+            
+            {msgFeedback && (
+              <div className={`p-3 rounded-lg text-xs font-bold flex items-center gap-1.5 \${msgFeedback.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                {msgFeedback.type === 'success' ? <Check className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
+                {msgFeedback.text}
+              </div>
+            )}
+
+            <button
+              onClick={sendAbsenceMsg}
+              className="w-full flex items-center justify-center gap-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white py-3 px-4 rounded-xl font-black transition-all active:scale-[0.98] cursor-pointer text-sm shadow-md"
+            >
+              <Send className="w-4 h-4" />
+              إرسال الرسالة الآن
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* PRINTABLE ATTENDANCE SHEET */}
       <div id="printable-attendance-sheet" className="hidden print:block w-full bg-white text-black">
         {/* Header */}
         <div className="flex justify-between items-center border-b-4 border-slate-900 pb-4 mb-4" dir="rtl">

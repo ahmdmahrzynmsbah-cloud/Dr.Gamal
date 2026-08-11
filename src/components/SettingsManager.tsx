@@ -27,9 +27,9 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
   // Msg templates
   const [tAbsence, setTAbsence] = useState(localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.');
-  const [tExcellent, setTExcellent] = useState(localStorage.getItem('sams_msg_template_excellent') || 'بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من الإدارة.');
-  const [tFees, setTFees] = useState(localStorage.getItem('sams_msg_template_fees') || 'تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.');
-  const [tMeeting, setTMeeting] = useState(localStorage.getItem('sams_msg_template_meeting') || 'المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).');
+  const [tHomework, setTHomework] = useState(localStorage.getItem('sams_msg_template_homework') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) مسلمش الواجب بتاعه النهارده. ياريت نتابع معاه عشان ميأثرش على مستواه.');
+  const [tExam, setTExam] = useState(localStorage.getItem('sams_msg_template_exam') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن نتيجة الطالب/ة ({اسم_الطالب}) في الامتحان طلعت، ياريت تتابع معانا عشان تعرف مستواه وتطمن عليه.');
+  const [tBehavior, setTBehavior] = useState(localStorage.getItem('sams_msg_template_behavior') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، نرجو التنبيه على الطالب/ة ({اسم_الطالب}) بخصوص الالتزام بقواعد السنتر وعدم إثارة الشغب أثناء الحصة.');
 
   // WhatsApp variables
   const [callmebotKey, setCallmebotKey] = useState(localStorage.getItem('sams_callmebot_api_key') || '');
@@ -91,9 +91,9 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
       localStorage.setItem('sams_custom_header_subtitle_v2', headerSubtitle.trim());
 
       localStorage.setItem('sams_msg_template_absence', tAbsence.trim());
-      localStorage.setItem('sams_msg_template_excellent', tExcellent.trim());
-      localStorage.setItem('sams_msg_template_fees', tFees.trim());
-      localStorage.setItem('sams_msg_template_meeting', tMeeting.trim());
+      localStorage.setItem('sams_msg_template_homework', tHomework.trim());
+      localStorage.setItem('sams_msg_template_exam', tExam.trim());
+      localStorage.setItem('sams_msg_template_behavior', tBehavior.trim());
 
       localStorage.setItem('sams_callmebot_api_key', callmebotKey.trim());
       localStorage.setItem('sams_ultramsg_instance_id', ultramsgId.trim());

@@ -241,16 +241,16 @@ export default function NotificationsCenter() {
   };
 
   // Predefined quick templates for direct SMS messaging
-  const selectSmsTemplate = (templateType: 'absence' | 'excellent' | 'fees' | 'meeting') => {
+  const selectSmsTemplate = (templateType: 'absence' | 'homework' | 'exam' | 'behavior') => {
     if (!selectedParentStudent) return;
     
     const childName = selectedParentStudent.name;
     const parentName = selectedParentStudent.parent_name || 'ولي الأمر العزيز';
 
     const tAbsence = localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.';
-    const tExcellent = localStorage.getItem('sams_msg_template_excellent') || 'بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من المعلم.';
-    const tFees = localStorage.getItem('sams_msg_template_fees') || 'تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.';
-    const tMeeting = localStorage.getItem('sams_msg_template_meeting') || 'المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء والمعلمين القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).';
+    const tHomework = localStorage.getItem('sams_msg_template_homework') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) مسلمش الواجب بتاعه النهارده. ياريت نتابع معاه عشان ميأثرش على مستواه.';
+    const tExam = localStorage.getItem('sams_msg_template_exam') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن نتيجة الطالب/ة ({اسم_الطالب}) في الامتحان طلعت، ياريت تتابع معانا عشان تعرف مستواه وتطمن عليه.';
+    const tBehavior = localStorage.getItem('sams_msg_template_behavior') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، نرجو التنبيه على الطالب/ة ({اسم_الطالب}) بخصوص الالتزام بقواعد السنتر وعدم إثارة الشغب أثناء الحصة.';
 
     const getParsedText = (template: string) => {
       const todayString = new Date().toISOString().split('T')[0];
@@ -265,9 +265,9 @@ export default function NotificationsCenter() {
 
     const text = {
       absence: getParsedText(tAbsence),
-      excellent: getParsedText(tExcellent),
-      fees: getParsedText(tFees),
-      meeting: getParsedText(tMeeting)
+      homework: getParsedText(tHomework),
+      exam: getParsedText(tExam),
+      behavior: getParsedText(tBehavior)
     }[templateType];
 
     setDirectSmsText(text);
@@ -656,24 +656,24 @@ export default function NotificationsCenter() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => selectSmsTemplate('excellent')}
+                      onClick={() => selectSmsTemplate('homework')}
                       className="p-2 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-200 rounded-lg text-xxs font-semibold text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
-                      ⭐ تشجيع وتفوق دراسي متميز
+                       عدم تسليم الواجب
                     </button>
                     <button
                       type="button"
-                      onClick={() => selectSmsTemplate('fees')}
+                      onClick={() => selectSmsTemplate('exam')}
                       className="p-2 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-200 rounded-lg text-xxs font-semibold text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
-                       مطابقة وتذكير الرسوم الدراسية
+                       نتيجة امتحان
                     </button>
                     <button
                       type="button"
-                      onClick={() => selectSmsTemplate('meeting')}
+                      onClick={() => selectSmsTemplate('behavior')}
                       className="p-2 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-200 rounded-lg text-xxs font-semibold text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
-                       دعوة لحضور مجلس الآباء
+                       تنبيه سلوكي / شغب
                     </button>
                   </div>
                 </div>

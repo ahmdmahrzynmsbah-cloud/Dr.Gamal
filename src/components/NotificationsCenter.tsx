@@ -247,7 +247,7 @@ export default function NotificationsCenter() {
     const childName = selectedParentStudent.name;
     const parentName = selectedParentStudent.parent_name || 'ولي الأمر العزيز';
 
-    const tAbsence = localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، نحيطكم علماً بتغيب ابنكم ({اسم_الطالب}) عن السنتر اليوم. نرجو التواصل مع المعلم لتوضيح السبب.';
+    const tAbsence = localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.';
     const tExcellent = localStorage.getItem('sams_msg_template_excellent') || 'بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من المعلم.';
     const tFees = localStorage.getItem('sams_msg_template_fees') || 'تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.';
     const tMeeting = localStorage.getItem('sams_msg_template_meeting') || 'المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء والمعلمين القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).';
@@ -652,7 +652,7 @@ export default function NotificationsCenter() {
                       onClick={() => selectSmsTemplate('absence')}
                       className="p-2 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 text-slate-700 dark:text-slate-200 rounded-lg text-xxs font-semibold text-right hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
-                       إنذار غياب طارئ للطفل
+                       تنبيه غياب للطالب
                     </button>
                     <button
                       type="button"

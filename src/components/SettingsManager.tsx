@@ -26,7 +26,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
   const [headerSubtitle, setHeaderSubtitle] = useState(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
 
   // Msg templates
-  const [tAbsence, setTAbsence] = useState(localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، نحيطكم علماً بتغيب ابنكم ({اسم_الطالب}) عن السنتر اليوم. نرجو التواصل مع الإدارة لتوضيح السبب.');
+  const [tAbsence, setTAbsence] = useState(localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.');
   const [tExcellent, setTExcellent] = useState(localStorage.getItem('sams_msg_template_excellent') || 'بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من الإدارة.');
   const [tFees, setTFees] = useState(localStorage.getItem('sams_msg_template_fees') || 'تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.');
   const [tMeeting, setTMeeting] = useState(localStorage.getItem('sams_msg_template_meeting') || 'المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).');

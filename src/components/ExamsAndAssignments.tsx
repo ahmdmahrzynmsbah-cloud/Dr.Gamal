@@ -1823,25 +1823,25 @@ ${resultText}
               
               {/* Exam Name */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسم أو كود الامتحان</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسم الامتحان</label>
                 <input
                   type="text"
                   placeholder="مثال: امتحان الحصة الأولى، امتحان البلاغة الشامل"
                   value={examForm.name}
                   onChange={(e) => setExamForm({ ...examForm, name: e.target.value })}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                  className="w-full min-w-0 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
                   dir="rtl"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Exam Type */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">تصنيف الامتحان</label>
+                <div className="space-y-1.5 min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">تصنيف الامتحان</label>
                   <select
                     value={examForm.type}
                     onChange={(e) => setExamForm({ ...examForm, type: e.target.value as any })}
-                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="quiz">امتحان حصة (سريع)</option>
                     <option value="comprehensive">امتحان شامل</option>
@@ -1852,12 +1852,12 @@ ${resultText}
                 </div>
 
                 {/* Term */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الفصل الدراسي</label>
+                <div className="space-y-1.5 min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">الفصل الدراسي</label>
                   <select
                     value={examForm.term}
                     onChange={(e) => setExamForm({ ...examForm, term: e.target.value as any })}
-                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
                     <option value="first_term">الفصل الأول</option>
                     <option value="second_term">الفصل الثاني</option>
@@ -1866,12 +1866,12 @@ ${resultText}
               </div>
 
               {/* Class Group */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 min-w-0">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">موجه لطلاب المجموعة الدراسية</label>
                 <select
                   value={examForm.class_id}
                   onChange={(e) => setExamForm({ ...examForm, class_id: e.target.value })}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level} - {c.education_type || 'عام'})</option>
@@ -2077,15 +2077,15 @@ ${resultText}
                   placeholder="مثال: حل صفحة 12 و 13 بكتاب المدرسة، أو واجب شرح اسم الفاعل صـ 40"
                   value={assignmentForm.title}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
+                  className="w-full min-w-0 text-right border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:outline-hidden focus:border-[#0D5C8C] resize-none"
                   dir="rtl"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Max Score */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">درجة الواجب (مثلاً من 10)</label>
+                <div className="space-y-1.5 min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">درجة الواجب (مثلاً من 10)</label>
                   <input
                     type="number"
                     min={1}
@@ -2097,26 +2097,26 @@ ${resultText}
                 </div>
 
                 {/* Term */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">الفصل الدراسي</label>
+                <div className="space-y-1.5 min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">الفصل الدراسي</label>
                   <select
                     value={assignmentForm.term}
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, term: e.target.value as any })}
-                    className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                    className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                   >
-                    <option value="first_term">الفصل الدراسي الأول</option>
-                    <option value="second_term">الفصل الدراسي الثاني</option>
+                    <option value="first_term">الفصل الأول</option>
+                    <option value="second_term">الفصل الثاني</option>
                   </select>
                 </div>
               </div>
 
               {/* Class Group */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 min-w-0">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">مخصص لطلاب المجموعة</label>
                 <select
                   value={assignmentForm.class_id}
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, class_id: e.target.value })}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
                 >
                   {classes.map(c => (
                     <option key={c.id} value={c.id}>{c.name} (الصف: {c.grade_level} - {c.education_type || 'عام'})</option>

@@ -66,7 +66,7 @@ export default function ExamsAndAssignments() {
       title: string;
       score: number;
       maxScore: number;
-      isAbsent: boolean;
+      flag: boolean;
     };
   } | null>(null);
   const [customWhatsAppMsg, setCustomWhatsAppMsg] = useState<string>('');
@@ -265,15 +265,25 @@ export default function ExamsAndAssignments() {
   // Open WhatsApp Modal for exam/assignment grades
   const handleOpenGradeWhatsAppModal = (
     student: Student,
-    gradeContext: { type: 'exam' | 'assignment'; title: string; score: number; maxScore: number; isAbsent: boolean; }
+    gradeContext: { type: 'exam' | 'assignment'; title: string; score: number; maxScore: number; flag: boolean; }
   ) => {
+    const isMissing = gradeContext.type === 'exam' ? gradeContext.flag : !gradeContext.flag;
+    const typeName = gradeContext.type === 'exam' ? 'امتحان' : 'واجب';
+    
+    let resultText = '';
+    if (gradeContext.type === 'exam') {
+      resultText = isMissing ? '🔴 *الطالب/ة كان غائباً عن الامتحان*' : `📊 *الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
+    } else {
+      resultText = isMissing ? '🔴 *لم يقم الطالب/ة بتسليم الواجب*' : `📊 *درجة الواجب:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
+    }
+
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
 ولي أمر الطالب/ة: ${student.name}
 
 تحية طيبة وبعد من إدارة السنتر،
-نود إبلاغكم بنتيجة الطالب/ة في (${gradeContext.title}):
+نود إبلاغكم بنتيجة الطالب/ة في ${typeName} (${gradeContext.title}):
 
-${gradeContext.isAbsent ? '🔴 *الطالب/ة كان غائباً*' : `📊 *الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`}
+${resultText}
 
 يرجى الاهتمام والمتابعة مع السنتر حرصاً على المستوى الأكاديمي للطالب/ة.
 شاكرين لسيادتكم حسن التعاون.`;
@@ -1704,7 +1714,7 @@ ${gradeContext.isAbsent ? '🔴 *الطالب/ة كان غائباً*' : `📊 *
                                   title: gradingType === 'exam' ? (activeEvaluationObj as any).name : (activeEvaluationObj as any).title,
                                   score: tempObj.score,
                                   maxScore: activeEvaluationObj.max_score,
-                                  isAbsent: tempObj.flag
+                                  flag: tempObj.flag
                                 })}
                                 className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                                 title="إرسال النتيجة لولي الأمر عبر الواتساب"

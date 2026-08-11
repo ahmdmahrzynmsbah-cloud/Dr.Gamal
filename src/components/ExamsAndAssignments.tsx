@@ -56,11 +56,18 @@ export default function ExamsAndAssignments() {
   const [assignmentGrades, setAssignmentGrades] = useState<AssignmentGrade[]>([]);
   const [attendanceList, setAttendanceList] = useState<Attendance[]>([]);
 
-  // WhatsApp Alert Modal State for Absence Warnings
+  // WhatsApp Alert Modal State for Absence/Grade Warnings
   const [whatsAppModalStudent, setWhatsAppModalStudent] = useState<{
     student: Student;
-    count: number;
-    dates: string[];
+    count?: number;
+    dates?: string[];
+    gradeContext?: {
+      type: 'exam' | 'assignment';
+      title: string;
+      score: number;
+      maxScore: number;
+      isAbsent: boolean;
+    };
   } | null>(null);
   const [customWhatsAppMsg, setCustomWhatsAppMsg] = useState<string>('');
 
@@ -253,6 +260,26 @@ export default function ExamsAndAssignments() {
 
     setCustomWhatsAppMsg(defaultMsg);
     setWhatsAppModalStudent({ student, count, dates });
+  };
+
+  // Open WhatsApp Modal for exam/assignment grades
+  const handleOpenGradeWhatsAppModal = (
+    student: Student,
+    gradeContext: { type: 'exam' | 'assignment'; title: string; score: number; maxScore: number; isAbsent: boolean; }
+  ) => {
+    const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
+ولي أمر الطالب/ة: ${student.name}
+
+تحية طيبة وبعد من إدارة السنتر،
+نود إبلاغكم بنتيجة الطالب/ة في (${gradeContext.title}):
+
+${gradeContext.isAbsent ? '🔴 *الطالب/ة كان غائباً*' : `📊 *الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`}
+
+يرجى الاهتمام والمتابعة مع السنتر حرصاً على المستوى الأكاديمي للطالب/ة.
+شاكرين لسيادتكم حسن التعاون.`;
+
+    setCustomWhatsAppMsg(defaultMsg);
+    setWhatsAppModalStudent({ student, gradeContext });
   };
 
   // Dispatch WhatsApp web link
@@ -1475,7 +1502,7 @@ export default function ExamsAndAssignments() {
                       </th>
                       <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">ملاحظات خاصة برصد الطالب</th>
                       <th className="p-3 text-center w-[90px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النسبة %</th>
-                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">تنبيهات الغياب (واتساب)</th>
+                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إرسال النتيجة (واتساب)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">
@@ -1668,29 +1695,23 @@ export default function ExamsAndAssignments() {
                               )}
                             </td>
 
-                            {/* WhatsApp Direct Parent Notification */}
+                            {/* WhatsApp Direct Grade Notification */}
                             <td className="p-3 text-center">
-                              {monthlyAbsence.count >= 3 ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenWhatsAppModal(student, monthlyAbsence.count, monthlyAbsence.dates)}
-                                  className="w-full px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
-                                  title="إرسال تنبيه واتساب مباشر لولي الأمر بتكرار الغياب"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5 fill-current text-white" />
-                                  <span>واتساب ولي الأمر 📱</span>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenWhatsAppModal(student, monthlyAbsence.count, monthlyAbsence.dates)}
-                                  className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-medium flex items-center justify-center gap-1 transition-all cursor-pointer"
-                                  title="تنبيه أو مراسلة ولي الأمر عبر الواتساب"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>مراسلة ({monthlyAbsence.count})</span>
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenGradeWhatsAppModal(student, {
+                                  type: gradingType,
+                                  title: gradingType === 'exam' ? (activeEvaluationObj as any).name : (activeEvaluationObj as any).title,
+                                  score: tempObj.score,
+                                  maxScore: activeEvaluationObj.max_score,
+                                  isAbsent: tempObj.flag
+                                })}
+                                className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                                title="إرسال النتيجة لولي الأمر عبر الواتساب"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span>إرسال النتيجة</span>
+                              </button>
                             </td>
 
                           </tr>
@@ -2366,7 +2387,7 @@ export default function ExamsAndAssignments() {
                       📱 {whatsAppModalStudent.student.parent_phone || whatsAppModalStudent.student.phone || 'لا يوجد هاتف'}
                     </span>
                   </div>
-                  {whatsAppModalStudent.dates.length > 0 && (
+                  {whatsAppModalStudent.dates && whatsAppModalStudent.dates.length > 0 && (
                     <div className="text-[11px] text-slate-500 dark:text-slate-400 font-sans border-t border-emerald-100 dark:border-emerald-900/50 pt-2 mt-2">
                       <strong>تواريخ الغياب المرصودة هذا الشهر:</strong> {whatsAppModalStudent.dates.join(' | ')}
                     </div>
@@ -2375,7 +2396,7 @@ export default function ExamsAndAssignments() {
 
                 <div>
                   <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5">
-                    نص رسالة التنبيه الموجهة لولي الأمر (قابل للتعديل قبل الإرسال):
+                    {whatsAppModalStudent.gradeContext ? 'نص رسالة إبلاغ النتيجة (قابل للتعديل):' : 'نص رسالة التنبيه الموجهة لولي الأمر (قابل للتعديل):'}
                   </label>
                   <textarea
                     rows={6}
@@ -2396,7 +2417,7 @@ export default function ExamsAndAssignments() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count, customWhatsAppMsg)}
+                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
                     className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
                   >
                     <Smartphone className="w-4 h-4" />

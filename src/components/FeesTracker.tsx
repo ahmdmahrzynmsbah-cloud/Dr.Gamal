@@ -450,7 +450,7 @@ export default function FeesTracker() {
           
           <div className="flex justify-between items-center mb-4">
             <div className="text-2xl font-black text-slate-800">
-              {localStorage.getItem('sams_center_name') || 'الدكتور في اللغة العربية'}
+              {typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_center_name') || 'الدكتور في اللغة العربية')}
             </div>
             <div className="text-xl font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300 inline-block">
               المجموعة: {classes.find(c => c.id === selectedClass)?.name || selectedGrade}
@@ -1093,7 +1093,9 @@ export default function FeesTracker() {
                                 type="button"
                                 onClick={() => {
                                   setWhatsAppStudent(student);
-                                  const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل القسط الشهري لشهر (*${selectedMonth}*) بقيمة *${currentMonthPayment.amount} ج.م*. رقم الإيصال: *${currentMonthPayment.receipt_number}*.\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`);
+                                  const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+                                  const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
+                                  const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nتحية طيبة وبعد من إدارة *${centerTitle}* 🏛️\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل القسط الشهري لشهر (*${selectedMonth}*) بقيمة *${currentMonthPayment.amount} ج.م*. رقم الإيصال: *${currentMonthPayment.receipt_number}*.\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`);
                                   setWhatsAppMessage(confirmMsg);
                                   setShowWhatsAppModal(true);
                                 }}

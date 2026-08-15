@@ -176,6 +176,38 @@ export function validateEgyptianPhone(phone: string, fieldLabel = 'رقم اله
 /**
  * Standard system message signature for all communications sent to parents/students.
  */
+export function getSystemSenderName(): string {
+  const active = typeof window !== 'undefined' ? localStorage.getItem('sams_active_system') : 'doctor';
+  if (active === 'alsafa') {
+    return 'سيستم الصفا للمواد الشرعية';
+  }
+  return 'الدكتور في اللغة العربية';
+}
+
+export function getSystemSenderHeader(): string {
+  const active = typeof window !== 'undefined' ? localStorage.getItem('sams_active_system') : 'doctor';
+  if (active === 'alsafa') {
+    return 'إدارة سيستم الصفا للمواد الشرعية';
+  }
+  return 'إدارة سنتر الدكتور في اللغة العربية';
+}
+
+export function getSystemSubjectName(): string {
+  const active = typeof window !== 'undefined' ? localStorage.getItem('sams_active_system') : 'doctor';
+  if (active === 'alsafa') {
+    return 'المواد الشرعية';
+  }
+  return 'اللغة العربية';
+}
+
+export function getSystemSignature(): string {
+  const active = typeof window !== 'undefined' ? localStorage.getItem('sams_active_system') : 'doctor';
+  if (active === 'alsafa') {
+    return '#سيستم الصفا للمواد الشرعية';
+  }
+  return '#سيستم الدكتور في اللغة العربية';
+}
+
 export const SYSTEM_SIGNATURE = '#سيستم الدكتور في اللغة العربية';
 
 /**
@@ -184,9 +216,19 @@ export const SYSTEM_SIGNATURE = '#سيستم الدكتور في اللغة ال
 export function appendSystemSignature(message: string): string {
   if (!message || !message.trim()) return message;
   const trimmed = message.trim();
-  if (trimmed.includes(SYSTEM_SIGNATURE) || trimmed.includes('#سيستم_الدكتور_في_اللغة_العربية')) {
+  const sig = getSystemSignature();
+  if (
+    trimmed.includes(sig) || 
+    trimmed.includes('#سيستم_الدكتور_في_اللغة_العربية') || 
+    trimmed.includes('#سيستم الدكتور في اللغة العربية') || 
+    trimmed.includes('#سيستم_الصفا_للمواد_الشرعية') || 
+    trimmed.includes('#سيستم الصفا للمواد الشرعية') ||
+    trimmed.includes('#سيستم_الصفا') || 
+    trimmed.includes('#سيستم الدكتور للمواد الشرعية') ||
+    trimmed.includes(SYSTEM_SIGNATURE)
+  ) {
     return trimmed;
   }
-  return `${trimmed}\n\n${SYSTEM_SIGNATURE}`;
+  return `${trimmed}\n\n${sig}`;
 }
 

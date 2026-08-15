@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { Exam, Assignment, ExamGrade, AssignmentGrade, Student, ClassRoom, Attendance } from '../types';
-import { samsDb } from '../utils/db';
+import { samsDb, getActiveSystem } from '../utils/db';
 import { appendSystemSignature } from '../utils/phoneUtils';
 
 import { 
@@ -249,18 +249,22 @@ export default function ExamsAndAssignments() {
   const handleOpenWhatsAppModal = (student: Student, count: number, dates: string[]) => {
     const currentClass = classes.find(c => c.id === selectedClassId);
     const groupName = currentClass ? currentClass.name : 'المجموعة الدراسية';
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
+    const subjectName = isAlsafa ? 'المواد الشرعية' : 'اللغة العربية';
+    const sig = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
 
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
 ولي أمر الطالب/ة المحترم: ${student.name}
-تحية طيبة وبعد من إدارة الدكتور في اللغة العربية،
+تحية طيبة وبعد من إدارة ${centerTitle}،
 
 نحيط سيادتكم علماً بتكرار غياب الطالب/ة عن الحصص والتقييمات بمجموعة (${groupName}) لأكثر من 3 مرات خلال هذا الشهر (إجمالي الغياب حتى الآن: ${count} مرات).
 
-حرصاً على المستوى الأكاديمي والتحصيل لـ (${student.name}) في مادة اللغة العربية، يرجى التكرم بانتظام الطالب والتواصل مع إدارة المركز.
+حرصاً على المستوى الأكاديمي والتحصيل لـ (${student.name}) في مادة ${subjectName}، يرجى التكرم بانتظام الطالب والتواصل مع إدارة المركز.
 
 شاكرين لسيادتكم حسن التعاون.
 
-#سيستم الدكتور في اللغة العربية`;
+${sig}`;
 
     setCustomWhatsAppMsg(defaultMsg);
     setWhatsAppModalStudent({ student, count, dates });
@@ -273,6 +277,9 @@ export default function ExamsAndAssignments() {
   ) => {
     const isMissing = gradeContext.type === 'exam' ? gradeContext.flag : !gradeContext.flag;
     const typeName = gradeContext.type === 'exam' ? 'امتحان' : 'واجب';
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
+    const sig = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
     
     let resultText = '';
     if (gradeContext.type === 'exam') {
@@ -284,7 +291,7 @@ export default function ExamsAndAssignments() {
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
 ولي أمر الطالب/ة: ${student.name}
 
-تحية طيبة وبعد من إدارة الدكتور في اللغة العربية،
+تحية طيبة وبعد من إدارة ${centerTitle}،
 نود إبلاغكم بنتيجة الطالب/ة في ${typeName} (${gradeContext.title}):
 
 ${resultText}
@@ -292,7 +299,7 @@ ${resultText}
 يرجى الاهتمام والمتابعة مع السنتر حرصاً على المستوى الأكاديمي للطالب/ة.
 شاكرين لسيادتكم حسن التعاون.
 
-#سيستم الدكتور في اللغة العربية`;
+${sig}`;
 
     setCustomWhatsAppMsg(defaultMsg);
     setWhatsAppModalStudent({ student, gradeContext });
@@ -311,10 +318,12 @@ ${resultText}
 
     const currentClass = classes.find(c => c.id === selectedClassId);
     const groupName = currentClass ? currentClass.name : 'المجموعة الدراسية';
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
 
     const defaultText = `السلام عليكم ورحمة الله وبركاته،
 إلى ولي أمر الطالب/ة: ${student.name}
-تحية طيبة وبعد من إدارة سنتر الدكتور في اللغة العربية،
+تحية طيبة وبعد من إدارة ${centerTitle}،
 
 نود إحاطتكم بتكرار غياب الطالب/ة بمجموعة (${groupName}) لأكثر من 3 مرات في هذا الشهر (إجمالي الغياب: ${count} مرات). يرجى المتابعة لضمان تحصيل المنهج.`;
 
@@ -348,10 +357,12 @@ ${resultText}
 
     const currentClass = classes.find(c => c.id === selectedClassId);
     const groupName = currentClass ? currentClass.name : 'المجموعة الدراسية';
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
 
     const defaultText = `السلام عليكم ورحمة الله وبركاته،
 إلى ولي أمر الطالب/ة: ${student.name}
-تحية طيبة وبعد من إدارة سنتر الدكتور في اللغة العربية،
+تحية طيبة وبعد من إدارة ${centerTitle}،
 
 نود إحاطتكم بتكرار غياب الطالب/ة بمجموعة (${groupName}) لأكثر من 3 مرات في هذا الشهر (إجمالي الغياب: ${count} مرات). يرجى المتابعة لضمان تحصيل المنهج.`;
 
@@ -998,7 +1009,8 @@ ${resultText}
   }, [assignments, assignmentSearch, classes]);
 
   if (showPrintModal && activeEvaluationObj) {
-    const centerName = 'الدكتور في اللغة العربية';
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const centerName = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
     const centerPhone = localStorage.getItem('sams_center_phone') || '';
     const centerLogo = localStorage.getItem('sams_center_logo') || '';
     const currentClass = classes.find(c => c.id === selectedClassId);

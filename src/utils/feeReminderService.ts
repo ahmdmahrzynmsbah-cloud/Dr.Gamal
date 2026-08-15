@@ -45,7 +45,9 @@ export function generateWhatsAppReminderText(
   amount: number,
   gradeLevel: string
 ): string {
-  const customCenterTitle = localStorage.getItem('sams_custom_app_name_v2') || 'الدكتور في اللغة العربية';
+  const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+  const customCenterTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_custom_app_name_v2') || 'الدكتور في اللغة العربية');
+  const signature = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
   
   return `السلام عليكم ورحمة الله وبركاته 🌸
 السيد ولي أمر الطالب/ة: *${studentName}* (${parentName || 'المحترم'})
@@ -58,8 +60,7 @@ export function generateWhatsAppReminderText(
 
 شاكرين لكم حسن تعاونكم ودعمكم الدائم! 🌺
 
-#سيستم الدكتور في اللغة العربية`;
-
+${signature}`;
 }
 
 /**

@@ -154,7 +154,9 @@ export default function StudentBarcodes() {
                   className="border-2 border-slate-800 rounded-xl p-3.5 flex flex-col items-center text-center shadow-sm print:shadow-none bg-white dark:bg-slate-800 break-inside-avoid print:break-inside-avoid"
                   style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}
                 >
-                  <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">الدكتور في اللغة العربية</h3>
+                  <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">
+                    {typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية')}
+                  </h3>
                   <div className="w-full mt-2 mb-3">
                     <p className="font-black text-slate-900 dark:text-slate-50 text-base">{student.name}</p>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">المجموعة: {classroom?.name || 'غير محدد'}</p>

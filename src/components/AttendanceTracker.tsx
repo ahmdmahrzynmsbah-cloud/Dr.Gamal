@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Student, ClassRoom, Attendance } from '../types';
-import { samsDb } from '../utils/db';
+import { samsDb, getActiveSystem } from '../utils/db';
 import { CheckCheck, Printer, AlertCircle, Scan, UserCheck, Calendar, RotateCcw, Search, ShieldAlert, Wifi, Check, X, MessageSquare, Send, Smartphone } from 'lucide-react';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -122,13 +122,17 @@ export default function AttendanceTracker() {
     const parentName = student.parent_name || 'ولي الأمر العزيز';
     const childName = student.name;
     
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    const sysSuffix = isAlsafa ? '_alsafa' : '';
+    const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
+
     let template = '';
     if (status === 'present') {
-        template = localStorage.getItem('sams_msg_template_present') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) حضر النهاردة في السنتر. شكراً لمتابعتك.';
+        template = localStorage.getItem(`sams_msg_template_present${sysSuffix}`) || `السلام عليكم، عزيزي ولي الأمر ({اسم_ولي_الأمر})، نحيطكم علماً بأن الطالب/ة ({اسم_الطالب}) قد حضر اليوم في (${centerTitle}). شكراً لمتابعتكم المستمرة.`;
     } else if (status === 'excused') {
-        template = localStorage.getItem('sams_msg_template_excused') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، تم تسجيل استئذان للطالب/ة ({اسم_الطالب}) عن الحضور النهاردة للسنتر.';
+        template = localStorage.getItem(`sams_msg_template_excused${sysSuffix}`) || `السلام عليكم، عزيزي ولي الأمر ({اسم_ولي_الأمر})، تم تسجيل إذن مسبق للطالب/ة ({اسم_الطالب}) عن حصة اليوم في (${centerTitle}).`;
     } else {
-        template = localStorage.getItem('sams_msg_template_absence') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) غاب النهاردة عن السنتر. ياريت تتواصل معانا عشان نعرف السبب. شكراً لمتابعتك.';
+        template = localStorage.getItem(`sams_msg_template_absence${sysSuffix}`) || `السلام عليكم، عزيزي ولي الأمر ({اسم_ولي_الأمر})، نود إحاطتكم بغياب الطالب/ة ({اسم_الطالب}) اليوم عن حصة (${centerTitle}). برجاء التواصل معنا لمعرفة السبب والاطمئنان عليه.`;
     }
     
     const todayString = new Date().toISOString().split('T')[0];

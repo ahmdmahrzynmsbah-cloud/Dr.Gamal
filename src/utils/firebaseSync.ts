@@ -63,7 +63,27 @@ const ALL_SYNC_KEYS = [
   'sams_admin_notifications',
   'sams_salaries',
   'sams_system_users',
-  'sams_grade_monthly_fees'
+  'sams_grade_monthly_fees',
+  // Alsafa System Keys
+  'sams_v2_alsafa_students',
+  'sams_v2_alsafa_teachers',
+  'sams_v2_alsafa_classes',
+  'sams_v2_alsafa_subjects',
+  'sams_v2_alsafa_grades',
+  'sams_v2_alsafa_attendance',
+  'sams_v2_alsafa_fees',
+  'sams_v2_alsafa_notifications',
+  'sams_v2_alsafa_audit_logs',
+  'sams_v2_alsafa_current_user_role',
+  'sams_v2_alsafa_center_schedule',
+  'sams_v2_alsafa_exams',
+  'sams_v2_alsafa_assignments',
+  'sams_v2_alsafa_exam_grades',
+  'sams_v2_alsafa_assignment_grades',
+  'sams_alsafa_salaries',
+  'sams_alsafa_admin_notifications',
+  'sams_alsafa_system_users',
+  'sams_alsafa_grade_monthly_fees'
 ];
 
 let isInitialized = false;

@@ -44,18 +44,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   // Once a center registers transactions, we assume active students with no payment have a standard subscription of 350 L.E.
   const activeStudentsList = students.filter(s => s.status === 'active');
   const unpaidStudents = activeStudentsList.filter(s => !fees.some(f => f.student_id === s.id));
-let gradeFees = {
-    'الأول الإعدادي': 150,
-    'الثاني الإعدادي': 150,
-    'الثالث الإعدادي': 150,
-    'الأول الثانوي': 200,
-    'الثاني الثانوي': 250,
-    'الثالث الثانوي': 300
-  };
-  try {
-    const saved = localStorage.getItem('sams_grade_monthly_fees');
-    if (saved) gradeFees = JSON.parse(saved);
-  } catch (e) {}
+  let gradeFees = samsDb.getGradeMonthlyFees();
   
   const pendingRevenue = fees.length === 0 ? 0 : unpaidStudents.reduce((sum, s) => {
     return sum + (gradeFees[s.grade_level] || 250);

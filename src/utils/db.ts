@@ -19,6 +19,22 @@ import {
   INITIAL_CENTER_SCHEDULE
 } from '../data/initialData';
 
+// ACTIVE SYSTEM CONTEXT
+export type SystemContext = 'doctor' | 'alsafa';
+
+export function getActiveSystem(): SystemContext {
+  if (typeof window === 'undefined') return 'doctor';
+  return (localStorage.getItem('sams_active_system') as SystemContext) || 'doctor';
+}
+
+export function setActiveSystem(sys: SystemContext) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('sams_active_system', sys);
+    window.dispatchEvent(new CustomEvent('sams_system_switched', { detail: { system: sys } }));
+    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key: 'system_switch' } }));
+  }
+}
+
 // KEYS FOR LOCALSTORAGE
 const KEYS = {
   STUDENTS: 'sams_v2_students',
@@ -38,28 +54,76 @@ const KEYS = {
   ASSIGNMENT_GRADES: 'sams_v2_assignment_grades'
 };
 
-// LOAD INITIAL DATA OR USE SAVED STATE
-function loadFromStorage<T>(key: string, defaultVal: T): T {
-  const data = localStorage.getItem(key);
-  if (!data) {
-    localStorage.setItem(key, JSON.stringify(defaultVal));
+function getSystemKey(baseKey: string): string {
+  const active = getActiveSystem();
+  if (active === 'alsafa') {
+    if (baseKey.startsWith('sams_v2_')) {
+      return baseKey.replace('sams_v2_', 'sams_v2_alsafa_');
+    }
+    if (baseKey.startsWith('sams_')) {
+      return baseKey.replace('sams_', 'sams_alsafa_');
+    }
+    return `alsafa_${baseKey}`;
+  }
+  return baseKey;
+}
+
+function getSystemDefault<T>(baseKey: string, defaultVal: T): T {
+  const active = getActiveSystem();
+  if (active === 'alsafa') {
+    if (baseKey === 'sams_system_users') {
+      return [
+        { id: 'u-alsafa-1', name: 'مدير سيستم الصفا', role: 'teacher', password: '4444', isDefault: true },
+        { id: 'u-alsafa-2', name: 'سكرتارية سيستم الصفا', role: 'secretary', password: '4444', isDefault: true }
+      ] as any;
+    }
+    // For alsafa, system must start completely fresh and empty as explicitly requested
+    if (baseKey === KEYS.CURRENT_USER_ROLE) return 'teacher' as any;
+    if (baseKey === KEYS.CENTER_SCHEDULE) {
+      return {
+        saturday: [], sunday: [], monday: [], tuesday: [], wednesday: [], thursday: [], friday: []
+      } as any;
+    }
+    if (Array.isArray(defaultVal)) {
+      return [] as any;
+    }
     return defaultVal;
+  } else {
+    if (baseKey === 'sams_system_users') {
+      return [
+        { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
+        { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
+      ] as any;
+    }
+  }
+  return defaultVal;
+}
+
+// LOAD INITIAL DATA OR USE SAVED STATE
+function loadFromStorage<T>(baseKey: string, defaultVal: T): T {
+  const realKey = getSystemKey(baseKey);
+  const realDefault = getSystemDefault(baseKey, defaultVal);
+  const data = localStorage.getItem(realKey);
+  if (!data) {
+    localStorage.setItem(realKey, JSON.stringify(realDefault));
+    return realDefault;
   }
   try {
     const parsed = JSON.parse(data);
     return parsed as T;
   } catch (e) {
-    return defaultVal;
+    return realDefault;
   }
 }
 
-export function saveToStorage<T>(key: string, data: T) {
-  localStorage.setItem(key, JSON.stringify(data));
-  localStorage.setItem(`${key}_ts`, Date.now().toString());
+export function saveToStorage<T>(baseKey: string, data: T) {
+  const realKey = getSystemKey(baseKey);
+  localStorage.setItem(realKey, JSON.stringify(data));
+  localStorage.setItem(`${realKey}_ts`, Date.now().toString());
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key } }));
+    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key: realKey } }));
   }
-  syncToFirebase(key, data);
+  syncToFirebase(realKey, data);
 }
 
 // SIMULATE TIME STAMP

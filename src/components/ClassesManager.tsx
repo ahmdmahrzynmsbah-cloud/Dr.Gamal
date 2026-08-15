@@ -116,7 +116,9 @@ export default function ClassesManager() {
 
   // PDF / Print Customization State
   const [printHeaderTitle, setPrintHeaderTitle] = useState(
-    localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية'
+    (typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa')
+      ? 'سيستم الصفا للمواد الشرعية'
+      : (localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية')
   );
   const [printHeaderSubtitle, setPrintHeaderSubtitle] = useState(
     localStorage.getItem('sams_custom_header_subtitle_v2') || 'سجل متابعة وكشوفات طلاب المجموعات التعليمية'
@@ -1078,15 +1080,19 @@ export default function ClassesManager() {
               <button
                 type="button"
                 onClick={() => {
+                  const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+                  const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
+                  const sig = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
+
                   const defaultBroadcastMsg = `السلام عليكم ورحمة الله وبركاته،
-أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - سنتر الدكتور في اللغة العربية،
+أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - ${centerTitle}،
 تحية طيبة وبعد،
 
 نود إحاطتكم بجدول مواعيد المجموعة (${formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
 
 شاكرين لكم حسن التعاون.
 
-#سيستم الدكتور في اللغة العربية`;
+${sig}`;
                   setGroupWhatsAppMsg(defaultBroadcastMsg);
                   setShowGroupWhatsAppModal(true);
                 }}
@@ -1379,7 +1385,7 @@ export default function ClassesManager() {
                             {/* WhatsApp Direct */}
                             {student.parent_phone && (
                               <a
-                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر الطالب/ة: ${student.name}\nتحية طيبة وبعد من سنتر الدكتور في اللغة العربية...\n\n#سيستم الدكتور في اللغة العربية`)}`}
+                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر الطالب/ة: ${student.name}\nتحية طيبة وبعد من ${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية'}...\n\n${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية'}`)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-emerald-200 dark:border-emerald-700"
@@ -2356,14 +2362,6 @@ export default function ClassesManager() {
         </div>
       )}
 
-      {/* Help banner for Drag & Drop */}
-      <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl p-3 flex items-center justify-between text-xs text-sky-900 dark:text-sky-200 font-sans">
-        <div className="flex items-center gap-2">
-          <Move className="w-4 h-4 text-[#0D5C8C]" />
-          <span><strong>خاصية تنظيم المواعيد بالسحب والإفلات:</strong> يمكنك سحب كروت المجموعات وتغيير ترتيبها، أو إفلاتها مباشرة داخل جدول أوقات المعلم لتنظيم الحصص والمواعيد بسهولة.</span>
-        </div>
-      </div>
-
       {/* Class list Grid cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {classes.map((cls, index) => {
@@ -2482,207 +2480,6 @@ export default function ClassesManager() {
             </div>
           );
         })}
-      </div>
-
-
-      {/* Dynamic Week Class Schedule */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
-            أوقات المحاضرات وجدول التوزيع اليومي الأسبوعي الأساسي للمجموعات بالسنتر
-          </h3>
-          <div className="flex items-center gap-2">
-            {/* Trash Drop Zone */}
-            <div
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                const dataRaw = e.dataTransfer.getData('text/plain');
-                let payload: any = null;
-                try { if (dataRaw) payload = JSON.parse(dataRaw); } catch {}
-                const key = draggedScheduleSlot?.key || payload?.key;
-                if (key) {
-                  handleDeleteScheduleSlot(key);
-                  setDraggedScheduleSlot(null);
-                }
-              }}
-              className="border border-dashed border-red-300 dark:border-red-800 bg-red-50/60 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
-              title="اسحب أي حصة هنا لحذفها فوراً"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-              <span>إلقاء هنا للحذف</span>
-            </div>
-
-            {!isEditingSchedule ? (
-              <button onClick={() => { setIsEditingSchedule(true); setEditingSchedule(schedule ? JSON.parse(JSON.stringify(schedule)) : null); }} className="text-xs bg-[#0D5C8C] text-white px-3 py-1.5 rounded-lg cursor-pointer">تعديل الجدول</button>
-            ) : (
-              <div className="flex gap-2">
-                <button onClick={() => setIsEditingSchedule(false)} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg cursor-pointer">إلغاء</button>
-                <button onClick={() => { if (editingSchedule) { samsDb.saveCenterSchedule(editingSchedule); setSchedule(editingSchedule); setIsEditingSchedule(false); } }} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"><Check className="w-3 h-3"/> حفظ</button>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          يتكون الأسبوع الدراسي من أيام وفترات يمكن تخصيصها.
-        </p>
-
-        {(isEditingSchedule && editingSchedule) || (!isEditingSchedule && schedule) ? (
-          <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-xl mt-2 text-xxs sm:text-xs">
-            <table className="min-w-full text-right border-collapse" dir="rtl">
-              <thead className="bg-[#0D5C8C] text-white">
-                <tr>
-                  <th className="p-3 w-32 border-b border-[#0A4B73]">اليوم</th>
-                  {(isEditingSchedule ? editingSchedule : schedule)?.periods?.map(period => (
-                    <th key={period.id} className="p-2 border-r border-[#0A4B73] border-b">
-                      {isEditingSchedule ? (
-                        <div className="flex flex-col gap-1 items-start">
-                          <input type="text" value={period.name} onChange={(e) => {
-                            const newSched = {...editingSchedule} as any;
-                            const p = newSched.periods.find((x: any) => x.id === period.id);
-                            if (p) p.name = e.target.value;
-                            setEditingSchedule(newSched);
-                          }} className="text-black px-1 py-0.5 rounded text-xs w-full" placeholder="اسم الفترة" />
-                          <input type="text" value={period.time} onChange={(e) => {
-                            const newSched = {...editingSchedule} as any;
-                            const p = newSched.periods.find((x: any) => x.id === period.id);
-                            if (p) p.time = e.target.value;
-                            setEditingSchedule(newSched);
-                          }} className="text-black px-1 py-0.5 rounded text-[10px] w-full mt-1" placeholder="الوقت" />
-                          <label className="flex items-center gap-1 text-[10px] mt-1"><input type="checkbox" checked={period.isBreak} onChange={(e) => {
-                            const newSched = {...editingSchedule} as any;
-                            const p = newSched.periods.find((x: any) => x.id === period.id);
-                            if (p) p.isBreak = e.target.checked;
-                            setEditingSchedule(newSched);
-                          }} /> استراحة؟</label>
-                        </div>
-                      ) : (
-                        <div className="text-center">{period.name} <br/><span className="text-[10px] opacity-80">({period.time})</span></div>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 font-sans text-slate-700 dark:text-slate-200">
-                {(isEditingSchedule ? editingSchedule : schedule)?.days?.map(day => (
-                  <tr key={day.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="p-3 font-bold bg-slate-50 dark:bg-slate-900/50 border-l border-gray-100 dark:border-gray-700">
-                      {isEditingSchedule ? (
-                        <input type="text" value={day.name} onChange={(e) => {
-                          const newSched = {...editingSchedule} as any;
-                          const d = newSched.days.find((x: any) => x.id === day.id);
-                          if (d) d.name = e.target.value;
-                          setEditingSchedule(newSched);
-                        }} className="px-1 py-0.5 border rounded w-full" />
-                      ) : (
-                        day.name
-                      )}
-                    </td>
-                    {(isEditingSchedule ? editingSchedule : schedule)?.periods?.map(period => {
-                      const entryKey = `${day.id}_${period.id}`;
-                      const currentSchedule = isEditingSchedule ? editingSchedule : schedule;
-                      const currentSubject = currentSchedule?.entries?.[entryKey] || '';
-                      
-                      return (
-                        <td
-                          key={period.id}
-                          onDragOver={(e) => !period.isBreak && handleScheduleSlotDragOver(e, entryKey)}
-                          onDragLeave={() => setDragOverScheduleSlotKey(null)}
-                          onDrop={(e) => !period.isBreak && handleScheduleSlotDrop(e, entryKey)}
-                          className={`p-3 border-r border-gray-100 dark:border-gray-700/50 transition-all ${
-                            period.isBreak ? 'bg-slate-50/50 dark:bg-slate-900/30 text-slate-400' : ''
-                          } ${
-                            dragOverScheduleSlotKey === entryKey
-                              ? 'bg-sky-100/80 dark:bg-sky-900/60 border-2 border-dashed border-[#0D5C8C] ring-2 ring-sky-300 scale-[1.02]'
-                              : ''
-                          }`}
-                        >
-                          {isEditingSchedule && !period.isBreak ? (
-                            <div className="flex flex-col gap-1 relative group/edit">
-                              <input type="text" value={currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject} onChange={(e) => {
-                                 const newSched = JSON.parse(JSON.stringify(editingSchedule));
-                                 if (!newSched.entries) newSched.entries = {};
-                                 const grade = currentSubject.includes('||') ? currentSubject.split('||')[1] : '';
-                                 if (!e.target.value && !grade) {
-                                   delete newSched.entries[entryKey];
-                                 } else {
-                                   newSched.entries[entryKey] = `${e.target.value}||${grade}`;
-                                 }
-                                 setEditingSchedule(newSched);
-                              }} className="px-2 py-1 border rounded w-full text-xs" placeholder="اسم المجموعة" />
-                              <input type="text" value={currentSubject.includes('||') ? currentSubject.split('||')[1] || '' : ''} onChange={(e) => {
-                                 const newSched = JSON.parse(JSON.stringify(editingSchedule));
-                                 if (!newSched.entries) newSched.entries = {};
-                                 const group = currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject;
-                                 if (!group && !e.target.value) {
-                                   delete newSched.entries[entryKey];
-                                 } else {
-                                   newSched.entries[entryKey] = `${group}||${e.target.value}`;
-                                 }
-                                 setEditingSchedule(newSched);
-                              }} className="px-2 py-1 border rounded w-full text-[10px]" placeholder="الصف الدراسي" />
-                              {currentSubject && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteScheduleSlot(entryKey)}
-                                  className="text-[10px] text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-900/30 p-1 rounded font-bold transition-colors flex items-center justify-center gap-1 mt-0.5 cursor-pointer"
-                                  title="تفريغ هذا الموعد"
-                                >
-                                  <X className="w-3 h-3" /> مسح الموعد
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-center relative group/slot">
-                              {period.isBreak ? <span className="text-[10px] italic">فترة استراحة</span> : (
-                                currentSubject ? (
-                                  <div className="relative">
-                                    <div
-                                      draggable={true}
-                                      onDragStart={(e) => handleScheduleSlotDragStart(e, entryKey, currentSubject)}
-                                      className="flex flex-col items-center cursor-grab active:cursor-grabbing hover:bg-sky-50 dark:hover:bg-slate-700/60 p-1.5 rounded-lg border border-transparent hover:border-sky-200 dark:hover:border-slate-600 transition-all group"
-                                      title="سحب لنقل أو تبديل الحصة في جدول المعلم"
-                                    >
-                                      <div className="flex items-center gap-1">
-                                        <GripVertical className="w-3 h-3 text-slate-300 group-hover:text-[#0D5C8C] transition-colors" />
-                                        <span className="font-bold text-xs">{currentSubject.includes('||') ? currentSubject.split('||')[0] : currentSubject}</span>
-                                      </div>
-                                      {currentSubject.includes('||') && currentSubject.split('||')[1] && (
-                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-1 font-semibold">{currentSubject.split('||')[1]}</span>
-                                      )}
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteScheduleSlot(entryKey);
-                                      }}
-                                      className="absolute -top-1.5 -left-1.5 opacity-0 group-hover/slot:opacity-100 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all shadow-xs cursor-pointer z-10"
-                                      title="حذف تفريغ الحصة من هذا الموعد"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="text-slate-300 dark:text-slate-600 text-xs py-1 border border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded cursor-pointer">
-                                    اسحب مجموعة هنا
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center p-5 text-slate-500 dark:text-slate-400 text-xs">جاري تحميل الجدول...</div>
-        )}
       </div>
 
       {/* Custom Delete Confirmation Modal */}

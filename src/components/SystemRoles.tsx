@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Key, User, Plus, Check, X, Trash2, Edit2, Lock } from 'lucide-react';
-import { samsDb } from '../utils/db';
+import { samsDb, getActiveSystem } from '../utils/db';
 import { ClassRoom } from '../types';
 
 interface SystemUser {
@@ -75,14 +75,30 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
   }, [successMsg]);
 
   const loadUsers = () => {
-    const saved = samsDb.getSystemUsers();
+    const isAlsafa = getActiveSystem() === 'alsafa';
+    let saved = samsDb.getSystemUsers();
+    
+    // If in alsafa and we find legacy default '123' / 'المدير الأكاديمي', replace with alsafa default
+    if (isAlsafa && saved && saved.length > 0 && saved[0].password === '123' && saved[0].name === 'المدير الأكاديمي') {
+      saved = [
+        { id: 'u-alsafa-1', name: 'مدير سيستم الصفا', role: 'teacher', password: '4444', isDefault: true },
+        { id: 'u-alsafa-2', name: 'سكرتارية سيستم الصفا', role: 'secretary', password: '4444', isDefault: true }
+      ];
+      samsDb.saveSystemUsers(saved);
+    }
+
     if (saved && saved.length > 0) {
       setUsers(saved);
     } else {
-      const defaultUsers: SystemUser[] = [
-        { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
-        { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
-      ];
+      const defaultUsers: SystemUser[] = isAlsafa
+        ? [
+            { id: 'u-alsafa-1', name: 'مدير سيستم الصفا', role: 'teacher', password: '4444', isDefault: true },
+            { id: 'u-alsafa-2', name: 'سكرتارية سيستم الصفا', role: 'secretary', password: '4444', isDefault: true }
+          ]
+        : [
+            { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
+            { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
+          ];
       setUsers(defaultUsers);
       samsDb.saveSystemUsers(defaultUsers);
     }

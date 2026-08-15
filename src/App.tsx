@@ -52,23 +52,35 @@ import ExamsAndAssignments from './components/ExamsAndAssignments';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import ThemeToggle from './components/ThemeToggle';
 import InstallPWAButton from './components/InstallPWAButton';
-import { Settings, Search, ShieldCheck } from 'lucide-react';
+import { Settings, Search, ShieldCheck, Building2 } from 'lucide-react';
 import { initFirebaseSync } from './utils/firebaseSync';
 import { AdminNotification } from './types';
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'motion/react';
 
-import { samsDb, saveToStorage } from './utils/db';
+import { samsDb, saveToStorage, getActiveSystem, setActiveSystem, SystemContext } from './utils/db';
 import { checkFeeDueDatesBackgroundService } from './utils/feeReminderService';
 
 type TabType = 'dashboard' | 'students' | 'parents' | 'barcodes' | 'classes' | 'attendance' | 'fees' | 'notifications' | 'roles' | 'audit' | 'settings' | 'exams' | 'salaries' | 'privacy';
 
 export default function App() {
+  // Active system context
+  const [activeSystem, setActiveSystemState] = useState<SystemContext>(() => getActiveSystem());
+
   // Initial loading states
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('جاري تهيئة النظام الأكاديمي...');
+  const [loadingText, setLoadingText] = useState('جاري تهيئة المنظومة...');
+
+  useEffect(() => {
+    const onSystemSwitched = (e: any) => {
+      setActiveSystemState(getActiveSystem());
+      setRefreshTrigger(prev => prev + 1);
+    };
+    window.addEventListener('sams_system_switched', onSystemSwitched);
+    return () => window.removeEventListener('sams_system_switched', onSystemSwitched);
+  }, []);
 
   useEffect(() => {
     // Step-by-step progress simulation with realistic texts
@@ -86,16 +98,17 @@ export default function App() {
         const nextProgress = prev + Math.floor(Math.random() * 12) + 4;
         const boundedProgress = Math.min(nextProgress, 100);
         
+        const currentSys = getActiveSystem();
         if (boundedProgress < 25) {
-          setLoadingText('تأمين بوابة الدكتور في اللغة العربية...');
+          setLoadingText(currentSys === 'alsafa' ? 'تأمين بوابة سيستم الصفا للمواد الشرعية...' : 'تأمين بوابة الدكتور في اللغة العربية...');
         } else if (boundedProgress < 50) {
-          setLoadingText('جاري تحميل سجلات الطلاب وقاعدة البيانات الإدارية...');
+          setLoadingText(currentSys === 'alsafa' ? 'جاري تهيئة قاعدة بيانات سيستم الصفا...' : 'جاري تحميل سجلات الطلاب وقاعدة البيانات الإدارية...');
         } else if (boundedProgress < 75) {
           setLoadingText('تهيئة لوحة التحكم الذكية وفهرس الحصص...');
         } else if (boundedProgress < 95) {
           setLoadingText('مزامنة الحسابات وتوزيع الصلاحيات اليومية...');
         } else {
-          setLoadingText('مكتمل! مرحباً بك في منبر الضاد والريادة للأستاذ...');
+          setLoadingText(currentSys === 'alsafa' ? 'مكتمل! مرحباً بك في سيستم الصفا للمواد الشرعية...' : 'مكتمل! مرحباً بك في منبر اللغة العربية والريادة للأستاذ...');
         }
         
         return boundedProgress;
@@ -114,17 +127,17 @@ export default function App() {
   );
   const [currentUserName, setCurrentUserName] = useState(() => {
     const stored = localStorage.getItem('sams_logged_in_name') || '';
-    if (stored === 'د. أحمد كمال' || stored === 'أحمد كمال' || stored === 'د أحمد كمال') {
+    if (stored === 'د. أحمد كمال' || stored === 'أحمد كمال' || stored === 'د أحمد كمال' || stored === 'الدكتور للمواد الشرعية') {
       localStorage.setItem('sams_logged_in_name', 'الدكتور في اللغة العربية');
       return 'الدكتور في اللغة العربية';
     }
-    return stored;
+    return stored || (getActiveSystem() === 'alsafa' ? 'مدير سيستم الصفا' : 'الدكتور في اللغة العربية');
   });
 
   // Customized Branding state
   const [customAppName, setCustomAppName] = useState(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
   const [customAppLogo, setCustomAppLogo] = useState(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
-  const [customHeaderTitle, setCustomHeaderTitle] = useState(localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية');
+  const [customHeaderTitle, setCustomHeaderTitle] = useState(localStorage.getItem('sams_custom_header_title_v2') || (getActiveSystem() === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية'));
   const [customHeaderSubtitle, setCustomHeaderSubtitle] = useState(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
 
   // High-Contrast Dark Mode State
@@ -352,14 +365,19 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('sams_logged_in_role');
     localStorage.removeItem('sams_logged_in_name');
+    localStorage.removeItem('sams_logged_in_id');
     setCurrentUserRole(null);
     setCurrentUserName('');
+    setCurrentUserId(null);
   };
 
   const [openNavGroups, setOpenNavGroups] = useState<string[]>([]);
 
   const currentRole = samsDb.getCurrentRole();
   const getRoleBadge = (role: string) => {
+    if (activeSystem === 'alsafa') {
+      return { name: 'مدير سيستم الصفا', style: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold' };
+    }
     if (currentUserRole === 'secretary') {
       return { name: 'سكرتيرة الإدارة', style: 'bg-sky-50 text-sky-800 border border-sky-200 font-bold' };
     }
@@ -432,8 +450,7 @@ export default function App() {
     const allowedNavItems = useMemo(() => {
     let users: any[] = [];
     try {
-      const saved = localStorage.getItem('sams_system_users');
-      if (saved) users = JSON.parse(saved);
+      users = samsDb.getSystemUsers();
     } catch (e) {}
     
     const user = users.find(u => u.id === currentUserId);
@@ -458,7 +475,11 @@ export default function App() {
   // If initial loading screen is active, render the premium loader
   if (isInitialLoading) {
     return (
-      <div className="fixed inset-0 bg-[#0B3047] bg-gradient-to-b from-[#06243A] via-[#0A3D5C] to-[#0D5C8C] flex flex-col items-center justify-center p-6 z-[9999] font-sans overflow-hidden select-none" dir="rtl">
+      <div className={`fixed inset-0 flex flex-col items-center justify-center p-6 z-[9999] font-sans overflow-hidden select-none ${
+        activeSystem === 'alsafa'
+          ? 'bg-gradient-to-b from-emerald-950 via-teal-950 to-slate-950'
+          : 'bg-[#0B3047] bg-gradient-to-b from-[#06243A] via-[#0A3D5C] to-[#0D5C8C]'
+      }`} dir="rtl">
         {/* Ambient glow backgrounds */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
@@ -466,9 +487,13 @@ export default function App() {
         <div className="relative z-10 flex flex-col items-center text-center max-w-md w-full animate-fade-in">
           {/* Logo Brand Animation */}
           <div className="relative mb-6">
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full blur-xl opacity-40 animate-pulse" />
-            <div className="relative w-24 h-24 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full flex items-center justify-center shadow-2xl text-white ring-4 ring-white/10 hover:scale-105 transition-transform duration-300">
-              <GraduationCap className="w-12 h-12 text-white stroke-[1.5]" />
+            <div className={`absolute inset-0 rounded-full blur-xl opacity-40 animate-pulse ${
+              activeSystem === 'alsafa' ? 'bg-emerald-400' : 'bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453]'
+            }`} />
+            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl text-white ring-4 ring-white/10 hover:scale-105 transition-transform duration-300 ${
+              activeSystem === 'alsafa' ? 'bg-gradient-to-tr from-emerald-600 to-teal-400' : 'bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453]'
+            }`}>
+              {activeSystem === 'alsafa' ? <Building2 className="w-12 h-12 text-white stroke-[1.5]" /> : <GraduationCap className="w-12 h-12 text-white stroke-[1.5]" />}
             </div>
             {/* Tiny stylized orbital star pins */}
             <div className="absolute -top-1 -right-1 text-amber-300 animate-ping text-lg font-bold">
@@ -480,9 +505,11 @@ export default function App() {
           </div>
 
           {/* Luxury Typography */}
-          <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">الدكتور</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
+            {activeSystem === 'alsafa' ? 'سيستم الصفا' : 'الدكتور'}
+          </h1>
           <p className="text-sm font-bold text-[#FCF6BA] mt-2 px-4 py-1.5 bg-white/10 rounded-full select-none tracking-wider shadow-inner">
-            في اللغة العربية
+            {activeSystem === 'alsafa' ? 'للمواد الشرعية' : 'في اللغة العربية'}
           </p>
 
           {/* Premium Loading Progress Panel */}
@@ -495,7 +522,11 @@ export default function App() {
             {/* Smooth linear progress bar */}
             <div className="w-full h-2.5 bg-slate-950/45 rounded-full p-0.5 overflow-hidden border border-white/5 shadow-inner">
               <div 
-                className="h-full bg-gradient-to-l from-[#1A7FAA] via-[#F5C453] to-[#E2A62C] rounded-full transition-all duration-300 relative"
+                className={`h-full rounded-full transition-all duration-300 relative ${
+                  activeSystem === 'alsafa' 
+                    ? 'bg-gradient-to-l from-emerald-500 via-teal-400 to-amber-300' 
+                    : 'bg-gradient-to-l from-[#1A7FAA] via-[#F5C453] to-[#E2A62C]'
+                }`}
                 style={{ width: `${loadingProgress}%` }}
               >
                 {/* Gloss high-end shine reflect */}
@@ -510,7 +541,7 @@ export default function App() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>نظام الإدارة التعليمية الأكاديمي v2.5</span>
+            <span>{activeSystem === 'alsafa' ? 'منظومة سيستم الصفا v2.5' : 'نظام الإدارة التعليمية الأكاديمي v2.5'}</span>
           </div>
         </div>
       </div>
@@ -523,7 +554,10 @@ export default function App() {
       <LoginScreen
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onLoginSuccess={(role, name, userId) => {
+        onLoginSuccess={(role, name, userId, system) => {
+          const targetSys = system || getActiveSystem();
+          setActiveSystem(targetSys);
+          setActiveSystemState(targetSys);
           if (userId) localStorage.setItem('sams_logged_in_id', userId);
           setCurrentUserId(userId || null);
           localStorage.setItem('sams_logged_in_role', role);
@@ -558,24 +592,44 @@ export default function App() {
 
       {/* Navigation Sidebar (RTL: right side) */}
       <aside className={` print:hidden 
-        fixed lg:static inset-y-0 right-0 bg-[#0D5C8C] text-white flex flex-col p-0 shadow-lg z-50 lg:z-auto transition-all duration-300 border-l border-[#1A7FAA]/20 shrink-0 h-full overflow-y-auto no-scrollbar
+        fixed lg:static inset-y-0 right-0 ${
+          activeSystem === 'alsafa' ? 'bg-[#064e3b] border-emerald-700/30' : 'bg-[#0D5C8C] border-[#1A7FAA]/20'
+        } text-white flex flex-col p-0 shadow-lg z-50 lg:z-auto transition-all duration-300 border-l shrink-0 h-full overflow-y-auto no-scrollbar
         ${mobileMenuOpen ? 'translate-x-0 w-72 max-w-[85vw]' : 'translate-x-full lg:translate-x-0'}
         ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
       `}>
         
         {/* Logo Brand Header */}
-        <div className={`py-5 px-4 border-b border-[#1A7FAA]/30 shrink-0 select-none bg-[#0a4d75] flex flex-col items-center justify-center text-center w-full transition-all duration-300 ${isSidebarCollapsed ? 'hidden' : 'flex'}`}>
-          <div className="w-14 h-14 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full flex items-center justify-center shadow-lg text-white mb-3 ring-4 ring-white/10">
-            <GraduationCap className="w-8 h-8 text-white stroke-[1.5]" />
-          </div>
-          <h1 className="text-xl font-extrabold text-white tracking-wide">الدكتور</h1>
-          <p className="text-xs font-semibold text-[#FCF6BA] mt-1.5 px-3 py-1 bg-white/10 rounded-full select-none">في اللغة العربية</p>
+        <div className={`py-5 px-4 border-b shrink-0 select-none flex flex-col items-center justify-center text-center w-full transition-all duration-300 ${
+          activeSystem === 'alsafa' ? 'bg-[#043d2e] border-emerald-700/30' : 'bg-[#0a4d75] border-[#1A7FAA]/30'
+        } ${isSidebarCollapsed ? 'hidden' : 'flex'}`}>
+          {activeSystem === 'alsafa' ? (
+            <>
+              <div className="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-300 rounded-full flex items-center justify-center shadow-lg text-white mb-3 ring-4 ring-white/15">
+                <Building2 className="w-8 h-8 text-white stroke-[1.5]" />
+              </div>
+              <h1 className="text-xl font-extrabold text-white tracking-wide">سيستم الصفا</h1>
+              <p className="text-xs font-semibold text-emerald-100 mt-1.5 px-3.5 py-1 bg-white/15 rounded-full select-none backdrop-blur-xs">للمواد الشرعية</p>
+            </>
+          ) : (
+            <>
+              <div className="w-14 h-14 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full flex items-center justify-center shadow-lg text-white mb-3 ring-4 ring-white/10">
+                <GraduationCap className="w-8 h-8 text-white stroke-[1.5]" />
+              </div>
+              <h1 className="text-xl font-extrabold text-white tracking-wide">الدكتور</h1>
+              <p className="text-xs font-semibold text-[#FCF6BA] mt-1.5 px-3 py-1 bg-white/10 rounded-full select-none">في اللغة العربية</p>
+            </>
+          )}
         </div>
 
         {isSidebarCollapsed && (
-          <div className="py-5 px-2 border-b border-[#1A7FAA]/30 shrink-0 select-none bg-[#0a4d75] flex flex-col items-center justify-center text-center w-full transition-all duration-300">
-             <div className="w-10 h-10 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full flex items-center justify-center shadow-lg text-white ring-2 ring-white/10">
-              <GraduationCap className="w-5 h-5 text-white stroke-[1.5]" />
+          <div className={`py-5 px-2 border-b shrink-0 select-none flex flex-col items-center justify-center text-center w-full transition-all duration-300 ${
+            activeSystem === 'alsafa' ? 'bg-[#043d2e] border-emerald-700/30' : 'bg-[#0a4d75] border-[#1A7FAA]/30'
+          }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg text-white ring-2 ring-white/10 ${
+              activeSystem === 'alsafa' ? 'bg-gradient-to-tr from-emerald-500 to-teal-300' : 'bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453]'
+            }`}>
+              {activeSystem === 'alsafa' ? <Building2 className="w-5 h-5 text-white stroke-[1.5]" /> : <GraduationCap className="w-5 h-5 text-white stroke-[1.5]" />}
             </div>
           </div>
         )}

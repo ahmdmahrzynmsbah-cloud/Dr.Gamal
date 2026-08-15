@@ -160,12 +160,14 @@ export default function NotificationsCenter() {
       // 2. Send WhatsApp background promise with active custom credentials if enabled
       let waPromise = null;
       if (whatsappEnabled) {
+        const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+        const platformName = isAlsafa ? 'إدارة سيستم الصفا للمواد الشرعية' : 'إدارة الدكتور في اللغة العربية';
         waPromise = fetch('/api/send-whatsapp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             to: phone, 
-            message: ` رسالة رسمية لولي الأمر من منصة الإدارة \n\n${message}`,
+            message: ` 🏛️ رسالة رسمية لولي الأمر من ${platformName} \n\n${message}`,
             callmebotApiKey: cKey,
             ultramsgInstanceId: uId,
             ultramsgToken: uToken

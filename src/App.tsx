@@ -904,81 +904,24 @@ export default function App() {
             {/* Khaled Sakr Style Animated Theme Switcher */}
             <ThemeToggle isDarkMode={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
 
-            <div className="relative" ref={notiDropdownRef}>
-              <button 
-                onClick={() => setShowNotiDropdown(!showNotiDropdown)}
-                className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-full cursor-pointer transition-colors"
-              >
-                <Bell className="w-5 h-5" />
-                {unreadNotisCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                )}
-              </button>
-              
-              <AnimatePresence>
-                {showNotiDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute left-0 top-full mt-2 w-[350px] max-w-[90vw] -right-20 md:left-0 md:right-auto bg-white dark:bg-slate-800 border border-gray-150 rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[400px]"
-                    dir="rtl"
-                  >
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                      <div className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">الإشعارات</div>
-                      {unreadNotisCount > 0 && (
-                        <button 
-                          onClick={handleMarkAllRead}
-                          className="text-xs text-[#0D5C8C] hover:text-sky-700 font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <CheckCheck className="w-3.5 h-3.5" />
-                          تحديد الكل كمقروء
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="overflow-y-auto flex-1 no-scrollbar p-2 space-y-1">
-                      {displayedNotis.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 text-xs font-sans">
-                          لا توجد إشعارات حالياً
-                        </div>
-                      ) : (
-                        displayedNotis.map(noti => (
-                          <div 
-                            key={noti.id} 
-                            className={`p-3 rounded-xl border ${noti.read ? 'border-transparent opacity-60 bg-white dark:bg-slate-800' : 'border-blue-100 bg-blue-50/30'} flex gap-3 transition-colors text-right relative`}
-                          >
-                            <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${noti.type === 'absence' ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
-                              {noti.type === 'absence' ? <Bell className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                            </div>
-                            <div className="flex-1 space-y-1 pr-1">
-                              <p className={`text-xs leading-relaxed ${noti.read ? 'text-slate-600 dark:text-slate-300' : 'text-slate-900 dark:text-slate-50 font-bold'}`}>
-                                {noti.message}
-                              </p>
-                              <div className="flex items-center gap-2 pt-0.5">
-                                <span className="text-[10px] text-slate-400 font-sans">
-                                  {new Date(noti.created_at).toLocaleDateString('ar-EG')} - {new Date(noti.created_at).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})}
-                                </span>
-                              </div>
-                            </div>
-                            {!noti.read && (
-                              <button 
-                                onClick={() => handleMarkNotiRead(noti.id)}
-                                className="absolute left-3 top-3 p-1.5 text-slate-400 hover:text-[#0D5C8C] hover:bg-blue-100 rounded-md transition-colors cursor-pointer"
-                                title="تحديد كمقروء"
-                              >
-                                <CheckCheck className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            {/* Notification Bell linking directly to dedicated Notifications Center */}
+            <button 
+              onClick={() => setActiveTab('notifications')}
+              className={`relative p-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
+                activeTab === 'notifications'
+                  ? 'bg-[#0D5C8C]/10 text-[#0D5C8C] dark:bg-sky-950/50 dark:text-sky-400 ring-2 ring-[#0D5C8C]/20'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+              title="مركز الإشعارات والتنبيهات"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadNotisCount > 0 && (
+                <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-slate-800"></span>
+                </span>
+              )}
+            </button>
 
             {/* Clock moved to Dashboard & Footer as requested */}
           </div>
@@ -997,7 +940,7 @@ export default function App() {
             {activeTab === 'attendance' && <AttendanceTracker />}
             {activeTab === 'salaries' && <SalariesManager />}
             {activeTab === 'fees' && <FeesTracker />}
-            {activeTab === 'notifications' && <NotificationsCenter />}
+            {activeTab === 'notifications' && <NotificationsCenter onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'roles' && <SystemRoles onRefreshAllData={forceRefresh} />}
             {activeTab === 'audit' && <SystemAuditLogs />}
             {activeTab === 'privacy' && <PrivacyPolicy />}

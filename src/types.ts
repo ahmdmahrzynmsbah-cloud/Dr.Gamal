@@ -185,7 +185,7 @@ export interface CenterScheduleData {
 
 export interface AdminNotification {
   id: string;
-  type: 'absence' | 'payment_reminder' | 'system';
+  type: 'absence' | 'payment_reminder' | 'exam' | 'sms' | 'system' | 'alert';
   message: string;
   created_at: string;
   read: boolean;

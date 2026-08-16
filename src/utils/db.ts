@@ -673,11 +673,40 @@ export const samsDb = {
       if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
     }
   },
+
+  toggleAdminNotificationRead(id: string) {
+    const list = this.getAdminNotifications();
+    const idx = list.findIndex(n => n.id === id);
+    if (idx !== -1) {
+      list[idx].read = !list[idx].read;
+      saveToStorage('sams_admin_notifications', list);
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
+    }
+  },
   
   markAllAdminNotificationsRead() {
     const list = this.getAdminNotifications();
     list.forEach(n => n.read = true);
     saveToStorage('sams_admin_notifications', list);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
+  },
+
+  deleteAdminNotification(id: string) {
+    const list = this.getAdminNotifications();
+    const filtered = list.filter(n => n.id !== id);
+    saveToStorage('sams_admin_notifications', filtered);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
+  },
+
+  clearReadAdminNotifications() {
+    const list = this.getAdminNotifications();
+    const filtered = list.filter(n => !n.read);
+    saveToStorage('sams_admin_notifications', filtered);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
+  },
+
+  clearAllAdminNotifications() {
+    saveToStorage('sams_admin_notifications', []);
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
   },
 

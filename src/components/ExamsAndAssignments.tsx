@@ -1420,58 +1420,59 @@ ${sig}`;
 
           {/* Active Evaluation Banner */}
           {activeEvaluationObj ? (
-            <div className="bg-[#0D5C8C]/5 border border-[#0D5C8C]/20 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#0D5C8C] text-white rounded-xl">
+            <div className="bg-[#0D5C8C]/5 border border-[#0D5C8C]/20 p-4 rounded-2xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="p-2.5 bg-[#0D5C8C] text-white rounded-xl shrink-0">
                   {gradingType === 'exam' ? <Award className="w-5 h-5" /> : <Notebook className="w-5 h-5" />}
                 </div>
-                <div>
-                  <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm truncate">
                     {gradingType === 'exam' ? (activeEvaluationObj as Exam).name : (activeEvaluationObj as Assignment).title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-sans">
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-sans">
                     {gradingType === 'exam' && (
                       <>
-                        <span className="bg-blue-100 text-[#0D5C8C] px-2 py-0.5 rounded text-[10px] font-bold">
+                        <span className="bg-blue-100 text-[#0D5C8C] px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap">
                           { {quiz: 'امتحان حصة', comprehensive: 'امتحان شامل', monthly: 'اختبار شهري', midterm: 'منتصف الفصل', final: 'اختبار نهائي' }[(activeEvaluationObj as Exam).type] || 'اختبار مخصص'}
                         </span>
                         <span>•</span>
-                        <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-slate-400" /> {(activeEvaluationObj as Exam).duration_mins} دقيقة</span>
+                        <span className="flex items-center gap-1 whitespace-nowrap"><Clock className="w-3.5 h-3.5 text-slate-400" /> {(activeEvaluationObj as Exam).duration_mins} دقيقة</span>
                         <span>•</span>
                       </>
                     )}
-                    <span>درجة التقييم العظمى: <strong className="text-amber-600 dark:text-amber-400">{(activeEvaluationObj as Exam | Assignment).max_score} درجات</strong></span>
+                    <span className="whitespace-nowrap">درجة التقييم العظمى: <strong className="text-amber-600 dark:text-amber-400">{(activeEvaluationObj as Exam | Assignment).max_score} درجات</strong></span>
                     <span>•</span>
-                    <span>تاريخ الحدث: {gradingType === 'exam' ? (activeEvaluationObj as Exam).date : (activeEvaluationObj as Assignment).due_date}</span>
+                    <span className="whitespace-nowrap">تاريخ الحدث: {gradingType === 'exam' ? (activeEvaluationObj as Exam).date : (activeEvaluationObj as Assignment).due_date}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action utilities */}
-              <div className="flex flex-wrap items-center gap-2">
-                
-
+              <div className="grid grid-cols-2 gap-2 w-full xl:w-auto xl:flex xl:items-center xl:gap-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={triggerPrintPDF}
-                  className="px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-2"
+                  className="w-full xl:w-auto px-2.5 sm:px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-[11px] sm:text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
                 >
-                  <Printer className="w-4 h-4 text-amber-300" />
-                  <span>تصدير PDF / طباعة الكشف</span>
+                  <Printer className="w-4 h-4 text-amber-300 shrink-0" />
+                  <span className="hidden sm:inline">تصدير PDF / طباعة الكشف</span>
+                  <span className="sm:hidden">طباعة PDF</span>
                 </button>
 
                 {isEditingSheet ? (
                   <button
                     onClick={handleMarkAllPerfect}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                    className="w-full xl:w-auto px-2.5 sm:px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    <span>تعبئة الدرجة كاملة للجميع</span>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="hidden sm:inline">تعبئة الدرجة كاملة للجميع</span>
+                    <span className="sm:hidden">درجة كاملة</span>
                   </button>
                 ) : (
-                  <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-800 font-bold flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-                    الدرجات معتمدة ومحفوظة
+                  <span className="w-full xl:w-auto text-[11px] sm:text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-2 sm:px-3.5 py-2 rounded-xl border border-emerald-100 dark:border-emerald-800 font-bold flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-pulse shrink-0" />
+                    <span className="hidden sm:inline">الدرجات معتمدة ومحفوظة</span>
+                    <span className="sm:hidden">الدرجات معتمدة</span>
                   </span>
                 )}
               </div>

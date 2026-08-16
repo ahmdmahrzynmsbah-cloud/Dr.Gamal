@@ -102,28 +102,28 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   return (
     <div className="space-y-6" id="sams_control_dashboard">
       {/* Header Info */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
-        <div className="flex items-center gap-2.5 bg-[#E8192C]/5 px-4 py-2 rounded-xl text-[#C0152A] text-xs font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans">
-          <Calendar className="w-4 h-4 text-[#C0152A]" />
-          <span className="whitespace-nowrap">توقيت النظام:</span>
-          <span className="font-bold">
+        <div className="flex items-center gap-1.5 sm:gap-3 bg-[#E8192C]/5 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[#C0152A] text-[10px] sm:text-sm font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans max-w-full overflow-x-auto no-scrollbar">
+          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
+          <span className="whitespace-nowrap shrink-0">توقيت النظام:</span>
+          <span className="font-bold whitespace-nowrap shrink-0">
             {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
-          <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-2 py-0.5 rounded">
+          <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded whitespace-nowrap shrink-0">
             {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
           </span>
         </div>
       </div>
 
       {/* Grid Statistics Cards - 4 Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
         
         {/* Total Students Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
+        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">إجمالي الطلاب المقيدين</p>
             <div className="flex items-baseline gap-2 flex-wrap">
@@ -138,7 +138,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Attendance Rate Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
+        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">نسبة حضور اليوم</p>
             <div className="flex items-baseline gap-2 flex-wrap">
@@ -153,7 +153,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Classes Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
+        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">المجموعات الدراسية</p>
             <div className="flex items-baseline gap-1 flex-wrap">
@@ -206,7 +206,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Grades Performance Plot (Recharts) */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
+        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#0D5C8C]" />
@@ -240,7 +240,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Financial Collection Doughnut Chart */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm mb-1 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-amber-500" />
@@ -304,7 +304,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Live Transactional Audit Logs */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
+        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <Activity className="w-4.5 h-4.5 text-indigo-600" />
@@ -348,7 +348,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* High-Level Attendance Absent Alert Notice */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <AlertTriangle className="w-4.5 h-4.5 text-[#C0152A]" />

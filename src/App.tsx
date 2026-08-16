@@ -750,21 +750,21 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full print:h-auto overflow-hidden print:overflow-visible w-full max-w-full min-w-0">
         
         {/* Upper Main Header inside the content wrapper */}
-        <header className="h-16 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-gray-700 px-3 sm:px-6 flex items-center justify-between shrink-0 shadow-xs z-30 print:hidden w-full max-w-full min-w-0">
+        <header className="h-16 sm:h-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 px-4 sm:px-8 flex items-center justify-between shrink-0 shadow-sm z-30 print:hidden w-full max-w-full min-w-0 transition-all">
           
-          {/* Logo and Branding section (User Customizable) */}
-          <div className="flex items-center gap-3 shrink-0 min-w-0">
+          {/* Logo and Branding section */}
+          <div className="flex items-center gap-4 shrink-0 min-w-0">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg lg:hidden cursor-pointer"
+              className="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl lg:hidden cursor-pointer transition-colors"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </button>
 
             {/* Desktop Sidebar Toggle */}
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden lg:flex p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer transition-colors"
+              className="hidden lg:flex p-2.5 ml-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl cursor-pointer transition-colors"
               title={isSidebarCollapsed ? "توسيع القائمة" : "طي القائمة"}
             >
               {isSidebarCollapsed ? <PanelRightOpen className="w-5 h-5" /> : <PanelRightClose className="w-5 h-5" />}
@@ -896,7 +896,7 @@ export default function App() {
           {/* Info badges, User details */}
           
           {/* Notifications & User Details */}
-          <div className="flex items-center gap-3 shrink-0 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
 
             {/* Install PWA Button */}
             <InstallPWAButton />
@@ -986,7 +986,7 @@ export default function App() {
         </header>
 
         {/* Viewport scroll area containing current Tab view */}
-        <main className="flex-1 p-3 sm:p-4 md:p-6 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-4 sm:space-y-6">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-6 sm:space-y-8">
           <div key={activeTab} className="max-w-7xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'students' && <StudentsList />}

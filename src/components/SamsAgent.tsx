@@ -253,7 +253,7 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="اسأل منصة الإدارة الذكي... (مثال: بحث عن سارة)"
+          placeholder="اسأل منصة الإدارة الذكي... (مثال: بحث عن أحمد)"
           className="flex-1 min-w-0 font-sans text-sm focus:outline-hidden border border-gray-200 dark:border-gray-700 px-3 py-2.5 rounded-xl block focus:border-[#0D5C8C] text-right"
           dir="rtl"
         />

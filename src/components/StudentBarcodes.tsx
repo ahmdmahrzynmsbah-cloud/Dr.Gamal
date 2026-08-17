@@ -128,7 +128,7 @@ export default function StudentBarcodes() {
 
   if (showPrintModal && printTargetStudents.length > 0) {
     return (
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl animate-fade-in" dir="rtl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4 gap-4">
           <button 
             onClick={() => setShowPrintModal(false)}
@@ -145,7 +145,7 @@ export default function StudentBarcodes() {
         </div>
 
         <div id="printable-group-roster" className="bg-white dark:bg-slate-800">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-4 print:grid-cols-3 print:gap-3.5 print:p-0">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:p-6 p-4 print:grid-cols-3 print:gap-3.5 print:p-0">
             {printTargetStudents.map(student => {
               const classroom = classes.find(c => c.id === student.class_id);
               return (
@@ -154,11 +154,11 @@ export default function StudentBarcodes() {
                   className="border-2 border-slate-800 rounded-xl p-3.5 flex flex-col items-center text-center shadow-sm print:shadow-none bg-white dark:bg-slate-800 break-inside-avoid print:break-inside-avoid"
                   style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}
                 >
-                  <h3 className="font-black text-slate-900 dark:text-slate-50 text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">
+                  <h3 className="font-black text-slate-900 dark:text-slate-50 text-sm sm:text-base sm:text-lg mb-1 border-b-2 border-slate-800 pb-2 w-full">
                     {typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية')}
                   </h3>
                   <div className="w-full mt-2 mb-3">
-                    <p className="font-black text-slate-900 dark:text-slate-50 text-base">{student.name}</p>
+                    <p className="font-black text-slate-900 dark:text-slate-50 text-sm sm:text-base">{student.name}</p>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">المجموعة: {classroom?.name || 'غير محدد'}</p>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-1">
                       {formatScheduleDisplay(classroom?.schedule_time, classroom?.schedule_days)}
@@ -210,7 +210,7 @@ export default function StudentBarcodes() {
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -235,7 +235,7 @@ export default function StudentBarcodes() {
 
       
       {/* Header Panel */}
-      <div className="bg-[#0D5C8C] text-white p-6 rounded-2xl shadow-xs relative overflow-hidden">
+      <div className="bg-[#0D5C8C] text-white p-4 sm:p-6 rounded-2xl shadow-xs relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-x-12 -translate-y-12" />
         <div className="absolute bottom-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl translate-x-24 translate-y-24" />
         
@@ -253,19 +253,19 @@ export default function StudentBarcodes() {
           <div className="flex items-center gap-4 bg-white/10 px-4 py-2.5 rounded-xl border border-white/10 shrink-0 self-start md:self-auto">
             <div className="text-center px-2">
               <div className="text-xs text-sky-200">إجمالي المقيدين</div>
-              <div className="text-lg font-black font-sans text-amber-300">{students.length}</div>
+              <div className="text-sm sm:text-base sm:text-lg font-black font-sans text-amber-300">{students.length}</div>
             </div>
             <div className="w-px h-8 bg-white/20" />
             <div className="text-center px-2">
               <div className="text-xs text-sky-200">المحدد للطباعة</div>
-              <div className="text-lg font-black font-sans text-white">{selectedStudents.length}</div>
+              <div className="text-sm sm:text-base sm:text-lg font-black font-sans text-white">{selectedStudents.length}</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter and Control Panel */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-3xs space-y-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-3xs space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search bar */}
           <div className="relative">

@@ -365,7 +365,7 @@ export default function AttendanceTracker() {
   return (
     <div className="animate-fade-in" dir="rtl"><div className="space-y-6 print:hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xs">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xs">
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-50 flex items-center gap-2">
             <Scan className="w-6 h-6 text-[#1A7FAA] dark:text-sky-400" />
@@ -392,7 +392,7 @@ export default function AttendanceTracker() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:p-6">
         
         {/* Right side: Real-time scan feed */}
         <div className="lg:col-span-1 space-y-6">
@@ -467,10 +467,10 @@ export default function AttendanceTracker() {
         </div>
 
         {/* Left side: Group Attendance Management */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px] lg:h-[500px]">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-4 sm:p-4 sm:p-6 flex flex-col min-h-[450px] lg:h-[500px]">
           <div className="flex flex-col mb-6 space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-[#1A7FAA] dark:text-sky-400 shrink-0" />
                 مراجعة حضور المجموعات
               </h3>
@@ -578,11 +578,11 @@ export default function AttendanceTracker() {
             <table className="w-full text-sm text-right relative border-collapse">
               <thead className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black sticky top-0 z-20 border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
-                  <th className="px-4 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">الطالب</th>
-                  <th className="px-4 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">رقم القيد</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">الطالب</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">رقم القيد</th>
                   
-                  <th className="px-4 py-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">حالة اليوم</th>
-                  <th className="px-4 py-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">إجراءات</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">حالة اليوم</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">إجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -593,16 +593,16 @@ export default function AttendanceTracker() {
 
                   return (
                     <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-colors">
-                      <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{student.name}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{student.registration_id}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{student.name}</td>
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-mono text-xs text-slate-500 dark:text-slate-400">{student.registration_id}</td>
                       
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-center">
                         {status === 'present' && <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-md text-xs font-bold"><Check className="w-3.5 h-3.5" /> حاضر</span>}
                         {status === 'absent' && <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-700 dark:text-rose-300 px-2.5 py-1 rounded-md text-xs font-bold"><X className="w-3.5 h-3.5" /> غائب</span>}
                         {status === 'excused' && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-md text-xs font-bold">مستأذن</span>}
                         {status === 'pending' && <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-md text-xs font-bold">لم يُسجل</span>}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => { samsDb.saveAttendance(student.id, student.class_id, selectedDate, 'present'); loadData(); }}
@@ -668,7 +668,7 @@ export default function AttendanceTracker() {
       {/* SMS/WhatsApp Direct Send Modal */}
       {selectedStudentForMsg && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-lg w-full space-y-4 animate-slide-up text-right">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-lg w-full space-y-4 animate-slide-up text-right">
             
             <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
               <h3 className="font-black text-[#0D5C8C] text-sm flex items-center gap-1.5">
@@ -747,7 +747,7 @@ export default function AttendanceTracker() {
             </p>
           </div>
           <div className="text-left">
-            <div className="text-lg font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300">
+            <div className="text-sm sm:text-base sm:text-lg font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300">
               {classes.find(c => c.id === selectedClass)?.name || ''}
             </div>
             <p className="text-[10px] font-bold text-slate-500 mt-1">

@@ -102,9 +102,9 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   return (
     <div className="space-y-6" id="sams_control_dashboard">
       {/* Header Info */}
-      <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
+          <h1 className="text-xl sm:text-2xl sm:text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-3 bg-[#E8192C]/5 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[#C0152A] text-[10px] sm:text-sm font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans max-w-full overflow-x-auto no-scrollbar">
@@ -120,14 +120,14 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       </div>
 
       {/* Grid Statistics Cards - 4 Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
         
         {/* Total Students Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">إجمالي الطلاب المقيدين</p>
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-2xl font-black text-[#1A1A2E] dark:text-slate-100">{totalStudents}</span>
+              <span className="text-xl sm:text-2xl font-black text-[#1A1A2E] dark:text-slate-100">{totalStudents}</span>
               <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold whitespace-nowrap">+{activeStudents} نشط</span>
             </div>
             <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold leading-tight">({suspendedStudents} معلق / {totalStudents - activeStudents - suspendedStudents} مؤرشف)</p>
@@ -138,11 +138,11 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Attendance Rate Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">نسبة حضور اليوم</p>
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-2xl font-black text-[#1A7FAA] dark:text-sky-400">{attendanceRate}%</span>
+              <span className="text-xl sm:text-2xl font-black text-[#1A7FAA] dark:text-sky-400">{attendanceRate}%</span>
               <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold">مستقر</span>
             </div>
             <p className="text-[10px] text-slate-400 font-sans font-bold">آخر تسجيل: {lastRecordedDate}</p>
@@ -153,11 +153,11 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Classes Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-5 sm:p-6 rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
           <div className="space-y-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">المجموعات الدراسية</p>
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-300">{totalClasses}</span>
+              <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-300">{totalClasses}</span>
               <span className="text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-200">مجموعات</span>
             </div>
             <p className="text-[10px] text-[#0D5C8C] dark:text-sky-400 font-black font-sans">تحديث فوري</p>
@@ -178,7 +178,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
           <div className="space-y-2">
             <p className={`text-xs font-extrabold font-sans ${fees.length === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات المالية والرسوم</p>
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-2xl font-black">{totalRevenue.toLocaleString()}</span>
+              <span className="text-xl sm:text-2xl font-black">{totalRevenue.toLocaleString()}</span>
               <span className="text-sm font-bold">ج.م</span>
             </div>
             <p className="text-[10px] font-bold flex items-center gap-1">
@@ -203,10 +203,10 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       </div>
 
       {/* Main Charts & Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:p-6">
         
         {/* Grades Performance Plot (Recharts) */}
-        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#0D5C8C]" />
@@ -230,8 +230,8 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-center p-6 space-y-2 text-slate-400 font-sans">
-                <div className="text-3xl">📊</div>
+              <div className="text-center p-4 sm:p-6 space-y-2 text-slate-400 font-sans">
+                <div className="text-2xl sm:text-3xl">📊</div>
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد درجات امتحانات مرصودة حالياً في النظام</p>
                 <p className="text-[10px] text-slate-400 max-w-xs">يمكنك رصد علامات الطلاب من تبويب الامتحانات والواجبات لتظهر لك التحليلات وتوزيع المستويات تلقائياً هنا</p>
               </div>
@@ -240,7 +240,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* Financial Collection Doughnut Chart */}
-        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm mb-1 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-amber-500" />
@@ -272,14 +272,14 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
                 </ResponsiveContainer>
                 <div className="absolute text-center mt-[-8px]">
                   <span className="text-[10px] text-slate-400 font-sans block">نسبة التحصيل</span>
-                  <span className="text-lg font-bold text-[#0D5C8C]">
+                  <span className="text-sm sm:text-base sm:text-lg font-bold text-[#0D5C8C]">
                     {Math.round((totalRevenue / (targetRevenue || 1)) * 100)}%
                   </span>
                 </div>
               </>
             ) : (
               <div className="text-center p-4 space-y-1.5 text-slate-400 font-sans">
-                <div className="text-3xl">💳</div>
+                <div className="text-2xl sm:text-3xl">💳</div>
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد رسوم محصلة بعد</p>
                 <p className="text-[10px] text-slate-400 max-w-[180px] mx-auto">عند تسجيل سداد اشتراك أو مصروفات لأي طالب، سيظهر لك مؤشر نسب التحصيل فوراً</p>
               </div>
@@ -301,10 +301,10 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       </div>
 
       {/* Two Columns: Recent System Notices (Parent Communication) & Audit Log Trail */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:p-6">
         
         {/* Live Transactional Audit Logs */}
-        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <Activity className="w-4.5 h-4.5 text-indigo-600" />
@@ -348,7 +348,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         {/* High-Level Attendance Absent Alert Notice */}
-        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
               <AlertTriangle className="w-4.5 h-4.5 text-[#C0152A]" />

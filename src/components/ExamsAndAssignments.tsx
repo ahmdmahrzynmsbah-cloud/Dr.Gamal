@@ -1047,7 +1047,7 @@ ${sig}`;
     const avgPct = maxScore > 0 && presentCount > 0 ? Math.round((Number(avgScore) / maxScore) * 100) : 0;
 
     return (
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl animate-fade-in" dir="rtl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4 gap-4">
           <button 
             onClick={() => setShowPrintModal(false)}
@@ -1074,7 +1074,7 @@ ${sig}`;
               </div>
             </div>
             <div className="text-left bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm print:bg-transparent print:border-none print:shadow-none">
-              <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{evalTitle}</h2>
+              <h2 className="text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{evalTitle}</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">{evalTypeLabel} - {termName}</p>
             </div>
           </div>
@@ -1165,7 +1165,7 @@ ${sig}`;
           </table>
 
           {/* Signatures */}
-          <div className="grid grid-cols-2 gap-6 mt-12 text-center text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
+          <div className="grid grid-cols-2 gap-4 sm:p-6 mt-12 text-center text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
             <div>
               <p>توقيع السكرتيرة</p>
               <p className="mt-8 text-slate-400 border-t border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pt-2 mx-12">التوقيع ....................</p>
@@ -1208,7 +1208,7 @@ ${sig}`;
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -1233,7 +1233,7 @@ ${sig}`;
 
       
       {/* Upper Tab Navigation Header */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <span className="bg-amber-100 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1 w-fit">
             <Sparkles className="w-3 h-3 fill-current" />
@@ -1318,7 +1318,7 @@ ${sig}`;
         <div className="space-y-6">
           
           {/* Quick Filters Panel */}
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs grid grid-cols-1 md:grid-cols-4 gap-4">
             
             {/* Term Select */}
             <div className="space-y-1.5">
@@ -1478,7 +1478,7 @@ ${sig}`;
               </div>
             </div>
           ) : (
-            <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-6 rounded-2xl text-center space-y-3">
+            <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-4 sm:p-6 rounded-2xl text-center space-y-3">
               <Info className="w-8 h-8 text-amber-500 mx-auto" />
               <p className="text-slate-700 dark:text-slate-200 font-bold text-sm">لم تقم بإضافة أي {gradingType === 'exam' ? 'امتحانات' : 'واجبات'} مخصصة لهذه المجموعة حتى الآن.</p>
               <p className="text-slate-500 dark:text-slate-400 text-xs max-w-md mx-auto">
@@ -1535,7 +1535,7 @@ ${sig}`;
 
           {/* Student Grading Grid Table */}
           {activeEvaluationObj && (
-            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-gray-700 pb-3 gap-3">
                 <h4 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs flex items-center gap-1.5">
                   <ListPlus className="w-4 h-4 text-[#0D5C8C]" />
@@ -1866,10 +1866,10 @@ ${sig}`;
       {/* SUB-TAB 2: EXAMS MANAGEMENT                               */}
       {/* ========================================================= */}
       {activeSubTab === 'exams' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:p-6">
           
           {/* Create/Edit Exam Form (5 columns) */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
             <div className="border-b border-gray-100 dark:border-gray-700 pb-2 flex items-center gap-1.5">
               <Award className="w-5 h-5 text-blue-500" />
               <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs">
@@ -2114,10 +2114,10 @@ ${sig}`;
       {/* SUB-TAB 3: ASSIGNMENTS MANAGEMENT                         */}
       {/* ========================================================= */}
       {activeSubTab === 'assignments' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:p-6">
           
           {/* Create/Edit Assignment Form (5 columns) */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
             <div className="border-b border-gray-100 dark:border-gray-700 pb-2 flex items-center gap-1.5">
               <Calendar className="w-5 h-5 text-amber-500" />
               <h3 className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-xs">
@@ -2326,7 +2326,7 @@ ${sig}`;
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
             >
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
@@ -2372,7 +2372,7 @@ ${sig}`;
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
             >
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
@@ -2422,13 +2422,13 @@ ${sig}`;
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 dark:border-slate-700 dark:border-slate-800"
             >
-              <div className="p-5 bg-gradient-to-r from-emerald-600 via-teal-700 to-[#0D5C8C] text-white flex items-center justify-between">
+              <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-600 via-teal-700 to-[#0D5C8C] text-white flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-white/10 rounded-2xl">
                     <MessageCircle className="w-6 h-6 text-white fill-current" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-base">إرسال النتيجة أو التنبيه لولي الأمر</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">إرسال النتيجة أو التنبيه لولي الأمر</h3>
                     <p className="text-xs text-emerald-100 font-sans">إخطار ولي الأمر بالنتيجة أو التنبيه عبر الواتساب أو الرسائل النصية SMS</p>
                   </div>
                 </div>
@@ -2441,7 +2441,7 @@ ${sig}`;
                 </button>
               </div>
 
-              <div className="p-6 space-y-4 text-right">
+              <div className="p-4 sm:p-6 space-y-4 text-right">
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
                     <span>الطالب/ة: <strong className="text-emerald-700 dark:text-emerald-400 font-extrabold">{whatsAppModalStudent.student.name}</strong></span>

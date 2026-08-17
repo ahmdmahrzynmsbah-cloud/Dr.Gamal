@@ -147,7 +147,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
   return (
     <div className="space-y-6" dir="rtl" id="sams_settings_manager_module">
       {/* Title block */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs">
         <div className="space-y-1 text-right">
           <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             
@@ -183,7 +183,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
       <form onSubmit={handleSaveSettings} className="space-y-6">
         {/* ROW 0: Dark Mode & Theme Settings */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
             <div className="flex items-center gap-2">
               <Palette className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">تفضيلات مظهر الواجهة والوضع الداكن (Dark Mode)</h3>
@@ -192,7 +192,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
               تباين عالي ومريح للعين
             </span>
           </div>
-          <div className="p-5 flex flex-col md:flex-row items-center justify-between gap-4 text-right">
+          <div className="p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 text-right">
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
                 {isDarkMode ? <Moon className="w-4 h-4 text-amber-400" /> : <Sun className="w-4 h-4 text-indigo-600" />}
@@ -211,7 +211,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 0.5: Audio Notification Tones & Alert Controls */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
             <div className="flex items-center gap-2">
               <Volume2 className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">إعدادات النغمات والتنبيهات الصوتية والمباشرة (Notification Sound Tones)</h3>
@@ -221,7 +221,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
             </span>
           </div>
 
-          <div className="p-5 space-y-5 text-right">
+          <div className="p-4 sm:p-5 space-y-5 text-right">
             
             {/* Toggles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -409,11 +409,11 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-5 border-b border-gray-50 bg-slate-50/50 flex items-center gap-2 text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center gap-2 text-right">
             <Image className="w-4.5 h-4.5 text-[#0D5C8C]" />
             <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">1. الهوية البصرية وشعارات النظام والتطبيق</h3>
           </div>
-          <div className="p-5 space-y-4 text-right">
+          <div className="p-4 sm:p-5 space-y-4 text-right">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">اسم التطبيق الفرعي (بالشريط الجانبي):</label>
@@ -472,7 +472,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 2: Custom Notification Templates */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">2. تخصيص قوالب وصيغ الرسائل التلقائية (الغياب وغيرها)</h3>
@@ -481,7 +481,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
               صيغة ذكية تستخدم المتغيرات التلقائية
             </div>
           </div>
-          <div className="p-5 space-y-4 text-right">
+          <div className="p-4 sm:p-5 space-y-4 text-right">
             <div className="p-3 bg-amber-50 dark:bg-amber-900/40 rounded-xl border border-amber-100 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
                <b>ملاحظة المتغيرات:</b> يمكنك استخدام الرموز التالية داخل أي قالب، ليقوم النظام بتعويضها تلقائياً بالاسم الفعلي للطالب وولي الأمر عند الإرسال:
               <div className="grid grid-cols-3 gap-2 mt-2 text-center text-[10px]">
@@ -551,7 +551,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 3: Centralized WhatsApp Integrations */}
         <div className={`bg-white dark:bg-slate-800 rounded-2xl border ${whatsappEnabled ? 'border-gray-100' : 'border-gray-200'} shadow-2xs overflow-hidden transition-colors`}>
-          <div className="p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
             <div className="flex items-center gap-2">
               <Key className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">3. بوابات الإرسال السحابي للواتسآب (إرسال صامت بالخلفية)</h3>
@@ -656,7 +656,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
             >
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">

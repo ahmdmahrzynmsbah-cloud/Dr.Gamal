@@ -96,8 +96,7 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
             { id: 'u-alsafa-2', name: 'سكرتارية سيستم الصفا', role: 'secretary', password: '4444', isDefault: true }
           ]
         : [
-            { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
-            { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
+            { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true }
           ];
       setUsers(defaultUsers);
       samsDb.saveSystemUsers(defaultUsers);
@@ -155,9 +154,9 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">إدارة المستخدمين والصلاحيات</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">إدارة المستخدمين والصلاحيات</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">تغيير كلمات المرور وإضافة حسابات سكرتارية جديدة</p>
         </div>
         <button
@@ -181,7 +180,7 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
       )}
 
       {showAddForm && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs mb-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs mb-6">
           <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">
             {editingId ? 'تعديل بيانات المستخدم' : 'إضافة سكرتيرة جديدة'}
           </h3>
@@ -392,11 +391,11 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
       {userToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-scale-up">
-            <div className="bg-rose-50 dark:bg-rose-900/40 p-6 flex flex-col items-center justify-center text-center">
+            <div className="bg-rose-50 dark:bg-rose-900/40 p-4 sm:p-6 flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm mb-4">
                 <Trash2 className="w-8 h-8 text-rose-500" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-2">تأكيد الحذف</h3>
+              <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-2">تأكيد الحذف</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300">
                 هل أنت متأكد من حذف هذا المستخدم نهائياً؟ لا يمكن التراجع عن هذه الخطوة.
               </p>

@@ -89,7 +89,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
       dir="rtl"
     >
       {/* Header */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl shrink-0 gap-4 print:hidden">
+      <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl shrink-0 gap-4 print:hidden">
         <div className="flex items-center gap-4">
           <button 
             onClick={onClose}
@@ -116,7 +116,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
       </div>
 
       {/* Content */}
-      <div id="printable-group-roster" className="flex-1 p-6 space-y-8 print:p-0 print:space-y-6">
+      <div id="printable-group-roster" className="flex-1 p-4 sm:p-6 space-y-8 print:p-0 print:space-y-6">
           
           {/* Official Printable Header */}
           <div className="border-b-2 border-slate-800 pb-4 mb-6 flex justify-between items-center">
@@ -129,7 +129,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 </div>
               )}
               <div>
-                <h1 className="text-lg font-extrabold text-slate-900 dark:text-slate-50 leading-tight">{printHeaderTitle}</h1>
+                <h1 className="text-sm sm:text-base sm:text-lg font-extrabold text-slate-900 dark:text-slate-50 leading-tight">{printHeaderTitle}</h1>
                 <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">{printHeaderSubtitle}</p>
                 {printHeaderContact && <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">{printHeaderContact}</p>}
               </div>
@@ -142,9 +142,9 @@ export default function StudentFullReport({ student, onClose }: Props) {
           </div>
           
           {/* Section 1: Personal Info & Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:p-6">
             {/* Info Card */}
-            <div className="md:col-span-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
+            <div className="md:col-span-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-sm">
               <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700 pb-3 mb-4 flex items-center gap-2">
                 <Hash className="w-4 h-4 text-[#1A7FAA] dark:text-sky-400" />
                 البيانات الأساسية
@@ -167,10 +167,10 @@ export default function StudentFullReport({ student, onClose }: Props) {
 
             {/* Quick Stats */}
             <div className="md:col-span-2 grid grid-cols-2 gap-4">
-              <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800 rounded-2xl p-5 flex flex-col justify-center">
+              <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800 rounded-2xl p-4 sm:p-5 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2"><Target className="w-5 h-5"/> نسبة الحضور</h4>
-                  <span className="text-2xl font-extrabold text-emerald-600">{attRate}%</span>
+                  <span className="text-xl sm:text-2xl font-extrabold text-emerald-600">{attRate}%</span>
                 </div>
                 <div className="w-full bg-emerald-200/50 rounded-full h-2 mt-2">
                   <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${attRate}%`}}></div>
@@ -182,15 +182,15 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 </div>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-100 dark:border-amber-800 rounded-2xl p-5 flex flex-col justify-center">
+              <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-100 dark:border-amber-800 rounded-2xl p-4 sm:p-5 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-amber-800 dark:text-amber-300 font-bold flex items-center gap-2"><CreditCard className="w-5 h-5"/> إجمالي المدفوعات</h4>
                 </div>
-                <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-mono mt-1">{totalFeesPaid} <span className="text-sm font-sans">ج.م</span></p>
+                <p className="text-2xl sm:text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-mono mt-1">{totalFeesPaid} <span className="text-sm font-sans">ج.م</span></p>
                 <p className="text-xs font-bold text-amber-700/70 mt-2">إجمالي ما تم سداده منذ التسجيل</p>
               </div>
 
-              <div className="bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-5 flex flex-col justify-center">
+              <div className="bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-4 sm:p-5 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-indigo-800 font-bold flex items-center gap-2"><Award className="w-5 h-5"/> التقييمات والامتحانات</h4>
                 </div>
@@ -198,7 +198,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 <p className="text-xs font-bold text-indigo-700/70 mt-2">تم تسجيل درجات لها</p>
               </div>
 
-              <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-100 dark:border-sky-800 rounded-2xl p-5 flex flex-col justify-center">
+              <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-100 dark:border-sky-800 rounded-2xl p-4 sm:p-5 flex flex-col justify-center">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sky-800 font-bold flex items-center gap-2"><BookOpen className="w-5 h-5"/> الواجبات</h4>
                 </div>
@@ -212,7 +212,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
 
           {/* Section 2: Attendance History */}
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-[#1A7FAA] dark:text-sky-400" />
               سجل الحضور والغياب (لشهر {new Date().toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' })})
             </h3>
@@ -245,7 +245,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
           {/* Section 3: Exams & Assignments */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
                 <Award className="w-5 h-5 text-indigo-600" />
                 سجل الامتحانات
               </h3>
@@ -261,7 +261,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                         {eg.absent ? (
                           <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/40 px-2 py-1 rounded-md">غائب عن الامتحان</span>
                         ) : (
-                          <p className="font-extrabold text-indigo-700 dark:text-indigo-300 text-lg">{eg.score} <span className="text-xs text-slate-400 font-medium">/ {eg.exam.max_score}</span></p>
+                          <p className="font-extrabold text-indigo-700 dark:text-indigo-300 text-sm sm:text-base sm:text-lg">{eg.score} <span className="text-xs text-slate-400 font-medium">/ {eg.exam.max_score}</span></p>
                         )}
                         {eg.teacher_notes && <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 max-w-[120px] truncate" title={eg.teacher_notes}>{eg.teacher_notes}</p>}
                       </div>
@@ -274,7 +274,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-sky-600" />
                 سجل التكليفات والواجبات
               </h3>
@@ -288,7 +288,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                       </div>
                       <div className="text-left">
                         {ag.completed ? (
-                          <p className="font-extrabold text-emerald-600 text-lg">{ag.score} <span className="text-xs text-slate-400 font-medium">/ {ag.assignment.max_score}</span></p>
+                          <p className="font-extrabold text-emerald-600 text-sm sm:text-base sm:text-lg">{ag.score} <span className="text-xs text-slate-400 font-medium">/ {ag.assignment.max_score}</span></p>
                         ) : (
                           <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/40 px-2 py-1 rounded-md">لم يتم التسليم</span>
                         )}
@@ -306,7 +306,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
 
           {/* Section 4: Fees History */}
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 mb-4 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               سجل المدفوعات المالية
             </h3>
@@ -315,23 +315,23 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 <table className="w-full text-sm text-right relative border-collapse">
                   <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                     <tr>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التاريخ</th>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ</th>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النوع</th>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">البيان/الشهر</th>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
-                      <th className="px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">طريقة الدفع</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التاريخ</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النوع</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">البيان/الشهر</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">طريقة الدفع</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {fees.map(fee => (
                       <tr key={fee.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="px-4 py-3 font-mono text-xs">{new Date(fee.payment_date).toLocaleDateString('ar-EG')}</td>
-                        <td className="px-4 py-3 font-extrabold text-amber-600 dark:text-amber-400">{fee.amount} ج.م</td>
-                        <td className="px-4 py-3 text-slate-700 dark:text-slate-200">اشتراك الشهر الدراسي</td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-bold">{fee.month || '-'}</td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{fee.receipt_number || '-'}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-mono text-xs">{new Date(fee.payment_date).toLocaleDateString('ar-EG')}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-extrabold text-amber-600 dark:text-amber-400">{fee.amount} ج.م</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-700 dark:text-slate-200">اشتراك الشهر الدراسي</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-bold">{fee.month || '-'}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-mono text-xs text-slate-500 dark:text-slate-400">{fee.receipt_number || '-'}</td>
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                           <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-md text-xs font-bold">
                             {fee.payment_method === 'cash' ? 'نقدي' : fee.payment_method === 'card' ? 'فيزا' : 'تحويل'}
                           </span>

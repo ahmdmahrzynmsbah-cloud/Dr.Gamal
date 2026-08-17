@@ -95,7 +95,7 @@ export default function SalariesManager() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             <DollarSign className="w-6 h-6 text-emerald-500" />
@@ -113,7 +113,7 @@ export default function SalariesManager() {
       </div>
 
       {showAddForm && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-emerald-100 dark:border-emerald-800 shadow-sm mb-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border-2 border-dashed border-emerald-100 dark:border-emerald-800 shadow-sm mb-6">
           <h3 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">صرف راتب جديد</h3>
           <form onSubmit={handleSavePayment} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="space-y-1.5">
@@ -269,7 +269,7 @@ export default function SalariesManager() {
       {/* Delete Confirmation Modal */}
       {paymentToDelete && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4 animate-scale-up">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4 animate-scale-up">
             <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
               <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />

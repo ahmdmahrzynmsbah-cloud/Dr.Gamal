@@ -35,8 +35,7 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
         ]);
       } else {
         setUsers([
-          { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
-          { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
+          { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true }
         ]);
       }
     };
@@ -105,7 +104,7 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
               <div className="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-300 rounded-full flex items-center justify-center shadow-xl text-white mb-4 ring-4 ring-white/15">
                 <Building2 className="w-11 h-11 text-white stroke-[1.5]" />
               </div>
-              <h1 className="text-2xl font-extrabold text-white tracking-wide">سيستم الصفا</h1>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-wide">سيستم الصفا</h1>
               <p className="text-xs font-bold text-emerald-100 mt-2 px-3.5 py-1 bg-white/15 rounded-full backdrop-blur-xs border border-white/10 shadow-xs">
                 للمواد الشرعية
               </p>
@@ -115,7 +114,7 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
               <div className="w-20 h-20 bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453] rounded-full flex items-center justify-center shadow-xl text-white mb-4 ring-4 ring-white/10">
                 <GraduationCap className="w-11 h-11 text-white stroke-[1.5]" />
               </div>
-              <h1 className="text-2xl font-extrabold text-white tracking-wide">الدكتور</h1>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-wide">الدكتور</h1>
               <p className="text-xs font-bold text-[#FCF6BA] mt-2 px-3.5 py-1 bg-white/10 rounded-full border border-white/10 shadow-xs">
                 في اللغة العربية
               </p>
@@ -124,9 +123,9 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
         </div>
 
         {/* Content Form */}
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-4 sm:p-6 md:p-8 space-y-6">
           <div className="text-center space-y-1">
-            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+            <h2 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100">
               {selectedSystem === 'alsafa' ? 'مرحباً بك في سيستم الصفا للمواد الشرعية' : 'مرحباً بك في سيستم الدكتور في اللغة العربية'}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">

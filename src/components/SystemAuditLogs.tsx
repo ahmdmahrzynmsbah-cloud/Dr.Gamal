@@ -66,10 +66,9 @@ export default function SystemAuditLogs() {
   // Stat counters
   const totalLogs = auditLogs.length;
   
-  // Secretary is identified by user_role === 'secretary' or user_name containing 'سارة'
+  // Secretary is identified by user_role === 'secretary' or user_name containing 'سكرتير'
   const secretaryLogs = auditLogs.filter(log => 
     log.user_role === 'secretary' || 
-    log.user_name.includes('سارة') || 
     log.user_name.includes('سكرتير')
   );
   
@@ -86,7 +85,7 @@ export default function SystemAuditLogs() {
     if (activeFilter === 'delete' && log.action_type !== 'DELETE' && log.action_type !== 'SOFT_DELETE') return false;
 
     // 2. Actor Filter
-    const isSec = log.user_role === 'secretary' || log.user_name.includes('سارة') || log.user_name.includes('سكرتير');
+    const isSec = log.user_role === 'secretary' || log.user_name.includes('سكرتير');
     if (actorFilter === 'admin' && isSec) return false;
     if (actorFilter !== 'all' && actorFilter !== 'admin') {
       // It's a specific secretary name
@@ -119,7 +118,7 @@ export default function SystemAuditLogs() {
     <div className="space-y-6" id="sams_audit_logs_tab">
       
       {/* Header card */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-[#0D5C8C]" />
@@ -160,7 +159,7 @@ export default function SystemAuditLogs() {
         {/* Secretary Operations */}
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-2xs flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[10px] text-slate-400 font-bold">عمليات السكرتارية (أ. سارة)</p>
+            <p className="text-[10px] text-slate-400 font-bold">عمليات السكرتارية</p>
             <p className="text-xl font-black text-emerald-600">{secretaryLogs.length}</p>
             <p className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold">إدخال حضور، تحصيل مالي</p>
           </div>
@@ -207,7 +206,7 @@ export default function SystemAuditLogs() {
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-xs overflow-hidden">
         
         {/* Advanced Filter Box */}
-        <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-slate-50/50 space-y-4">
+        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 bg-slate-50/50 space-y-4">
           
           <div className="flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
             {/* Search Input */}
@@ -306,7 +305,7 @@ export default function SystemAuditLogs() {
         </div>
 
         {/* List of Audit Logs */}
-        <div className="p-5 space-y-3 max-h-[600px] overflow-y-auto no-scrollbar">
+        <div className="p-4 sm:p-5 space-y-3 max-h-[600px] overflow-y-auto no-scrollbar">
           {filteredLogs.length > 0 ? (
             filteredLogs.map((log) => {
               const actionBadge = {
@@ -317,7 +316,7 @@ export default function SystemAuditLogs() {
                 QUERY: 'bg-gray-50 text-gray-700 border-gray-150'
               }[log.action_type] || 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700';
 
-              const isSecretaryAction = log.user_role === 'secretary' || log.user_name.includes('سارة') || log.user_name.includes('سكرتيرة');
+              const isSecretaryAction = log.user_role === 'secretary' || log.user_name.includes('سكرتير');
 
               return (
                 <div

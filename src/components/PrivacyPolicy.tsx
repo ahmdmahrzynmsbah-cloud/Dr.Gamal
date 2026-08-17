@@ -88,9 +88,9 @@ export default function PrivacyPolicy() {
     <div className="space-y-8 animate-slide-up" dir="rtl">
       
       {/* Dynamic Header Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2.5">
             <span className="p-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 rounded-xl">
               <ShieldCheck className="w-6 h-6" />
             </span>
@@ -110,11 +110,11 @@ export default function PrivacyPolicy() {
         
         {/* Left/Right Column: Privacy Content Accordion (7 Columns) */}
         <div className="lg:col-span-7 flex flex-col h-full">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex-grow flex flex-col justify-between h-full gap-6">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex-grow flex flex-col justify-between h-full gap-4 sm:p-6">
             <div className="space-y-4 flex-grow flex flex-col">
               <div className="flex items-center gap-2.5 pb-4 border-b border-gray-100 dark:border-gray-700">
                 <FileText className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">بنود اتفاقية الخصوصية والأمان</h3>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">بنود اتفاقية الخصوصية والأمان</h3>
               </div>
 
               <div className="space-y-3 flex-grow">
@@ -180,7 +180,7 @@ export default function PrivacyPolicy() {
         <div className="lg:col-span-5 h-full flex flex-col">
         
         {/* Luxury Fox Tech Box */}
-        <div className="relative overflow-hidden bg-[#0A192F] text-white rounded-3xl border border-slate-800 p-6 shadow-2xl flex-grow flex flex-col justify-between h-full">
+        <div className="relative overflow-hidden bg-[#0A192F] text-white rounded-3xl border border-slate-800 p-4 sm:p-6 shadow-2xl flex-grow flex flex-col justify-between h-full">
             {/* Glossy ambient reflex decoration */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-500/20 to-sky-500/0 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-amber-500/10 to-indigo-500/0 rounded-full blur-3xl pointer-events-none" />
@@ -230,7 +230,7 @@ export default function PrivacyPolicy() {
                       <svg className="w-4 h-4 text-[#1877F2] fill-current shrink-0 filter drop-shadow-[0_1px_3px_rgba(24,119,242,0.4)]" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-13 5l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
                       </svg>
-                      <h3 className="text-base font-black tracking-wider text-white font-sans uppercase">Fox Tech</h3>
+                      <h3 className="text-sm sm:text-base font-black tracking-wider text-white font-sans uppercase">Fox Tech</h3>
                     </div>
                     <p className="text-[9px] text-[#FCF6BA] font-extrabold uppercase tracking-widest font-mono">Software Solutions & Design</p>
                   </div>
@@ -278,11 +278,11 @@ export default function PrivacyPolicy() {
                 <div className="text-[10px] text-slate-400 font-bold tracking-wider font-mono uppercase mb-4">
                   OFFICIAL SIGN-OFF & DECREE
                 </div>
-                <div className="w-full bg-slate-900/80 p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+                <div className="w-full bg-slate-900/80 p-4 sm:p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
                   {/* Subtle grid pattern for extra fidelity */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-35 pointer-events-none" />
 
-                  <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-5 items-stretch">
+                  <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 sm:p-5 items-stretch">
                     
                     {/* CEO: Eng: Anas Abd El Aziz */}
                     <div className="flex flex-col p-4 bg-[#07111e]/80 rounded-2xl border border-slate-800/60 relative overflow-hidden group hover:border-slate-700 transition-all duration-300">

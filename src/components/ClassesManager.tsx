@@ -620,7 +620,7 @@ export default function ClassesManager() {
 
     if (showPrintRosterModal) {
       return (
-        <div className="space-y-6 animate-fade-in bg-white dark:bg-slate-800 p-6 rounded-3xl" id="print_roster_dedicated_page" dir="rtl">
+        <div className="space-y-6 animate-fade-in bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl" id="print_roster_dedicated_page" dir="rtl">
 
       {/* Global Processing Progress Overlay */}
       <AnimatePresence>
@@ -647,7 +647,7 @@ export default function ClassesManager() {
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -683,7 +683,7 @@ export default function ClassesManager() {
                 <Printer className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-lg">معاينة وتصدير كشف المجموعة كـ PDF</h3>
+                <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-sm sm:text-base sm:text-lg">معاينة وتصدير كشف المجموعة كـ PDF</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">تنسيق طباعة رسمي بكافة بيانات طلاب المجموعة</p>
               </div>
             </div>
@@ -735,7 +735,7 @@ export default function ClassesManager() {
                           {printHeaderLogo ? (
                             <img src={printHeaderLogo} alt="شعار السنتر" className="w-12 h-12 object-contain rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50" />
                           ) : (
-                            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center font-bold text-amber-800 dark:text-amber-300 text-lg">
+                            <div className="w-12 h-12 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center font-bold text-amber-800 dark:text-amber-300 text-sm sm:text-base sm:text-lg">
                               {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
                             </div>
                           )}
@@ -877,7 +877,7 @@ export default function ClassesManager() {
                 )}
 
                 {/* PRINTABLE CONTAINER AREA */}
-                <div id="printable-group-roster" className="space-y-6 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div id="printable-group-roster" className="space-y-6 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
                   {/* Dynamic Header section */}
                   <div
                     className={`flex items-center justify-between border-b-2 border-slate-800 pb-4 ${
@@ -892,7 +892,7 @@ export default function ClassesManager() {
                       {printHeaderLogo ? (
                         <img src={printHeaderLogo} alt="شعار السنتر" className="w-16 h-16 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 shrink-0" />
                       ) : (
-                        <div className="w-14 h-14 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 dark:text-amber-300 font-extrabold text-2xl shrink-0">
+                        <div className="w-14 h-14 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 dark:text-amber-300 font-extrabold text-xl sm:text-2xl shrink-0">
                           {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
                         </div>
                       )}
@@ -1003,7 +1003,7 @@ export default function ClassesManager() {
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -1027,7 +1027,7 @@ export default function ClassesManager() {
       </AnimatePresence>
 
         {/* Top Navigation & Group Header */}
-        <div className="bg-gradient-to-r from-[#0D5C8C] via-[#126b9e] to-[#0A4B73] text-white p-6 rounded-3xl shadow-lg space-y-4">
+        <div className="bg-gradient-to-r from-[#0D5C8C] via-[#126b9e] to-[#0A4B73] text-white p-4 sm:p-6 rounded-3xl shadow-lg space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
@@ -1048,7 +1048,7 @@ export default function ClassesManager() {
                     {selectedClassForStudents.grade_level}
                   </span>
                 </div>
-                <h2 className="text-2xl font-extrabold mt-1 flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-extrabold mt-1 flex items-center gap-2">
                   <GraduationCap className="w-7 h-7 text-amber-300" />
                   <span>طلاب مجموعة: {selectedClassForStudents.name}</span>
                 </h2>
@@ -1159,7 +1159,7 @@ ${sig}`;
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
             <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">إجمالي طلاب المجموعة</div>
-            <div className="text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center justify-between">
+            <div className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center justify-between">
               <span>{totalStudents}</span>
               <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-normal">طالب</span>
             </div>
@@ -1167,7 +1167,7 @@ ${sig}`;
 
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
             <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">الطلاب النشطون بالحضور</div>
-            <div className="text-2xl font-black text-emerald-600 flex items-center justify-between">
+            <div className="text-xl sm:text-2xl font-black text-emerald-600 flex items-center justify-between">
               <span>{activeCount}</span>
               <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold">{Math.round((activeCount / (totalStudents || 1)) * 100)}%</span>
             </div>
@@ -1175,7 +1175,7 @@ ${sig}`;
 
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
             <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">متوسط حضور المجموعة</div>
-            <div className="text-2xl font-black text-sky-700 dark:text-sky-300 flex items-center justify-between">
+            <div className="text-xl sm:text-2xl font-black text-sky-700 dark:text-sky-300 flex items-center justify-between">
               <span>{groupAvgAttendance}%</span>
               <span className="text-xs bg-sky-50 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 px-2 py-0.5 rounded-md font-bold">نسبة انضباط</span>
             </div>
@@ -1183,7 +1183,7 @@ ${sig}`;
 
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs space-y-1">
             <div className="text-xs text-slate-500 dark:text-slate-400 font-sans">طلاب بإنذار غياب (≥3 غيابات)</div>
-            <div className="text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center justify-between">
+            <div className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center justify-between">
               <span>{warningAbsenceCount}</span>
               {warningAbsenceCount > 0 ? (
                 <span className="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-black animate-pulse">تنبيه ⚠️</span>
@@ -1457,10 +1457,10 @@ ${sig}`;
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
-                <div className="p-5 bg-[#0D5C8C] text-white flex items-center justify-between">
+                <div className="p-4 sm:p-5 bg-[#0D5C8C] text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserPlus className="w-5 h-5 text-amber-300" />
-                    <h3 className="font-extrabold text-base">تسجيل طالب جديد بمجموعة: {selectedClassForStudents.name}</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">تسجيل طالب جديد بمجموعة: {selectedClassForStudents.name}</h3>
                   </div>
                   <button
                     type="button"
@@ -1510,7 +1510,7 @@ ${sig}`;
                       setErrorText(res.error || 'حدث خطأ أثناء إضافة الطالب.');
                     }
                   }}
-                  className="p-6 space-y-4 text-right"
+                  className="p-4 sm:p-6 space-y-4 text-right"
                 >
                   {errorText && (
                     <div className="p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
@@ -1616,10 +1616,10 @@ ${sig}`;
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
-                <div className="p-5 bg-amber-600 text-white flex items-center justify-between">
+                <div className="p-4 sm:p-5 bg-amber-600 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Edit className="w-5 h-5 text-white" />
-                    <h3 className="font-extrabold text-base">تعديل بيانات الطالب: {editingStudent.name}</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">تعديل بيانات الطالب: {editingStudent.name}</h3>
                   </div>
                   <button
                     type="button"
@@ -1661,7 +1661,7 @@ ${sig}`;
                       setErrorText(res.error || 'فشل تعديل البيانات.');
                     }
                   }}
-                  className="p-6 space-y-4 text-right"
+                  className="p-4 sm:p-6 space-y-4 text-right"
                 >
                   {errorText && (
                     <div className="p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
@@ -1781,10 +1781,10 @@ ${sig}`;
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-md w-full overflow-hidden"
               >
-                <div className="p-5 bg-sky-700 text-white flex items-center justify-between">
+                <div className="p-4 sm:p-5 bg-sky-700 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <RefreshCw className="w-5 h-5 text-white" />
-                    <h3 className="font-extrabold text-base">نقل الطالب لـ مجموعة أخرى</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">نقل الطالب لـ مجموعة أخرى</h3>
                   </div>
                   <button
                     type="button"
@@ -1795,7 +1795,7 @@ ${sig}`;
                   </button>
                 </div>
 
-                <div className="p-6 space-y-4 text-right">
+                <div className="p-4 sm:p-6 space-y-4 text-right">
                   <p className="text-xs text-slate-600 dark:text-slate-300 font-sans">
                     اختر المجموعة الدراسية الجديدة لنقل الطالب <strong className="text-slate-900 dark:text-slate-50 font-extrabold">({transferStudent.name})</strong> إليها:
                   </p>
@@ -1858,10 +1858,10 @@ ${sig}`;
                 exit={{ scale: 0.95, opacity: 0 }}
                 className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden"
               >
-                <div className="p-5 bg-emerald-600 text-white flex items-center justify-between">
+                <div className="p-4 sm:p-5 bg-emerald-600 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-white fill-current" />
-                    <h3 className="font-extrabold text-base">إرسال رسالة واتساب جماعية لأولياء أمور المجموعة</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">إرسال رسالة واتساب جماعية لأولياء أمور المجموعة</h3>
                   </div>
                   <button
                     type="button"
@@ -1872,7 +1872,7 @@ ${sig}`;
                   </button>
                 </div>
 
-                <div className="p-6 space-y-4 text-right">
+                <div className="p-4 sm:p-6 space-y-4 text-right">
                   <p className="text-xs text-slate-600 dark:text-slate-300 font-sans">
                     سيتم توجيه الرسالة لأولياء أمور كافة الطلاب بالمجموعة ({currentClassStudents.length} طالب):
                   </p>
@@ -1929,7 +1929,7 @@ ${sig}`;
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-3xl w-full p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
+                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-3xl w-full p-4 sm:p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 shrink-0">
                   <div className="flex items-center gap-3">
@@ -1937,7 +1937,7 @@ ${sig}`;
                       <Archive className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-base">أرشيف الطلاب المؤرشفين</h3>
+                      <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-sm sm:text-base">أرشيف الطلاب المؤرشفين</h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">إدارة واستعادة أو حذف بيانات الطلاب الموجودين في الأرشيف</p>
                     </div>
                   </div>
@@ -2041,7 +2041,7 @@ ${sig}`;
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
               >
                 <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                   <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center shrink-0">
@@ -2117,7 +2117,7 @@ ${sig}`;
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -2142,7 +2142,7 @@ ${sig}`;
 
       
       {/* Title block */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             
@@ -2180,7 +2180,7 @@ ${sig}`;
 
       {/* Initialize classroom form */}
       {showAddClass && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-slide-up">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-slide-up">
           <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-gray-50 pb-2">تأسيس مجموعة دراسية جديدة</h3>
           <form onSubmit={handleCreateClass} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
@@ -2363,7 +2363,7 @@ ${sig}`;
       )}
 
       {/* Class list Grid cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:p-5">
         {classes.map((cls, index) => {
           
           const currentSubjects = subjects.filter(s => s.class_id === cls.id);
@@ -2491,7 +2491,7 @@ ${sig}`;
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-2xl w-full p-6 text-right space-y-4 max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-2xl w-full p-4 sm:p-6 text-right space-y-4 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
                 <div className="flex items-center gap-2 text-[#0D5C8C] dark:text-sky-400">
@@ -2704,7 +2704,7 @@ ${sig}`;
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
             >
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">

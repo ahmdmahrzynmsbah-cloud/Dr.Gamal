@@ -216,7 +216,7 @@ export default function ParentsList() {
       id="sams_parents_module"
     >
       {/* Title & Action Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             <Users className="w-5 h-5 text-[#0D5C8C]" />
@@ -284,7 +284,7 @@ export default function ParentsList() {
       {/* Edit Form Modal Overlay */}
       {showEditForm && selectedParent && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[100] animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-800 border border-[#0D5C8C]/20 p-6 rounded-2xl shadow-2xl max-w-xl w-full my-auto" id="parent_edit_form_container">
+          <div className="bg-white dark:bg-slate-800 border border-[#0D5C8C]/20 p-4 sm:p-6 rounded-2xl shadow-2xl max-w-xl w-full my-auto" id="parent_edit_form_container">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3 mb-4">
               <h3 className="font-bold text-[#0D5C8C] text-sm flex items-center gap-2">
                 <Edit className="w-4 h-4" />
@@ -301,7 +301,7 @@ export default function ParentsList() {
                 ✕
               </button>
             </div>
-            <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:p-5">
               {errorMessage && (
                 <div className="md:col-span-2 p-3 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 text-rose-700 dark:text-rose-300 rounded-xl flex items-center gap-2 text-xs font-bold">
                   <ShieldAlert className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
@@ -378,7 +378,7 @@ export default function ParentsList() {
       )}
 
       {/* Main Grid: Filters & Parent Table / Cards */}
-      <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
         
         {/* Filters Panel */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

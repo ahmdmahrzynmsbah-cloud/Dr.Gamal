@@ -423,7 +423,7 @@ export default function FeesTracker() {
 
   if (showPrintReportModal) {
     return (
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl animate-fade-in" dir="rtl">
         <div className="flex justify-between items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4">
           <button
             onClick={() => setShowPrintReportModal(false)}
@@ -444,12 +444,12 @@ export default function FeesTracker() {
         {/* Printable Area */}
         <div className="print-area max-w-4xl mx-auto p-4 bg-white text-black border border-slate-200" dir="rtl">
           <div className="text-center mb-6 border-b-2 border-slate-800 pb-4">
-            <h1 className="text-2xl font-black text-slate-900">كشف سداد الاشتراكات الشهرية</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900">كشف سداد الاشتراكات الشهرية</h1>
             <p className="text-sm font-bold text-slate-600 mt-1">عن شهر: {selectedMonth}</p>
           </div>
           
           <div className="flex justify-between items-center mb-4">
-            <div className="text-2xl font-black text-slate-800">
+            <div className="text-xl sm:text-2xl font-black text-slate-800">
               {typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_center_name') || 'الدكتور في اللغة العربية')}
             </div>
             <div className="text-xl font-bold bg-slate-100 px-4 py-2 rounded-xl border border-slate-300 inline-block">
@@ -485,7 +485,7 @@ export default function FeesTracker() {
                         {isPaid ? (
                           <div className="text-center font-bold text-slate-700">مدفوع</div>
                         ) : (
-                          <div className="flex items-center justify-center gap-6">
+                          <div className="flex items-center justify-center gap-4 sm:p-6">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-700">دفع</span>
                               <div className="w-5 h-5 border-[1.5px] border-slate-400 rounded-sm"></div>
@@ -525,7 +525,7 @@ export default function FeesTracker() {
     const centerPhone = localStorage.getItem('sams_center_phone') || '';
     
     return (
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl animate-fade-in" dir="rtl">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl animate-fade-in" dir="rtl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print border-b border-slate-100 dark:border-slate-700 pb-4 gap-4">
           <button 
             onClick={() => {
@@ -544,7 +544,7 @@ export default function FeesTracker() {
           </button>
         </div>
 
-        <div id="printable-group-roster" className="bg-white dark:bg-slate-800 w-full max-w-sm mx-auto shadow-md rounded-2xl border-2 border-slate-900 p-6 print:shadow-none print:border-2 print:max-w-none print:w-[320px]">
+        <div id="printable-group-roster" className="bg-white dark:bg-slate-800 w-full max-w-sm mx-auto shadow-md rounded-2xl border-2 border-slate-900 p-4 sm:p-6 print:shadow-none print:border-2 print:max-w-none print:w-[320px]">
           <div className="text-center border-b-2 border-dashed border-slate-300 dark:border-slate-600 dark:border-slate-600 pb-4 mb-4">
             <h2 className="text-xl font-black text-slate-900 dark:text-slate-50">{centerName}</h2>
             {centerPhone && <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mt-1">هاتف: {centerPhone}</p>}
@@ -556,7 +556,7 @@ export default function FeesTracker() {
           <div className="space-y-3 text-sm font-bold text-slate-700 dark:text-slate-200 mb-6 font-sans">
             <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
               <span className="text-slate-500 dark:text-slate-400">رقم الإيصال</span>
-              <span className="font-mono text-slate-900 dark:text-slate-50 text-base">{printTargetReceipt.receipt_number}</span>
+              <span className="font-mono text-slate-900 dark:text-slate-50 text-sm sm:text-base">{printTargetReceipt.receipt_number}</span>
             </div>
             <div className="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
               <span className="text-slate-500 dark:text-slate-400">تاريخ السداد</span>
@@ -591,7 +591,7 @@ export default function FeesTracker() {
             )}
             <div className="flex justify-between bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
               <span className="text-slate-500 dark:text-slate-400">المبلغ المدفوع</span>
-              <span className="text-lg font-black text-slate-900 dark:text-slate-50">{printTargetReceipt.amount} ج.م</span>
+              <span className="text-sm sm:text-base sm:text-lg font-black text-slate-900 dark:text-slate-50">{printTargetReceipt.amount} ج.م</span>
             </div>
             <div className="flex justify-between text-xs pt-1">
               <span className="text-slate-500 dark:text-slate-400">وسيلة المعاملة</span>
@@ -638,7 +638,7 @@ export default function FeesTracker() {
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -662,7 +662,7 @@ export default function FeesTracker() {
       </AnimatePresence>
 
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs">
         <div className="text-right">
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <Coins className="w-5 h-5 text-[#0D5C8C]" />
@@ -744,7 +744,7 @@ export default function FeesTracker() {
 
       {/* General Fee Recording Form (Tab 2 subform) */}
       {showGeneralPayForm && activeTab === 'all_receipts' && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs animate-slide-up">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border-2 border-dashed border-[#0D5C8C]/20 shadow-xs animate-slide-up">
           <h3 className="font-bold text-[#0D5C8C] text-sm mb-4 border-b border-slate-50 dark:border-slate-800 pb-2">تسجيل إيصال سداد اشتراك الشهر الدراسي</h3>
           <form onSubmit={handleGeneralPaySubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 text-right">
             
@@ -877,7 +877,7 @@ export default function FeesTracker() {
           </div>
 
           {/* Controls Panel (Group & Month Selector) */}
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <div className="space-y-1.5 text-right">
               <label className="block text-xs font-extrabold text-slate-500 dark:text-slate-400">اختر الصف الدراسي:</label>
@@ -944,7 +944,7 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">إجمالي الطلاب (حسب التصفية)</span>
-                <span className="text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{classStudents.length} طلاب</span>
+                <span className="text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{classStudents.length} طلاب</span>
               </div>
               <div className="p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-slate-600 dark:text-slate-300">
                 <UserCheck className="w-4.5 h-4.5" />
@@ -954,7 +954,7 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">الاشتراكات المحصلة</span>
-                <span className="text-lg font-black text-emerald-600">
+                <span className="text-sm sm:text-base sm:text-lg font-black text-emerald-600">
                   {paidStudentsInClass.length} <span className="text-xs text-slate-400 font-bold">طالب ({collectionPercentage}%)</span>
                 </span>
               </div>
@@ -966,7 +966,7 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">المحصل لشهر {selectedMonth}</span>
-                <span className="text-lg font-black text-[#0D5C8C]">{totalCollectedForMonth.toLocaleString()} ج.م</span>
+                <span className="text-sm sm:text-base sm:text-lg font-black text-[#0D5C8C]">{totalCollectedForMonth.toLocaleString()} ج.م</span>
               </div>
               <div className="p-2.5 bg-[#0D5C8C]/5 rounded-lg text-[#0D5C8C]">
                 <TrendingUp className="w-4.5 h-4.5" />
@@ -976,7 +976,7 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">المديونية المتبقية (المتأخرات)</span>
-                <span className="text-lg font-black text-rose-600 dark:text-rose-400">{outstandingDebt.toLocaleString()} ج.م</span>
+                <span className="text-sm sm:text-base sm:text-lg font-black text-rose-600 dark:text-rose-400">{outstandingDebt.toLocaleString()} ج.م</span>
               </div>
               <div className="p-2.5 bg-rose-50 dark:bg-rose-900/40 rounded-lg text-rose-500">
                 <XCircle className="w-4.5 h-4.5" />
@@ -986,7 +986,7 @@ export default function FeesTracker() {
           </div>
 
           {/* Students Subscription Matrix */}
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-50 pb-3">
               <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">مصفوفة سداد الاشتراكات لطلاب {selectedClass === 'all' ? selectedGrade : '(' + classes.find(c => c.id === selectedClass)?.name + ')'}</h3>
               <div className="flex items-center gap-2">
@@ -1197,7 +1197,7 @@ export default function FeesTracker() {
 
       {/* TAB 2: GENERAL PAYMENTS & HISTORIC LOGS */}
       {activeTab === 'all_receipts' && (
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 pb-2">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">دفتر المدفوعات التاريخي وسجل حركة المعاملات</h3>
             <span className="text-xxs font-bold text-slate-400">إجمالي السجلات المستردة: {payments.length} إيصالات</span>
@@ -1319,7 +1319,7 @@ export default function FeesTracker() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleQuickPaySubmit} className="p-5 space-y-4">
+            <form onSubmit={handleQuickPaySubmit} className="p-4 sm:p-5 space-y-4">
               
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-150 space-y-2">
                 <div className="text-slate-400 text-xxs font-bold uppercase">بيانات الطالب والمجموعة:</div>
@@ -1424,7 +1424,7 @@ export default function FeesTracker() {
       {/* DIGITAL RECEIPT PRINT MODAL */}
       {selectedReceipt && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 text-right space-y-4 relative animate-scale-up" dir="rtl">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-md w-full p-4 sm:p-6 text-right space-y-4 relative animate-scale-up" dir="rtl">
             
             <div className="border-b-2 border-dashed border-slate-100 dark:border-slate-700 pb-3 flex items-center justify-between">
               <div>
@@ -1520,7 +1520,7 @@ export default function FeesTracker() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
             >
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center">
@@ -1566,7 +1566,7 @@ export default function FeesTracker() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-2xl max-w-lg w-full p-6 text-right space-y-4"
+              className="bg-white dark:bg-slate-800 dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-2xl max-w-lg w-full p-4 sm:p-6 text-right space-y-4"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">

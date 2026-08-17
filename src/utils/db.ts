@@ -91,8 +91,7 @@ function getSystemDefault<T>(baseKey: string, defaultVal: T): T {
   } else {
     if (baseKey === 'sams_system_users') {
       return [
-        { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true },
-        { id: 'u-2', name: 'أ. سارة علي', role: 'secretary', password: '456', isDefault: true }
+        { id: 'u-1', name: 'المدير الأكاديمي', role: 'teacher', password: '123', isDefault: true }
       ] as any;
     }
   }
@@ -150,7 +149,7 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
     admin: 'م. أشرف ممدوح',
     principal: 'أ. رشا فوزي - المسجل',
     teacher: 'المدير الأكاديمي',
-    secretary: 'أ. سارة علي',
+    secretary: 'سكرتير السنتر',
     parent: 'أبو أحمد الشافعي',
     student: 'أحمد الشافعي'
   }[role] || 'مستخدم غير معروف';
@@ -524,7 +523,7 @@ export const samsDb = {
     if (status === 'absent') {
       const loggedInRole = localStorage.getItem('sams_logged_in_role') || 'admin';
       const loggedInName = localStorage.getItem('sams_logged_in_name') || 'مستخدم النظام';
-      const roleText = (loggedInRole === 'secretary' || loggedInName.includes('سارة') || loggedInName.includes('سكرتيرة')) ? 'السكرتيرة' : 'الإدارة';
+      const roleText = (loggedInRole === 'secretary' || loggedInName.includes('سكرتير')) ? 'السكرتارية' : 'الإدارة';
       
       this.addAdminNotification({
         type: 'absence',

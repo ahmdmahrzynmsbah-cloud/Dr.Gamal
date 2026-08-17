@@ -500,7 +500,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
     <div className="space-y-6 animate-fade-in" id="sams_notifications_center_page">
       
       {/* Header Banner & Stats */}
-      <div className="bg-white dark:bg-slate-800 p-5 sm:p-7 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 sm:p-7 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -509,7 +509,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
                 <Bell className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">
+                <h1 className="text-xl sm:text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">
                   مركز الإشعارات والتنبيهات المباشرة
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -552,7 +552,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
             </div>
             <div>
               <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block">إجمالي التنبيهات</span>
-              <span className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">{totalNotisCount}</span>
+              <span className="text-sm sm:text-base sm:text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">{totalNotisCount}</span>
             </div>
           </div>
 
@@ -562,7 +562,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
             </div>
             <div>
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 block">غير مقروءة</span>
-              <span className="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400">{unreadAdminCount}</span>
+              <span className="text-sm sm:text-base sm:text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400">{unreadAdminCount}</span>
             </div>
           </div>
 
@@ -572,7 +572,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
             </div>
             <div>
               <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 block">تنبيهات الغياب</span>
-              <span className="text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400">{absenceNotisCount}</span>
+              <span className="text-sm sm:text-base sm:text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400">{absenceNotisCount}</span>
             </div>
           </div>
 
@@ -582,7 +582,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
             </div>
             <div>
               <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 block">تذكيرات الرسوم</span>
-              <span className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">{feesNotisCount}</span>
+              <span className="text-sm sm:text-base sm:text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400">{feesNotisCount}</span>
             </div>
           </div>
 
@@ -671,7 +671,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
         <div className="space-y-4">
           
           {/* Filter Bar Panel */}
-          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
             
             {/* Search + Action buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -807,7 +807,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
                 <div className="w-14 h-14 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center text-slate-400 mx-auto">
                   <Bell className="w-7 h-7" />
                 </div>
-                <h3 className="text-base font-bold text-slate-700 dark:text-slate-200">
+                <h3 className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200">
                   لا توجد إشعارات مطابقة للفلترة الحالية
                 </h3>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
@@ -967,7 +967,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
         <div className="space-y-6">
           
           {/* Quick Notice detailing the instant link */}
-          <div className="p-5 bg-sky-50/60 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-800 rounded-3xl flex flex-col md:flex-row md:items-center gap-4 justify-between" id="instant_sms_explanation_banner">
+          <div className="p-4 sm:p-5 bg-sky-50/60 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-800 rounded-3xl flex flex-col md:flex-row md:items-center gap-4 justify-between" id="instant_sms_explanation_banner">
             <div className="space-y-1">
               <h4 className="font-black text-[#0D5C8C] dark:text-sky-300 text-sm">نظام إرسال الرسائل التلقائي متصل بنشاط!</h4>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
@@ -983,7 +983,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
           </div>
 
           {/* Parents grid & Search input */}
-          <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm sm:text-base flex items-center gap-2">
@@ -1065,7 +1065,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
           {/* Quick Direct Message Modal */}
           {selectedParentStudent && (
             <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-              <div className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-150 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden p-6 space-y-4 text-right animate-slide-up">
+              <div className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-150 dark:border-gray-700 shadow-2xl max-w-lg w-full overflow-hidden p-4 sm:p-6 space-y-4 text-right animate-slide-up">
                 
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex items-center gap-2">
@@ -1165,9 +1165,9 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
 
       {/* TAB 3: BROADCAST */}
       {activeSubTab === 'broadcast' && (
-        <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-6">
           <div>
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-[#0D5C8C]" />
               بث إشعار أو تعميم عام وموسع
             </h3>
@@ -1244,7 +1244,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
 
       {/* TAB 4: ARCHIVE LOGS */}
       {activeSubTab === 'logs' && (
-        <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
           <h3 className="font-black text-slate-800 dark:text-slate-100 text-sm sm:text-base flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
             <Bell className="w-4.5 h-4.5 text-[#0D5C8C]" />
             سجل حركة الاتصالات وبث الـ SMS الصادر بالألوان
@@ -1312,7 +1312,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
       {/* FLOATING SMS TRANSMISSION MONITOR OVERLAY */}
       {transmissionState.isOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-sm w-full overflow-hidden flex flex-col p-6 text-center space-y-4">
+          <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-2xl max-w-sm w-full overflow-hidden flex flex-col p-4 sm:p-6 text-center space-y-4">
             
             <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-gray-700">
               <span className="text-xs font-bold text-slate-400">إرسال تنبيه فوري</span>
@@ -1382,13 +1382,13 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
       {/* Delete Confirmation Modal */}
       {deleteConfirmState.isOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-          <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full overflow-hidden flex flex-col p-6 text-center space-y-4">
+          <div className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full overflow-hidden flex flex-col p-4 sm:p-6 text-center space-y-4">
             <div className="w-14 h-14 bg-red-50 dark:bg-red-950/50 text-[#C0152A] rounded-2xl flex items-center justify-center mx-auto border border-red-200/60 dark:border-red-900/40">
               <AlertTriangle className="w-7 h-7" />
             </div>
 
             <div className="space-y-2 text-center">
-              <h3 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100">
+              <h3 className="text-base sm:text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100">
                 {deleteConfirmState.title}
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">

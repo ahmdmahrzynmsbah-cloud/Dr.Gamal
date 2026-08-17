@@ -347,7 +347,7 @@ export default function StudentsList() {
     return (
       <div className="space-y-6 animate-fade-in" dir="rtl">
         {/* Header */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowArchiveModal(false)}
@@ -366,7 +366,7 @@ export default function StudentsList() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[70vh]">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[70vh]">
           {/* Search */}
           <div className="relative shrink-0 mb-6">
             <Search className="w-5 h-5 text-slate-400 absolute right-4 top-3.5" />
@@ -402,22 +402,22 @@ export default function StudentsList() {
           <table className="w-full text-sm text-right relative border-collapse">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
-                  <th className="px-4 py-3.5 pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
-                  <th className="px-4 py-3.5 min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
-                  <th className="px-4 py-3.5 min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">الصف الدراسي</th>
-                  <th className="px-4 py-3.5 min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم هاتف الطالب / ولي الأمر</th>
-                  <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">الصف الدراسي</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم هاتف الطالب / ولي الأمر</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
                 </tr>
               </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 whitespace-nowrap">
                       {archivedList.map((st, index) => (
                         <tr key={st.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="px-4 py-3 pr-6 text-xs text-slate-400 font-mono">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm pr-6 text-xs text-slate-400 font-mono">
                             {(index + 1).toString().padStart(2, '0')}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0 text-amber-500 font-bold text-lg">
+                              <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0 text-amber-500 font-bold text-sm sm:text-base sm:text-lg">
                                 <Archive className="w-5 h-5 opacity-50" />
                               </div>
                               <div>
@@ -428,17 +428,17 @@ export default function StudentsList() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                             <div className="flex flex-col gap-1">
                               <span className="font-bold text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                             <div className="flex flex-col gap-1 text-slate-600 dark:text-slate-400">
                               <span className="flex items-center gap-1 font-mono text-xs"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-left pl-6">
+                          <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-left pl-6">
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 type="button"
@@ -480,14 +480,14 @@ export default function StudentsList() {
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-right space-y-4"
+                className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
               >
                 <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                   <div className="w-10 h-10 bg-red-50 dark:bg-red-900/40 rounded-full flex items-center justify-center shrink-0">
                     <ShieldAlert className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">تأكيد الحذف النهائي</h3>
+                    <h3 className="font-bold text-sm sm:text-base sm:text-lg">تأكيد الحذف النهائي</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">هذا الإجراء لا يمكن التراجع عنه.</p>
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export default function StudentsList() {
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
+                <h3 className="text-sm sm:text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{processingText}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">يرجى الانتظار، جاري معالجة البيانات...</p>
               </div>
               
@@ -599,7 +599,7 @@ export default function StudentsList() {
       className="space-y-6" 
       id="sams_students_module"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-2">
             إدارة سجلات الطلاب والقبول والتسجيل
@@ -661,9 +661,9 @@ export default function StudentsList() {
             exit={{ opacity: 0, y: -10 }} 
             className="w-full my-2"
           >
-            <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-md space-y-5">
+            <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-md space-y-5">
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
                 <button type="button" onClick={() => { setShowAddForm(false); setErrorMessage(''); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
               </div>
 
@@ -674,10 +674,10 @@ export default function StudentsList() {
                 </motion.div>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:p-5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
-                  <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+                  <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
                 </div>
                 
                 <div className="space-y-1.5">
@@ -691,7 +691,7 @@ export default function StudentsList() {
                       لا يوجد هاتف
                     </button>
                   </div>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX أو لا يوجد" dir="auto" />
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 outline-none" placeholder="01X XXXX XXXX أو لا يوجد" dir="auto" />
                   {formData.phone !== 'لا يوجد' && (
                     <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
                       <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
@@ -717,7 +717,7 @@ export default function StudentsList() {
                         class_id: avail.length > 0 ? avail[0].id : ''
                       }));
                     }} 
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold outline-none"
                   >
                     <option value="عام">عام</option>
                     <option value="أزهر">أزهر</option>
@@ -726,7 +726,7 @@ export default function StudentsList() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">المجموعة المخصصة ({formData.education_type}) <span className="text-rose-500">*</span></label>
-                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <select required name="class_id" value={formData.class_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none">
                     {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 ? (
                       <option value="" disabled>-- لا توجد مجموعات ({formData.education_type}) متاحة --</option>
                     ) : (
@@ -744,7 +744,7 @@ export default function StudentsList() {
                 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">الصف الدراسي <span className="text-rose-500">*</span></label>
-                  <select required name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <select required name="grade_level" value={formData.grade_level} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none">
                     <option value="الأول الإعدادي">الأول الإعدادي</option>
                     <option value="الثاني الإعدادي">الثاني الإعدادي</option>
                     <option value="الثالث الإعدادي">الثالث الإعدادي</option>
@@ -756,12 +756,12 @@ export default function StudentsList() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">تاريخ الميلاد <span className="text-rose-500">*</span></label>
-                  <input required type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" />
+                  <input required type="date" name="birth_date" value={formData.birth_date} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none" />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">حالة القيد <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
-                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none">
+                  <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none">
                     <option value="active">مفعل ومنتظم</option>
                     <option value="inactive">مجمد مؤقتاً</option>
                   </select>
@@ -769,7 +769,7 @@ export default function StudentsList() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم ولي الأمر <span className="text-rose-500">*</span></label>
-                  <input required type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="الاسم..." />
+                  <input required type="text" name="parent_name" value={formData.parent_name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none" placeholder="الاسم..." />
                 </div>
 
                 <div className="space-y-1.5">
@@ -783,7 +783,7 @@ export default function StudentsList() {
                       لا يوجد هاتف
                     </button>
                   </div>
-                  <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none" placeholder="01X XXXX XXXX أو اختر لا يوجد" dir="auto" />
+                  <input required type="tel" name="parent_phone" value={formData.parent_phone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm outline-none" placeholder="01X XXXX XXXX أو اختر لا يوجد" dir="auto" />
                   {formData.parent_phone !== 'لا يوجد' && (
                     <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
                       <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
@@ -853,22 +853,22 @@ export default function StudentsList() {
           <table className="w-full text-sm text-right relative border-collapse">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
-                  <th className="px-4 py-3.5 pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
-                  <th className="px-4 py-3.5 min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
-                  <th className="px-4 py-3.5 min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">المجموعة والصف الدراسي</th>
-                  <th className="px-4 py-3.5 min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم ولي الأمر</th>
-                  <th className="px-4 py-3.5 text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">المجموعة والصف الدراسي</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم ولي الأمر</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 whitespace-nowrap">
                 {filteredStudents.length > 0 ? filteredStudents.map((student, index) => (
                   <tr key={student.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-4 py-3 pr-6 text-xs text-slate-400 font-mono">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm pr-6 text-xs text-slate-400 font-mono">
                       {(index + 1).toString().padStart(2, '0')}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 text-slate-400 font-bold text-lg">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 text-slate-400 font-bold text-sm sm:text-base sm:text-lg">
                           {student.name.charAt(0)}
                         </div>
                         <div>
@@ -884,7 +884,7 @@ export default function StudentsList() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-bold text-[#0D5C8C] text-xs bg-sky-50 dark:bg-sky-900/40 px-2 py-1 rounded-md inline-flex items-center w-fit border border-sky-100 dark:border-sky-800">
@@ -901,12 +901,12 @@ export default function StudentsList() {
                         <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 mr-1">{student.grade_level}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                       <span className="font-mono text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 px-2 py-1 rounded border border-slate-100 dark:border-slate-700" dir="ltr">
                         {student.parent_phone}
                       </span>
                     </td>
-                    <td className="px-4 py-3 pl-6">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm pl-6">
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => {
@@ -962,7 +962,7 @@ export default function StudentsList() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 overflow-hidden"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-4 sm:p-5 overflow-hidden"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-50 pb-3">
@@ -1055,14 +1055,14 @@ export default function StudentsList() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 overflow-hidden space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-4 sm:p-6 overflow-hidden space-y-4"
             >
               <div className="flex items-center gap-3 text-orange-600 dark:text-orange-400">
                 <div className="p-3 bg-orange-50 dark:bg-orange-900/40 rounded-2xl">
                   <Archive className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد أرشفة الطالب</h3>
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد أرشفة الطالب</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">نقل سجل الطالب إلى الأرشيف</p>
                 </div>
               </div>

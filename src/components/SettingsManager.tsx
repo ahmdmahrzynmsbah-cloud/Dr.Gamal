@@ -32,7 +32,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
   const [tHomework, setTHomework] = useState(localStorage.getItem('sams_msg_template_homework') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) مسلمش الواجب بتاعه النهارده. ياريت نتابع معاه عشان ميأثرش على مستواه.');
   const [tExam, setTExam] = useState(localStorage.getItem('sams_msg_template_exam') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن نتيجة الطالب/ة ({اسم_الطالب}) في الامتحان طلعت، ياريت تتابع معانا عشان تعرف مستواه وتطمن عليه.');
   const [tBehavior, setTBehavior] = useState(localStorage.getItem('sams_msg_template_behavior') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، نرجو التنبيه على الطالب/ة ({اسم_الطالب}) بخصوص الالتزام بقواعد السنتر وعدم إثارة الشغب أثناء الحصة.');
-  const [tExcellent, setTExcellent] = useState(localStorage.getItem('sams_msg_template_excellent') || 'بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة!');
+  const [tExcellent, setTExcellent] = useState(localStorage.getItem('sams_msg_template_excellent') || 'خبر سار لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة!');
   const [tFees, setTFees] = useState(localStorage.getItem('sams_msg_template_fees') || 'تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد اشتراك الشهر الحالي للطالب ({اسم_الطالب}).');
   const [tMeeting, setTMeeting] = useState(localStorage.getItem('sams_msg_template_meeting') || 'المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).');
 
@@ -137,7 +137,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
     setHeaderTitle('المنصة التعليمية المتكاملة');
     setHeaderSubtitle('بوابة التحكم الإدارية والحصص الأكاديمية');
     setTAbsence('عزيزي ولي الأمر ({اسم_ولي_الأمر})، نحيطكم علماً بتغيب ابنكم ({اسم_الطالب}) عن السنتر اليوم. نرجو التواصل مع الإدارة لتوضيح السبب.');
-    setTExcellent('بشرى سارة لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من الإدارة.');
+    setTExcellent('خبر سار لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من الإدارة.');
     setTFees('تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.');
     setTMeeting('المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).');
     setWhatsappEnabled(true);

@@ -6,6 +6,7 @@
 import { Student, Teacher, ClassRoom, Subject, Grade, Attendance, ClassSchedule, FeePayment, SystemNotification, AuditLog, CenterScheduleData, Exam, Assignment, ExamGrade, AssignmentGrade } from '../types';
 import { playNotificationTone, getToneForCategory } from './audioAlerts';
 import { syncToFirebase, initFirebaseSync } from './firebaseSync';
+import { getStudentGender, getStudentTitle, getStudentTitleFor, getStudentTitleIndef, formatAuditLogDetails } from './genderUtils';
 import {
   INITIAL_STUDENTS,
   INITIAL_TEACHERS,
@@ -154,6 +155,8 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
     student: 'أحمد الشافعي'
   }[role] || 'مستخدم غير معروف';
 
+  const formattedDetails = formatAuditLogDetails(details);
+
   const logs = loadFromStorage<AuditLog[]>(KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
   const newLog: AuditLog = {
     id: `aud-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -162,7 +165,7 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
     action_type: actionType,
     table_name: tableName,
     record_id: recordId,
-    details,
+    details: formattedDetails,
     timestamp: getCurrentTimestamp()
   };
   logs.unshift(newLog); // newer first
@@ -241,7 +244,8 @@ export const samsDb = {
     allStudents.push(newStudent);
     saveToStorage(KEYS.STUDENTS, allStudents);
 
-    addAuditLog('INSERT', 'students', newStudent.id, `تسجيل الطالب الجديد: ${newStudent.name} بصف ${newStudent.grade_level}`);
+    const titleNew = getStudentTitle(newStudent) === 'الطالبة' ? 'الطالبة الجديدة' : 'الطالب الجديد';
+    addAuditLog('INSERT', 'students', newStudent.id, `تسجيل ${titleNew}: ${newStudent.name} بصف ${newStudent.grade_level}`);
     return { success: true, student: newStudent };
   },
 
@@ -249,13 +253,13 @@ export const samsDb = {
     const allStudents = loadFromStorage<Student[]>(KEYS.STUDENTS, INITIAL_STUDENTS);
     const idx = allStudents.findIndex(s => s.id === student.id);
     if (idx === -1) {
-      return { success: false, error: 'الطالب غير موجود بقاعدة البيانات.' };
+      return { success: false, error: `${getStudentTitle(student)} غير موجود/ة بقاعدة البيانات.` };
     }
 
     allStudents[idx] = { ...student };
     saveToStorage(KEYS.STUDENTS, allStudents);
     
-    addAuditLog('UPDATE', 'students', student.id, `تحديث بيانات الطالب: ${student.name}، حالة القيد: ${student.status}`);
+    addAuditLog('UPDATE', 'students', student.id, `تحديث بيانات ${getStudentTitle(student)}: ${student.name}، حالة القيد: ${student.status}`);
     return { success: true };
   },
 
@@ -263,10 +267,10 @@ export const samsDb = {
     const allStudents = loadFromStorage<Student[]>(KEYS.STUDENTS, INITIAL_STUDENTS);
     const idx = allStudents.findIndex(s => s.id === id);
     if (idx !== -1) {
-      const studentName = allStudents[idx].name;
+      const studentObj = allStudents[idx];
       allStudents[idx].deleted_at = getCurrentTimestamp();
       saveToStorage(KEYS.STUDENTS, allStudents);
-      addAuditLog('SOFT_DELETE', 'students', id, `أرشفة الطالب: ${studentName}`);
+      addAuditLog('SOFT_DELETE', 'students', id, `أرشفة ${getStudentTitle(studentObj)}: ${studentObj.name}`);
       return true;
     }
     return false;
@@ -281,10 +285,10 @@ export const samsDb = {
     const allStudents = loadFromStorage<Student[]>(KEYS.STUDENTS, INITIAL_STUDENTS);
     const idx = allStudents.findIndex(s => s.id === id);
     if (idx !== -1) {
-      const studentName = allStudents[idx].name;
+      const studentObj = allStudents[idx];
       delete allStudents[idx].deleted_at;
       saveToStorage(KEYS.STUDENTS, allStudents);
-      addAuditLog('UPDATE', 'students', id, `استعادة الطالب من الأرشيف: ${studentName}`);
+      addAuditLog('UPDATE', 'students', id, `استعادة ${getStudentTitle(studentObj)} من الأرشيف: ${studentObj.name}`);
       return true;
     }
     return false;
@@ -294,10 +298,10 @@ export const samsDb = {
     const allStudents = loadFromStorage<Student[]>(KEYS.STUDENTS, INITIAL_STUDENTS);
     const idx = allStudents.findIndex(s => s.id === id);
     if (idx !== -1) {
-      const studentName = allStudents[idx].name;
+      const studentObj = allStudents[idx];
       allStudents.splice(idx, 1);
       saveToStorage(KEYS.STUDENTS, allStudents);
-      addAuditLog('DELETE', 'students', id, `حذف نهائي لبيانات الطالب: ${studentName}`);
+      addAuditLog('DELETE', 'students', id, `حذف نهائي لبيانات ${getStudentTitle(studentObj)}: ${studentObj.name}`);
       return true;
     }
     return false;
@@ -466,7 +470,8 @@ export const samsDb = {
         updated_at: getCurrentTimestamp().split(' ')[0]
       };
       resultGrade = grades[existingIdx];
-      addAuditLog('UPDATE', 'grades', resultGrade.id, `رصد/تحديث درجة الطالب (${studentName}) لمادة (${subjectName}) - الامتحان: ${grade.exam_grade}، أعمال السنة: ${grade.class_work}، المجموع: ${total} (${label})`);
+      const title = getStudentTitle(studentObj || studentName);
+      addAuditLog('UPDATE', 'grades', resultGrade.id, `رصد/تحديث درجة ${title} (${studentName}) لمادة (${subjectName}) - الامتحان: ${grade.exam_grade}، أعمال السنة: ${grade.class_work}، المجموع: ${total} (${label})`);
     } else {
       const newGrade: Grade = {
         ...grade,
@@ -477,7 +482,8 @@ export const samsDb = {
       };
       grades.push(newGrade);
       resultGrade = newGrade;
-      addAuditLog('INSERT', 'grades', newGrade.id, `إدخال درجة جديدة للطالب (${studentName}) لمادة (${subjectName}) - الامتحان: ${grade.exam_grade}، أعمال السنة: ${grade.class_work}، المجموع: ${total} (${label})`);
+      const title = getStudentTitle(studentObj || studentName);
+      addAuditLog('INSERT', 'grades', newGrade.id, `إدخال درجة جديدة لـ${title} (${studentName}) لمادة (${subjectName}) - الامتحان: ${grade.exam_grade}، أعمال السنة: ${grade.class_work}، المجموع: ${total} (${label})`);
     }
 
     saveToStorage(KEYS.GRADES, grades);
@@ -496,6 +502,7 @@ export const samsDb = {
     const students = this.getStudents();
     const studentObj = students.find(item => item.id === student_id);
     const studentName = studentObj ? studentObj.name : `كود:${student_id}`;
+    const studentTitle = getStudentTitle(studentObj || studentName);
     const statusAr = status === 'present' ? 'حضور' : status === 'absent' ? 'غياب' : 'غياب بعذر';
 
     let result: Attendance;
@@ -503,7 +510,7 @@ export const samsDb = {
       list[idx].status = status;
       list[idx].notified_parent = list[idx].notified_parent || notify;
       result = list[idx];
-      addAuditLog('UPDATE', 'attendance', result.id, `تعديل حالة حضور الطالب (${studentName}) وتعيينها إلى: ${statusAr}`);
+      addAuditLog('UPDATE', 'attendance', result.id, `تعديل حالة حضور ${studentTitle} (${studentName}) وتعيينها إلى: ${statusAr}`);
     } else {
       const newAtt: Attendance = {
         id: `att-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -515,7 +522,7 @@ export const samsDb = {
       };
       list.push(newAtt);
       result = newAtt;
-      addAuditLog('INSERT', 'attendance', newAtt.id, `تسجيل حضور الطالب (${studentName}) بتاريخ ${date} كـ ${statusAr}`);
+      addAuditLog('INSERT', 'attendance', newAtt.id, `تسجيل حضور ${studentTitle} (${studentName}) بتاريخ ${date} كـ ${statusAr}`);
     }
 
     saveToStorage(KEYS.ATTENDANCE, list);
@@ -527,7 +534,7 @@ export const samsDb = {
       
       this.addAdminNotification({
         type: 'absence',
-        message: `سجلت ${roleText} (${loggedInName}) غياب للطالب/ة (${studentName})`,
+        message: `سجلت ${roleText} (${loggedInName}) غياب لـ${studentTitle} (${studentName})`,
         metadata: { student_id, date, actor: loggedInName }
       });
     }
@@ -580,10 +587,11 @@ export const samsDb = {
     const students = this.getStudents();
     const studentObj = students.find(s => s.id === payment.student_id);
     const studentName = studentObj ? studentObj.name : `كود:${payment.student_id}`;
+    const studentTitle = getStudentTitle(studentObj || studentName);
 
     const categoryAr = 'اشتراك الشهر الدراسي';
 
-    addAuditLog('INSERT', 'fees', newPay.id, `تسجيل دفعة مالية بقيمة ${payment.amount} ج.م للطالب (${studentName}). بند الدفع: ${categoryAr}، إيصال رقم ${receipt_number}`);
+    addAuditLog('INSERT', 'fees', newPay.id, `تسجيل دفعة مالية بقيمة ${payment.amount} ج.م لـ${studentTitle} (${studentName}). بند الدفع: ${categoryAr}، إيصال رقم ${receipt_number}`);
     return newPay;
   },
 
@@ -597,7 +605,8 @@ export const samsDb = {
     const students = this.getStudents();
     const studentObj = paymentObj ? students.find(s => s.id === paymentObj.student_id) : null;
     const studentName = studentObj ? studentObj.name : 'طالب';
-    addAuditLog('DELETE', 'fees', id, `حذف وإلغاء إيصال السداد رقم ${receiptNum} للطالب (${studentName})`);
+    const studentTitle = getStudentTitle(studentObj || studentName);
+    addAuditLog('DELETE', 'fees', id, `حذف وإلغاء إيصال السداد رقم ${receiptNum} لـ${studentTitle} (${studentName})`);
     return true;
   },
 
@@ -712,7 +721,11 @@ export const samsDb = {
 
   // AUDIT LOGS
   getAuditLogs(): AuditLog[] {
-    return loadFromStorage<AuditLog[]>(KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
+    const logs = loadFromStorage<AuditLog[]>(KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
+    return logs.map(log => ({
+      ...log,
+      details: formatAuditLogDetails(log.details)
+    }));
   },
 
   getCenterSchedule(): CenterScheduleData {
@@ -809,10 +822,12 @@ export const samsDb = {
     
     // Log exam score
     const students = this.getStudents();
-    const studentName = students.find(s => s.id === grade.student_id)?.name || grade.student_id;
+    const studentObj = students.find(s => s.id === grade.student_id);
+    const studentName = studentObj?.name || grade.student_id;
+    const studentTitle = getStudentTitle(studentObj || studentName);
     const exams = this.getExams();
     const examName = exams.find(e => e.id === grade.exam_id)?.name || grade.exam_id;
-    addAuditLog('UPDATE', 'exam_grades', updated.id, `رصد درجة الطالب (${studentName}) لـ (${examName}): ${grade.absent ? 'غياب' : grade.score}`);
+    addAuditLog('UPDATE', 'exam_grades', updated.id, `رصد درجة ${studentTitle} (${studentName}) لـ (${examName}): ${grade.absent ? 'غياب' : grade.score}`);
   },
 
   // ASSIGNMENT GRADES
@@ -837,10 +852,12 @@ export const samsDb = {
 
     // Log assignment score
     const students = this.getStudents();
-    const studentName = students.find(s => s.id === grade.student_id)?.name || grade.student_id;
+    const studentObj = students.find(s => s.id === grade.student_id);
+    const studentName = studentObj?.name || grade.student_id;
+    const studentTitle = getStudentTitle(studentObj || studentName);
     const assignments = this.getAssignments();
     const assignTitle = assignments.find(a => a.id === grade.assignment_id)?.title || grade.assignment_id;
-    addAuditLog('UPDATE', 'assignment_grades', updated.id, `رصد واجب الطالب (${studentName}) لـ (${assignTitle}): ${grade.completed ? `تم التسليم (الدرجة: ${grade.score})` : 'لم يتم التسليم'}`);
+    addAuditLog('UPDATE', 'assignment_grades', updated.id, `رصد واجب ${studentTitle} (${studentName}) لـ (${assignTitle}): ${grade.completed ? `تم التسليم (الدرجة: ${grade.score})` : 'لم يتم التسليم'}`);
   },
 
   // Merge duplicates

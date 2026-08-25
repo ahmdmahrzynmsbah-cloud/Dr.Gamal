@@ -52,6 +52,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
+import { getStudentTitle, getStudentGender, isFemaleName } from '../utils/genderUtils';
 
 export default function ClassesManager() {
   const [classes, setClasses] = useState<ClassRoom[]>([]);
@@ -309,14 +310,24 @@ export default function ClassesManager() {
   };
 
   // Add Student Form State inside Group View
-  const [newStudentForm, setNewStudentForm] = useState({
+  const [newStudentForm, setNewStudentForm] = useState<{
+    name: string;
+    gender?: 'male' | 'female';
+    phone: string;
+    parent_name: string;
+    parent_phone: string;
+    grade_level: string;
+    birth_date: string;
+    status: 'active' | 'suspended' | 'archived';
+  }>({
     name: '',
+    gender: undefined,
     phone: '',
     parent_name: '',
     parent_phone: '',
     grade_level: 'الأول الإعدادي',
     birth_date: '2016-01-01',
-    status: 'active' as 'active' | 'suspended' | 'archived'
+    status: 'active'
   });
 
   // Calculate attendance statistics for a student
@@ -1261,8 +1272,8 @@ ${sig}`;
                 <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
                     <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم القيد</th>
-                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب</th>
-                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">هاتف الطالب وولي الأمر</th>
+                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب / الطالبة</th>
+                    <th className="p-3.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الهاتف وولي الأمر</th>
                     <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إحصائيات الحضور %</th>
                     <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الموقف المالي والرسوم</th>
                     <th className="p-3.5 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة القيد</th>
@@ -1275,6 +1286,9 @@ ${sig}`;
                     const feeStats = getStudentFeeStatus(student.id);
                     const parentPhoneClean = (student.parent_phone || student.phone || '').replace(/[^0-9]/g, '');
                     const formattedParentPhone = parentPhoneClean.startsWith('0') ? '2' + parentPhoneClean : parentPhoneClean;
+                    const studentGender = getStudentGender(student.name, student.gender);
+                    const isFemale = studentGender === 'female';
+                    const titleWord = isFemale ? 'الطالبة' : 'الطالب';
 
                     return (
                       <tr key={student.id} className="hover:bg-sky-50/40 dark:hover:bg-slate-800/50 transition-colors">
@@ -1287,6 +1301,13 @@ ${sig}`;
                         <td className="p-3.5">
                           <div className="font-extrabold text-slate-900 dark:text-slate-50 text-sm flex items-center gap-2">
                             <span>{student.name}</span>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
+                              isFemale 
+                                ? 'bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800'
+                                : 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                            }`}>
+                              {titleWord}
+                            </span>
                             {attStats.absent >= 3 && (
                               <span className="bg-rose-100 text-rose-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-700 flex items-center gap-1 animate-pulse">
                                 <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
@@ -1376,7 +1397,7 @@ ${sig}`;
                               type="button"
                               onClick={() => setSelectedStudentForReport(student)}
                               className="p-2 bg-sky-50 dark:bg-sky-900/40 hover:bg-sky-100 text-[#0D5C8C] rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-sky-200"
-                              title="عرض كشف وتاريخ الطالب الكامل"
+                              title={`عرض كشف وتاريخ ${titleWord} الكامل`}
                             >
                               <Eye className="w-3.5 h-3.5 text-[#0D5C8C]" />
                               <span>كشف كامل</span>
@@ -1385,7 +1406,7 @@ ${sig}`;
                             {/* WhatsApp Direct */}
                             {student.parent_phone && (
                               <a
-                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر الطالب/ة: ${student.name}\nتحية طيبة وبعد من ${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية'}...\n\n${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية'}`)}`}
+                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر ${titleWord}: ${student.name}\nتحية طيبة وبعد من ${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية'}...\n\n${typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية'}`)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-emerald-200 dark:border-emerald-700"
@@ -1403,7 +1424,7 @@ ${sig}`;
                                 setTargetClassIdForTransfer('');
                               }}
                               className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl transition-transform active:scale-95 cursor-pointer"
-                              title="نقل الطالب إلى مجموعة أخرى"
+                              title={`نقل ${titleWord} إلى مجموعة أخرى`}
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
                             </button>
@@ -1415,7 +1436,7 @@ ${sig}`;
                                 setEditingStudent(student);
                               }}
                               className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 rounded-xl transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
-                              title="تعديل بيانات الطالب"
+                              title={`تعديل بيانات ${titleWord}`}
                             >
                               <Edit className="w-3.5 h-3.5" />
                             </button>
@@ -1426,10 +1447,10 @@ ${sig}`;
                               onClick={() => {
                                 samsDb.softDeleteStudent(student.id);
                                 loadData();
-                                setSuccessText(`تم نقل الطالب (${student.name}) إلى الأرشيف بنجاح.`);
+                                setSuccessText(`تم نقل ${titleWord} (${student.name}) إلى الأرشيف بنجاح.`);
                               }}
                               className="p-2 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 text-amber-800 dark:text-amber-300 rounded-xl font-bold text-xs flex items-center gap-1 transition-transform active:scale-95 cursor-pointer border border-amber-200 dark:border-amber-700"
-                              title="نقل الطالب إلى الأرشيف"
+                              title={`نقل ${titleWord} إلى الأرشيف`}
                             >
                               <Archive className="w-3.5 h-3.5 text-amber-700 dark:text-amber-300" />
                               <span>أرشفة</span>
@@ -1460,7 +1481,7 @@ ${sig}`;
                 <div className="p-4 sm:p-5 bg-[#0D5C8C] text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserPlus className="w-5 h-5 text-amber-300" />
-                    <h3 className="font-extrabold text-sm sm:text-base">تسجيل طالب جديد بمجموعة: {selectedClassForStudents.name}</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">تسجيل طالب / طالبة بمجموعة: {selectedClassForStudents.name}</h3>
                   </div>
                   <button
                     type="button"
@@ -1481,7 +1502,7 @@ ${sig}`;
                       setErrorText(parentPhoneErr);
                       return;
                     }
-                    const studentPhoneErr = validateEgyptianPhone(newStudentForm.phone, 'هاتف الطالب', false);
+                    const studentPhoneErr = validateEgyptianPhone(newStudentForm.phone, 'هاتف الطالب/ة', false);
                     if (studentPhoneErr) {
                       setErrorText(studentPhoneErr);
                       return;
@@ -1491,8 +1512,10 @@ ${sig}`;
                     const cleanParentPhone = normalizePhoneDigits(newStudentForm.parent_phone);
 
                     const finalParentName = newStudentForm.parent_name.trim() || deriveParentName(newStudentForm.name);
+                    const detectedGender = newStudentForm.gender || (isFemaleName(newStudentForm.name) ? 'female' : 'male');
                     const res = samsDb.addStudent({
                       name: newStudentForm.name,
+                      gender: detectedGender,
                       class_id: selectedClassForStudents.id,
                       grade_level: selectedClassForStudents.grade_level || newStudentForm.grade_level,
                       education_type: selectedClassForStudents.education_type || 'عام',
@@ -1503,11 +1526,12 @@ ${sig}`;
                       status: newStudentForm.status
                     });
                     if (res.success && res.student) {
-                      setSuccessText(`تم إضافة الطالب (${res.student.name}) برقم قيد (${res.student.registration_id}) وولى أمره (${res.student.parent_name}) بنجاح!`);
+                      const title = getStudentTitle(res.student.name, res.student.gender);
+                      setSuccessText(`تمت إضافة ${title} (${res.student.name}) برقم قيد (${res.student.registration_id}) وولى أمره (${res.student.parent_name}) بنجاح!`);
                       setShowAddStudentModal(false);
                       loadData();
                     } else {
-                      setErrorText(res.error || 'حدث خطأ أثناء إضافة الطالب.');
+                      setErrorText(res.error || 'حدث خطأ أثناء الإضافة.');
                     }
                   }}
                   className="p-4 sm:p-6 space-y-4 text-right"
@@ -1519,20 +1543,57 @@ ${sig}`;
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">الاسم الرباعي <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       required
                       value={newStudentForm.name}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        const autoGender = isFemaleName(name) ? 'female' : 'male';
+                        setNewStudentForm({
+                          ...newStudentForm,
+                          name,
+                          gender: newStudentForm.gender !== undefined ? newStudentForm.gender : (name.trim() ? autoGender : undefined)
+                        });
+                      }}
                       className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
-                      placeholder="أدخل اسم الطالب..."
+                      placeholder="أدخل الاسم الرباعي للطالب أو الطالبة..."
                     />
+                  </div>
+
+                  {/* Gender Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">النوع / الجنس</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewStudentForm({ ...newStudentForm, gender: 'male' })}
+                        className={`p-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          (newStudentForm.gender === 'male' || (!newStudentForm.gender && !isFemaleName(newStudentForm.name)))
+                            ? 'bg-sky-50 dark:bg-sky-950/60 border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-300 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
+                        <span>👦 طالب (ذكر)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewStudentForm({ ...newStudentForm, gender: 'female' })}
+                        className={`p-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          (newStudentForm.gender === 'female' || (!newStudentForm.gender && isFemaleName(newStudentForm.name)))
+                            ? 'bg-pink-50 dark:bg-pink-950/60 border-pink-500 text-pink-600 dark:text-pink-300 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
+                        <span>👧 طالبة (أنثى)</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">الهاتف الشخصي <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
                       <input
                         type="text"
                         value={newStudentForm.phone}
@@ -1597,7 +1658,7 @@ ${sig}`;
                       type="submit"
                       className="px-5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white rounded-xl text-xs font-bold cursor-pointer"
                     >
-                      حفظ وإضافة الطالب
+                      حفظ وتسجيل الحساب
                     </button>
                   </div>
                 </form>
@@ -1619,7 +1680,9 @@ ${sig}`;
                 <div className="p-4 sm:p-5 bg-amber-600 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Edit className="w-5 h-5 text-white" />
-                    <h3 className="font-extrabold text-sm sm:text-base">تعديل بيانات الطالب: {editingStudent.name}</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">
+                      تعديل بيانات {getStudentTitle(editingStudent.name, editingStudent.gender)}: {editingStudent.name}
+                    </h3>
                   </div>
                   <button
                     type="button"
@@ -1640,7 +1703,7 @@ ${sig}`;
                       setErrorText(parentPhoneErr);
                       return;
                     }
-                    const studentPhoneErr = validateEgyptianPhone(editingStudent.phone || '', 'هاتف الطالب', false);
+                    const studentPhoneErr = validateEgyptianPhone(editingStudent.phone || '', 'هاتف الطالب/ة', false);
                     if (studentPhoneErr) {
                       setErrorText(studentPhoneErr);
                       return;
@@ -1654,7 +1717,8 @@ ${sig}`;
 
                     const res = samsDb.updateStudent(updatedStudent);
                     if (res.success) {
-                      setSuccessText(`تم تعديل بيانات الطالب (${editingStudent.name}) بنجاح.`);
+                      const title = getStudentTitle(editingStudent.name, editingStudent.gender);
+                      setSuccessText(`تم تعديل بيانات ${title} (${editingStudent.name}) بنجاح.`);
                       setEditingStudent(null);
                       loadData();
                     } else {
@@ -1670,21 +1734,53 @@ ${sig}`;
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">اسم الطالب <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">الاسم الرباعي <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       required
                       value={editingStudent.name}
-                      onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        setEditingStudent({ ...editingStudent, name });
+                      }}
                       className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl focus:outline-hidden focus:border-amber-600"
                     />
+                  </div>
+
+                  {/* Gender Selector in Edit Modal */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">النوع / الجنس</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingStudent({ ...editingStudent, gender: 'male' })}
+                        className={`p-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          getStudentGender(editingStudent.name, editingStudent.gender) === 'male'
+                            ? 'bg-sky-50 dark:bg-sky-950/60 border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-300 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
+                        <span>👦 طالب (ذكر)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingStudent({ ...editingStudent, gender: 'female' })}
+                        className={`p-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          getStudentGender(editingStudent.name, editingStudent.gender) === 'female'
+                            ? 'bg-pink-50 dark:bg-pink-950/60 border-pink-500 text-pink-600 dark:text-pink-300 shadow-xs'
+                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
+                        <span>👧 طالبة (أنثى)</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف الطالب <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
-                        <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف الطالب/ة <span className="text-slate-400 font-normal text-[10px]">(اختياري)</span></label>
+                        <button type="button" onClick={() => setEditingStudent(prev => prev ? ({ ...prev, phone: 'لا يوجد' }) : null)} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
                       </div>
                       <input
                         type="text"
@@ -1698,7 +1794,7 @@ ${sig}`;
                         <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
                           <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
                           <p className="text-[10px] text-slate-500 leading-relaxed">
-                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, phone: 'لا يوجد' }))} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => prev ? ({ ...prev, phone: 'لا يوجد' }) : null)} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
                           </p>
                         </div>
                       )}
@@ -1706,7 +1802,7 @@ ${sig}`;
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هاتف ولي الأمر <span className="text-rose-500">*</span></label>
-                        <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
+                        <button type="button" onClick={() => setEditingStudent(prev => prev ? ({ ...prev, parent_phone: 'لا يوجد' }) : null)} className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/80 transition-colors">لا يوجد</button>
                       </div>
                       <input
                         type="text"
@@ -1721,7 +1817,7 @@ ${sig}`;
                         <div className="mt-1.5 flex items-start gap-1.5 p-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 rounded-lg">
                           <Info className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
                           <p className="text-[10px] text-slate-500 leading-relaxed">
-                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => ({ ...prev, parent_phone: 'لا يوجد' }))} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
+                            إذا كان الرقم غير متاح، اضغط <button type="button" onClick={() => setEditingStudent(prev => prev ? ({ ...prev, parent_phone: 'لا يوجد' }) : null)} className="font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">هنا</button> لتسجيله كـ "لا يوجد"
                           </p>
                         </div>
                       )}
@@ -1739,7 +1835,7 @@ ${sig}`;
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">حالة الطالب</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">حالة القيد</label>
                     <select
                       value={editingStudent.status}
                       onChange={(e) => setEditingStudent({ ...editingStudent, status: e.target.value as any })}
@@ -1784,7 +1880,9 @@ ${sig}`;
                 <div className="p-4 sm:p-5 bg-sky-700 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <RefreshCw className="w-5 h-5 text-white" />
-                    <h3 className="font-extrabold text-sm sm:text-base">نقل الطالب لـ مجموعة أخرى</h3>
+                    <h3 className="font-extrabold text-sm sm:text-base">
+                      نقل {getStudentTitle(transferStudent.name, transferStudent.gender)} لمجموعة أخرى
+                    </h3>
                   </div>
                   <button
                     type="button"
@@ -1797,7 +1895,7 @@ ${sig}`;
 
                 <div className="p-4 sm:p-6 space-y-4 text-right">
                   <p className="text-xs text-slate-600 dark:text-slate-300 font-sans">
-                    اختر المجموعة الدراسية الجديدة لنقل الطالب <strong className="text-slate-900 dark:text-slate-50 font-extrabold">({transferStudent.name})</strong> إليها:
+                    اختر المجموعة الدراسية الجديدة لنقل {getStudentTitle(transferStudent.name, transferStudent.gender)} <strong className="text-slate-900 dark:text-slate-50 font-extrabold">({transferStudent.name})</strong> إليها:
                   </p>
 
                   <div>
@@ -1832,7 +1930,8 @@ ${sig}`;
                         const res = samsDb.updateStudent(updated);
                         if (res.success) {
                           const targetGroup = classes.find(c => c.id === targetClassIdForTransfer);
-                          setSuccessText(`تم نقل الطالب (${transferStudent.name}) إلى مجموعة (${targetGroup?.name || ''}) بنجاح.`);
+                          const title = getStudentTitle(transferStudent.name, transferStudent.gender);
+                          setSuccessText(`تم نقل ${title} (${transferStudent.name}) إلى مجموعة (${targetGroup?.name || ''}) بنجاح.`);
                           setTransferStudent(null);
                           loadData();
                         }

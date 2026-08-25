@@ -485,7 +485,7 @@ export default function FeesTracker() {
                         {isPaid ? (
                           <div className="text-center font-bold text-slate-700">مدفوع</div>
                         ) : (
-                          <div className="flex items-center justify-center gap-4 sm:p-6">
+                          <div className="flex items-center justify-center gap-4 sm:gap-6">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-700">دفع</span>
                               <div className="w-5 h-5 border-[1.5px] border-slate-400 rounded-sm"></div>

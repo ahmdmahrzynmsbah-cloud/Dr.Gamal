@@ -32,6 +32,23 @@ import {
   PanelRightOpen,
   Sun,
   Moon,
+  Contact,
+  QrCode,
+  CalendarCheck2,
+  Layers,
+  BadgeDollarSign,
+  Wallet,
+  CreditCard,
+  ShieldAlert,
+  KeyRound,
+  Activity,
+  Settings,
+  Search,
+  ShieldCheck,
+  Building2,
+  Bell,
+  CheckCheck,
+  Trash2,
 } from 'lucide-react';
 
 // Import local components
@@ -52,10 +69,8 @@ import ExamsAndAssignments from './components/ExamsAndAssignments';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import ThemeToggle from './components/ThemeToggle';
 import InstallPWAButton from './components/InstallPWAButton';
-import { Settings, Search, ShieldCheck, Building2 } from 'lucide-react';
 import { initFirebaseSync } from './utils/firebaseSync';
 import { AdminNotification } from './types';
-import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -63,6 +78,23 @@ import { samsDb, saveToStorage, getActiveSystem, setActiveSystem, SystemContext 
 import { checkFeeDueDatesBackgroundService } from './utils/feeReminderService';
 
 type TabType = 'dashboard' | 'students' | 'parents' | 'barcodes' | 'classes' | 'attendance' | 'fees' | 'notifications' | 'roles' | 'audit' | 'settings' | 'exams' | 'salaries' | 'privacy';
+
+interface NavSubItem {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
+  isFinance?: boolean;
+  roles: string[];
+}
+
+interface NavCategoryItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  isFinance?: boolean;
+  roles: string[];
+  subItems?: NavSubItem[];
+}
 
 export default function App() {
   // Active system context
@@ -390,19 +422,24 @@ export default function App() {
     }[role] || { name: 'زائر', style: 'bg-gray-50 text-gray-700' };
   };
 
-  const navCategories = [
-    { id: 'dashboard', label: 'لوحة التحكم والمؤشرات', icon: <LayoutDashboard className="w-4 h-4" />, roles: ['teacher'] },
+  const navCategories: NavCategoryItem[] = [
+    {
+      id: 'dashboard',
+      label: 'لوحة التحكم والمؤشرات',
+      icon: <LayoutDashboard className="w-4 h-4" />,
+      roles: ['teacher']
+    },
     {
       id: 'students_group',
       label: 'شؤون الطلاب',
       icon: <GraduationCap className="w-4 h-4" />,
       roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'students', label: 'إدارة الطلاب والقبول', roles: ['teacher', 'secretary'] },
-        { id: 'parents', label: 'إدارة أولياء الأمور', roles: ['teacher', 'secretary'] },
-        { id: 'barcodes', label: 'باركود الطلاب', roles: ['teacher', 'secretary'] },
-        { id: 'attendance', label: 'الحضور والانتظام اليومي', roles: ['teacher', 'secretary'] },
-        { id: 'exams', label: 'الامتحانات والواجبات', roles: ['teacher', 'secretary'] },
+        { id: 'students', label: 'إدارة الطلاب والقبول', icon: <UserCheck className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'parents', label: 'إدارة أولياء الأمور', icon: <Contact className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'barcodes', label: 'باركود وكروت الطلاب', icon: <QrCode className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'attendance', label: 'الحضور والانتظام اليومي', icon: <CalendarCheck2 className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'exams', label: 'الامتحانات والواجبات', icon: <Award className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
       ]
     },
     {
@@ -411,28 +448,29 @@ export default function App() {
       icon: <BookOpen className="w-4 h-4" />,
       roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'classes', label: 'المجموعات والجدول والمقررات', roles: ['teacher', 'secretary'] },
+        { id: 'classes', label: 'المجموعات والجدول والمقررات', icon: <Layers className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
       ]
     },
     {
       id: 'finance_group',
-      label: 'الحسابات والتواصل',
-      icon: <DollarSign className="w-4 h-4" />,
+      label: 'الحسابات والمالية',
+      icon: <BadgeDollarSign className="w-4 h-4 text-amber-300" />,
+      isFinance: true,
       roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'salaries', label: 'المرتبات والمصروفات', roles: ['teacher'] },
-        { id: 'fees', label: 'اشتراكات الشهر والحسابات', roles: ['teacher', 'secretary'] },
-        { id: 'notifications', label: 'بث الرسائل وتواصل الآباء', roles: ['teacher', 'secretary'] },
+        { id: 'salaries', label: 'المرتبات والمصروفات', icon: <Wallet className="w-3.5 h-3.5 text-amber-300" />, isFinance: true, roles: ['teacher'] },
+        { id: 'fees', label: 'اشتراكات الشهر والحسابات', icon: <CreditCard className="w-3.5 h-3.5 text-emerald-300" />, isFinance: true, roles: ['teacher', 'secretary'] },
+        { id: 'notifications', label: 'بث الرسائل وتواصل الآباء', icon: <Megaphone className="w-3.5 h-3.5 text-sky-300" />, roles: ['teacher', 'secretary'] },
       ]
     },
     {
       id: 'management_group',
       label: 'الإدارة والصلاحيات',
-      icon: <Users className="w-4 h-4" />,
+      icon: <ShieldAlert className="w-4 h-4" />,
       roles: ['teacher'],
       subItems: [
-        { id: 'roles', label: 'الصلاحيات وتدقيق الأمان', roles: ['teacher'] },
-        { id: 'audit', label: 'سجل المعاملات الحية', roles: ['teacher'] },
+        { id: 'roles', label: 'الصلاحيات وتدقيق الأمان', icon: <KeyRound className="w-3.5 h-3.5" />, roles: ['teacher'] },
+        { id: 'audit', label: 'سجل المعاملات الحية', icon: <Activity className="w-3.5 h-3.5" />, roles: ['teacher'] },
       ]
     },
     { id: 'privacy', label: 'سياسة الخصوصية', icon: <ShieldCheck className="w-4 h-4" />, roles: ['teacher', 'secretary'] },
@@ -666,22 +704,28 @@ export default function App() {
                         toggleNavGroup(category.id);
                       }
                     }}
-                    className={`w-full text-right ${isSidebarCollapsed ? 'px-0 justify-center py-3' : 'px-4 py-2.5'} text-xs rounded-xl font-bold flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} transition-all cursor-pointer ${
+                    className={`w-full text-right ${isSidebarCollapsed ? 'px-0 justify-center py-3' : 'px-4 py-2.5'} text-xs rounded-xl font-bold flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} transition-all cursor-pointer group ${
                       isAnyChildActive && !isOpen
-                        ? 'bg-[#1A7FAA]/30 text-white'
+                        ? 'bg-[#1A7FAA]/35 text-white shadow-xs'
                         : 'text-blue-100 hover:bg-[#1A7FAA]/20 hover:text-white'
                     }`}
                     title={isSidebarCollapsed ? category.label : undefined}
                   >
                     <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-                      <span className={`text-sm shrink-0 ${isAnyChildActive ? 'text-amber-300' : ''}`}>{category.icon}</span>
+                      <span className={`text-sm shrink-0 transition-transform ${
+                        isAnyChildActive ? 'text-amber-300' : 'text-blue-200 group-hover:text-white'
+                      } ${category.isFinance ? 'finance-wobble-hover' : 'group-hover:scale-110'}`}>
+                        {category.icon}
+                      </span>
                       {!isSidebarCollapsed && <span>{category.label}</span>}
                     </div>
-                    {!isSidebarCollapsed && (isOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-60" /> : <ChevronDown className="w-3.5 h-3.5 opacity-60" />)}
+                    {!isSidebarCollapsed && (
+                      isOpen ? <ChevronUp className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" /> : <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" />
+                    )}
                   </button>
                   
                   {isOpen && !isSidebarCollapsed && (
-                    <div className="pl-4 pr-11 space-y-1 animate-fade-in mt-1">
+                    <div className="pl-2 pr-4 space-y-1 animate-fade-in mt-1 mr-3 border-r-2 border-white/10">
                       {allowedSubItems.map(subItem => {
                         const isActive = activeTab === subItem.id;
                         return (
@@ -691,14 +735,25 @@ export default function App() {
                               setActiveTab(subItem.id as TabType);
                               setMobileMenuOpen(false);
                             }}
-                            className={`w-full text-right px-3 py-2 text-[11px] rounded-lg font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+                            className={`w-full text-right px-3 py-2 text-[11px] rounded-lg font-semibold flex items-center justify-between gap-2 transition-all cursor-pointer group ${
                               isActive
                                 ? 'bg-[#1A7FAA] text-white shadow-xs'
-                                : 'text-blue-200 hover:bg-[#1A7FAA]/40 hover:text-white'
+                                : 'text-blue-100/90 hover:bg-[#1A7FAA]/40 hover:text-white'
                             }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-amber-300' : 'bg-blue-400'}`} />
-                            {subItem.label}
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span
+                                className={`shrink-0 transition-transform ${
+                                  isActive ? 'text-amber-300 scale-110' : 'text-blue-200/90 group-hover:text-white'
+                                } ${subItem.isFinance ? 'finance-wobble-hover' : 'group-hover:scale-110'}`}
+                              >
+                                {subItem.icon}
+                              </span>
+                              <span className="truncate">{subItem.label}</span>
+                            </div>
+                            {isActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-300 shrink-0 shadow-xs animate-pulse" />
+                            )}
                           </button>
                         );
                       })}
@@ -717,14 +772,18 @@ export default function App() {
                   setActiveTab(category.id as TabType);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full text-right ${isSidebarCollapsed ? 'px-0 justify-center py-3' : 'px-4 py-3'} text-xs rounded-xl font-bold flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} transition-all cursor-pointer ${
+                className={`w-full text-right ${isSidebarCollapsed ? 'px-0 justify-center py-3' : 'px-4 py-3'} text-xs rounded-xl font-bold flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} transition-all cursor-pointer group ${
                   isActive
                     ? 'bg-[#1A7FAA] text-white shadow-xs'
                     : 'text-blue-100 hover:bg-[#1A7FAA]/50 hover:text-white'
                 }`}
                 title={isSidebarCollapsed ? category.label : undefined}
               >
-                <span className={`text-sm shrink-0 ${isActive ? 'text-amber-300' : ''}`}>{category.icon}</span>
+                <span className={`text-sm shrink-0 transition-transform ${
+                  isActive ? 'text-amber-300 scale-110' : 'text-blue-200 group-hover:text-white'
+                } ${category.isFinance ? 'finance-wobble-hover' : 'group-hover:scale-110'}`}>
+                  {category.icon}
+                </span>
                 {!isSidebarCollapsed && <span>{category.label}</span>}
               </button>
             );

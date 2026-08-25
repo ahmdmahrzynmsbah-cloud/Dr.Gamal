@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuditLog } from '../types';
 import { samsDb } from '../utils/db';
+import { formatAuditLogDetails } from '../utils/genderUtils';
 import { 
   History, 
   User, 
@@ -103,8 +104,10 @@ export default function SystemAuditLogs() {
     // 4. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
+      const formatted = formatAuditLogDetails(log.details).toLowerCase();
       return (
         log.details.toLowerCase().includes(q) ||
+        formatted.includes(q) ||
         log.user_name.toLowerCase().includes(q) ||
         log.timestamp.toLowerCase().includes(q) ||
         log.table_name.toLowerCase().includes(q)
@@ -355,7 +358,7 @@ export default function SystemAuditLogs() {
                       
                       <div className="space-y-1">
                         <p className="text-slate-800 dark:text-slate-100 dark:text-slate-100 font-bold font-sans">
-                          {log.details}
+                          {formatAuditLogDetails(log.details)}
                         </p>
                         <p className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">
                           كود المعاملة الفريد: <span className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300">{log.id}</span>

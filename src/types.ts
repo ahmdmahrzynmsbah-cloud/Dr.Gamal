@@ -7,6 +7,7 @@ export interface Student {
   id: string; // unique identification string
   national_id?: string; // الرقم القومي (optional)
   name: string; // الاسم
+  gender?: 'male' | 'female'; // النوع: ذكر (طالب) / أنثى (طالبة)
   registration_id: string; // رقم القيد
   class_id: string; // المجموعة
   grade_level: string; // السنة الدراسية (مثلاً: الصف الأول، الثاني، الثالث)

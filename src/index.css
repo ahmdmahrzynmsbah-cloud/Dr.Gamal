@@ -44,6 +44,27 @@ button, input, select, textarea {
   animation: fade-in 0.2s ease-out forwards;
 }
 
+/* Gentle wobble / shake animation for Finance and Accounts icons */
+@keyframes finance-wobble {
+  0% { transform: rotate(0deg) scale(1); }
+  15% { transform: rotate(-13deg) scale(1.18); }
+  30% { transform: rotate(11deg) scale(1.18); }
+  45% { transform: rotate(-8deg) scale(1.12); }
+  60% { transform: rotate(6deg) scale(1.08); }
+  75% { transform: rotate(-3deg) scale(1.03); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-finance-wobble {
+  animation: finance-wobble 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.group:hover .finance-wobble-hover,
+button:hover .finance-wobble-hover,
+.finance-wobble-hover:hover {
+  animation: finance-wobble 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
 @keyframes scanline {
   0% { top: 0%; }
   50% { top: 100%; }

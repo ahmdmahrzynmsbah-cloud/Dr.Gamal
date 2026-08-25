@@ -392,7 +392,7 @@ export default function AttendanceTracker() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         
         {/* Right side: Real-time scan feed */}
         <div className="lg:col-span-1 space-y-6">
@@ -467,7 +467,7 @@ export default function AttendanceTracker() {
         </div>
 
         {/* Left side: Group Attendance Management */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-4 sm:p-4 sm:p-6 flex flex-col min-h-[450px] lg:h-[500px]">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-4 sm:p-5 md:p-6 flex flex-col min-h-[450px] lg:h-[500px]">
           <div className="flex flex-col mb-6 space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">

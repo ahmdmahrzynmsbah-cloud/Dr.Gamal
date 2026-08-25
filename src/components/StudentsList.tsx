@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
+import { getStudentTitle, getStudentGender, getStudentTitleFor, getStudentTitleIndef, isFemaleName } from '../utils/genderUtils';
 
 export default function StudentsList() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -120,6 +121,7 @@ export default function StudentsList() {
   
   const [formData, setFormData] = useState<{
     name: string;
+    gender?: 'male' | 'female';
     national_id?: string;
     class_id: string;
     grade_level: string;
@@ -131,6 +133,7 @@ export default function StudentsList() {
     status: Student['status'];
   }>({
     name: '',
+    gender: undefined,
     class_id: '',
     grade_level: 'الأول الإعدادي',
     education_type: 'عام',
@@ -197,10 +200,14 @@ export default function StudentsList() {
     if (name === 'phone' || name === 'parent_phone') {
       val = normalizePhoneDigits(val);
     }
-    setFormData(prev => ({
-      ...prev,
-      [name]: val
-    }));
+    setFormData(prev => {
+      const next = { ...prev, [name]: val };
+      if (name === 'name' && !prev.gender) {
+        // Auto-detect gender when name changes if user hasn't explicitly overridden
+        next.gender = isFemaleName(val) ? 'female' : 'male';
+      }
+      return next;
+    });
   };
 
   const executeAddOrUpdate = (e: React.FormEvent) => {
@@ -218,14 +225,16 @@ export default function StudentsList() {
       setErrorMessage(parentPhoneErr);
       return;
     }
-    const studentPhoneErr = validateEgyptianPhone(formData.phone, 'هاتف الطالب', false);
+    const studentPhoneErr = validateEgyptianPhone(formData.phone, 'هاتف الطالب/ة', false);
     if (studentPhoneErr) {
       setErrorMessage(studentPhoneErr);
       return;
     }
 
+    const effectiveGender = formData.gender || (isFemaleName(formData.name) ? 'female' : 'male');
     const cleanedFormData = {
       ...formData,
+      gender: effectiveGender,
       phone: normalizePhoneDigits(formData.phone),
       parent_phone: normalizePhoneDigits(formData.parent_phone)
     };
@@ -235,11 +244,13 @@ export default function StudentsList() {
         ...cleanedFormData
       });
       if (res.success && res.student) {
-        setSuccessMessage(`تم تسجيل الطالب بنجاح برقم القيد: ${res.student.registration_id}`);
+        const studentTitle = getStudentTitle(res.student);
+        setSuccessMessage(`تم تسجيل ${studentTitle} بنجاح برقم القيد: ${res.student.registration_id}`);
         const defaultEd = 'عام';
         const avail = classes.filter(c => (c.education_type || 'عام') === defaultEd);
         setFormData({
           name: '',
+          gender: undefined,
           class_id: avail[0]?.id || '',
           grade_level: 'الأول الإعدادي',
           education_type: 'عام',
@@ -252,7 +263,7 @@ export default function StudentsList() {
         setShowAddForm(false);
         loadData();
       } else {
-        setErrorMessage(res.error || 'حدث خطأ غير متوقع أثناء تسجيل الطالب.');
+        setErrorMessage(res.error || 'حدث خطأ غير متوقع أثناء تسجيل البيانات.');
       }
     } else {
       const existingStudent = students.find(s => s.id === editId);
@@ -265,7 +276,8 @@ export default function StudentsList() {
       
       const res = samsDb.updateStudent(updatedStudent);
       if (res.success) {
-        setSuccessMessage('تم تعديل وحفظ بيانات الطالب بنجاح.');
+        const studentTitle = getStudentTitle(updatedStudent);
+        setSuccessMessage(`تم تعديل وحفظ بيانات ${studentTitle} بنجاح.`);
         setIsEditing(false);
         setEditId('');
         setShowAddForm(false);
@@ -286,6 +298,7 @@ export default function StudentsList() {
     const edType = student.education_type || studentClass?.education_type || 'عام';
     setFormData({
       name: student.name,
+      gender: student.gender || (isFemaleName(student.name) ? 'female' : 'male'),
       class_id: student.class_id,
       grade_level: student.grade_level,
       education_type: edType,
@@ -300,9 +313,10 @@ export default function StudentsList() {
   };
 
   const handleDeleteClick = (student: Student) => {
-    handleProcessAction("جاري أرشفة الطالب...", () => {
+    const studentTitle = getStudentTitle(student);
+    handleProcessAction(`جاري أرشفة ${studentTitle}...`, () => {
       samsDb.softDeleteStudent(student.id);
-      setSuccessMessage(`تم أرشفة الطالب (${student.name}) بنجاح.`);
+      setSuccessMessage(`تم أرشفة ${studentTitle} (${student.name}) بنجاح.`);
       setStudentToDelete(null);
       loadData();
       if (selectedProfile?.id === student.id) {
@@ -313,9 +327,10 @@ export default function StudentsList() {
 
   const confirmDelete = () => {
     if (studentToDelete) {
-      handleProcessAction("جاري أرشفة الطالب...", () => {
+      const studentTitle = getStudentTitle(studentToDelete);
+      handleProcessAction(`جاري أرشفة ${studentTitle}...`, () => {
         samsDb.softDeleteStudent(studentToDelete.id);
-        setSuccessMessage('تم أرشفة الطالب بنجاح.');
+        setSuccessMessage(`تم أرشفة ${studentTitle} بنجاح.`);
         setStudentToDelete(null);
         loadData();
         if (selectedProfile?.id === studentToDelete.id) {
@@ -663,7 +678,11 @@ export default function StudentsList() {
           >
             <form onSubmit={executeAddOrUpdate} className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-md space-y-5">
               <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">{isEditing ? 'تعديل بيانات الطالب المحددة' : 'تسجيل قيد طالب جديد'}</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">
+                  {isEditing 
+                    ? `تعديل بيانات ${formData.gender === 'female' || isFemaleName(formData.name) ? 'الطالبة' : 'الطالب'}` 
+                    : `تسجيل قيد ${formData.gender === 'female' || isFemaleName(formData.name) ? 'طالبة جديدة' : 'طالب جديد'}`}
+                </h3>
                 <button type="button" onClick={() => { setShowAddForm(false); setErrorMessage(''); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
               </div>
 
@@ -676,13 +695,49 @@ export default function StudentsList() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:p-5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">اسم الطالب الرباعي <span className="text-rose-500">*</span></label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">
+                    الاسم الرباعي <span className="text-rose-500">*</span>
+                  </label>
                   <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-[#1A7FAA]/30 focus:border-[#1A7FAA] outline-none transition-all" placeholder="الاسم كامل..." />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">
+                    النوع / اللقب <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
+                      className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        (formData.gender === 'male' || (!formData.gender && !isFemaleName(formData.name)))
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-blue-50'
+                      }`}
+                    >
+                      <span>👦</span>
+                      <span>طالب (ذكر)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+                      className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        (formData.gender === 'female' || (!formData.gender && isFemaleName(formData.name)))
+                          ? 'bg-pink-600 text-white border-pink-600 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-pink-50'
+                      }`}
+                    >
+                      <span>👧</span>
+                      <span>طالبة (أنثى)</span>
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">هاتف الطالب <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span></label>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">
+                      هاتف {formData.gender === 'female' || isFemaleName(formData.name) ? 'الطالبة' : 'الطالب'} <span className="text-slate-400 font-normal text-[11px]">(اختياري)</span>
+                    </label>
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, phone: 'لا يوجد' }))}
@@ -798,7 +853,7 @@ export default function StudentsList() {
               <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
                 <button type="button" onClick={() => setShowAddForm(false)} className="px-5 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl ml-3 cursor-pointer">إلغاء</button>
                 <button type="submit" className="px-6 py-2 bg-[#1A7FAA] text-white rounded-xl text-sm font-bold shadow-md hover:bg-[#0D5C8C] cursor-pointer">
-                  {isEditing ? 'حفظ التعديلات المطبقة' : 'حفظ وتسجيل الطالب المذكور'}
+                  {isEditing ? 'حفظ التعديلات' : `حفظ وتسجيل ${formData.gender === 'female' || isFemaleName(formData.name) ? 'الطالبة' : 'الطالب'}`}
                 </button>
               </div>
             </form>
@@ -854,25 +909,41 @@ export default function StudentsList() {
               <thead className="sticky top-0 z-20">
                 <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
-                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب / الطالبة</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">المجموعة والصف الدراسي</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم ولي الأمر</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 whitespace-nowrap">
-                {filteredStudents.length > 0 ? filteredStudents.map((student, index) => (
+                {filteredStudents.length > 0 ? filteredStudents.map((student, index) => {
+                  const studentTitle = getStudentTitle(student);
+                  const isFemale = getStudentGender(student) === 'female';
+                  return (
                   <tr key={student.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm pr-6 text-xs text-slate-400 font-mono">
                       {(index + 1).toString().padStart(2, '0')}
                     </td>
                     <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 text-slate-400 font-bold text-sm sm:text-base sm:text-lg">
+                        <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 font-bold text-sm sm:text-base sm:text-lg ${
+                          isFemale 
+                            ? 'bg-pink-50 dark:bg-pink-950/40 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-300' 
+                            : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300'
+                        }`}>
                           {student.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm leading-tight">{student.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{student.name}</p>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-bold ${
+                              isFemale 
+                                ? 'bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border border-pink-200 dark:border-pink-800' 
+                                : 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                            }`}>
+                              {studentTitle}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{student.registration_id}</p>
                             {student.status === 'active' ? (
@@ -931,13 +1002,14 @@ export default function StudentsList() {
                         <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors" title="تعديل">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" title="أرشفة الطالب">
+                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" title={`أرشفة ${studentTitle}`}>
                           <Archive className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                )) : (
+                  );
+                }) : (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
                       <Users className="w-8 h-8 mx-auto text-slate-300 mb-2" />
@@ -966,8 +1038,8 @@ export default function StudentsList() {
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-50 pb-3">
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
-                    الملف الأكاديمي والشخصي
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                    الملف الأكاديمي والشخصي لـ{getStudentTitle(selectedProfile)}
                   </h3>
                   <div className="flex items-center gap-2">
                     <button
@@ -987,7 +1059,7 @@ export default function StudentsList() {
                     <User className="w-6 h-6" />
                   </div>
                   <div className="space-y-0.5">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm leading-tight">{selectedProfile.name}</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{selectedProfile.name}</h4>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">قيد: #{selectedProfile.registration_id}</p>
                   </div>
                 </div>
@@ -1016,7 +1088,7 @@ export default function StudentsList() {
                   return (
                     <div className={`p-3 border rounded-xl space-y-2 text-xs ${stats.bgClass}`}>
                       <div className="flex items-center justify-between font-bold text-[11px]">
-                        <span>حضور وانتظام الطالب</span>
+                        <span>حضور وانتظام {getStudentTitle(selectedProfile)}</span>
                         <span className={`font-extrabold ${stats.statusColor}`}>{stats.statusLabel}</span>
                       </div>
                       <p className={`text-[10px] ${stats.statusColor} opacity-80 leading-relaxed`}>{stats.description}</p>
@@ -1033,7 +1105,7 @@ export default function StudentsList() {
                     className="w-full flex items-center justify-center gap-2 bg-[#1A7FAA] hover:bg-[#156a8e] text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-colors"
                   >
                     <BookOpen className="w-4 h-4" />
-                    عرض التقرير الشامل للطالب
+                    عرض التقرير الشامل لـ{getStudentTitle(selectedProfile)}
                   </button>
                 </div>
               </div>
@@ -1062,13 +1134,13 @@ export default function StudentsList() {
                   <Archive className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد أرشفة الطالب</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">نقل سجل الطالب إلى الأرشيف</p>
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-50">تأكيد أرشفة {getStudentTitle(studentToDelete)}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">نقل سجل {getStudentTitle(studentToDelete)} إلى الأرشيف</p>
                 </div>
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-sans bg-orange-50/50 dark:bg-orange-900/20 p-3.5 rounded-xl border border-orange-100 dark:border-orange-800">
-                هل أنت متأكد من رغبتك في أرشفة الطالب <strong className="text-slate-900 dark:text-slate-50">"{studentToDelete.name}"</strong>؟ سيتم نقله إلى الأرشيف ولن يظهر في القوائم النشطة.
+                هل أنت متأكد من رغبتك في أرشفة {getStudentTitle(studentToDelete)} <strong className="text-slate-900 dark:text-slate-50">"{studentToDelete.name}"</strong>؟ سيتم نقله إلى الأرشيف ولن يظهر في القوائم النشطة.
               </p>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">

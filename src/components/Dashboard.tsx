@@ -102,18 +102,18 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   return (
     <div className="space-y-6" id="sams_control_dashboard">
       {/* Header Info */}
-      <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5">
+      <div className="bg-white dark:bg-slate-800 p-3 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-5">
         <div>
-          <h1 className="text-xl sm:text-2xl sm:text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100">الأداء العام للسنتر</h1>
-          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-slate-100">الأداء العام للسنتر</h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-3 bg-[#E8192C]/5 px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[#C0152A] text-[10px] sm:text-sm font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans max-w-full overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans max-w-full overflow-x-auto no-scrollbar">
           <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
           <span className="whitespace-nowrap shrink-0">توقيت النظام:</span>
           <span className="font-bold whitespace-nowrap shrink-0">
             {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
-          <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded whitespace-nowrap shrink-0">
+          <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">
             {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
           </span>
         </div>
@@ -203,12 +203,12 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       </div>
 
       {/* Main Charts & Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         
         {/* Grades Performance Plot (Recharts) */}
         <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-[#0D5C8C]" />
               توزيع تقديرات الدرجات الأكاديمية للطلاب
             </h3>
@@ -301,12 +301,12 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
       </div>
 
       {/* Two Columns: Recent System Notices (Parent Communication) & Audit Log Trail */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         
         {/* Live Transactional Audit Logs */}
         <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm" id="sams_audit_logs_preview">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-50 pb-3">
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
               <Activity className="w-4.5 h-4.5 text-indigo-600" />
               سجل تدقيق وإجراءات قاعدة البيانات الحية (Audit Logs)
             </h3>

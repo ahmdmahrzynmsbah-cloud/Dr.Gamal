@@ -118,8 +118,40 @@ function loadFromStorage<T>(baseKey: string, defaultVal: T): T {
 
 export function saveToStorage<T>(baseKey: string, data: T) {
   const realKey = getSystemKey(baseKey);
-  localStorage.setItem(realKey, JSON.stringify(data));
-  localStorage.setItem(`${realKey}_ts`, Date.now().toString());
+  try {
+    localStorage.setItem(realKey, JSON.stringify(data));
+    localStorage.setItem(`${realKey}_ts`, Date.now().toString());
+  } catch (err: any) {
+    console.warn(`[Storage Quota Warning] Unable to write ${realKey} directly, pruning transient storage:`, err);
+    try {
+      // If quota exceeded, attempt to prune old audit logs and notifications
+      const logsKey = getSystemKey(KEYS.AUDIT_LOGS);
+      const notifsKey = getSystemKey(KEYS.NOTIFICATIONS);
+      const existingLogs = localStorage.getItem(logsKey);
+      if (existingLogs) {
+        try {
+          const parsed = JSON.parse(existingLogs);
+          if (Array.isArray(parsed) && parsed.length > 50) {
+            localStorage.setItem(logsKey, JSON.stringify(parsed.slice(0, 50)));
+          }
+        } catch {}
+      }
+      const existingNotifs = localStorage.getItem(notifsKey);
+      if (existingNotifs) {
+        try {
+          const parsed = JSON.parse(existingNotifs);
+          if (Array.isArray(parsed) && parsed.length > 30) {
+            localStorage.setItem(notifsKey, JSON.stringify(parsed.slice(0, 30)));
+          }
+        } catch {}
+      }
+      localStorage.setItem(realKey, JSON.stringify(data));
+      localStorage.setItem(`${realKey}_ts`, Date.now().toString());
+    } catch (innerErr) {
+      console.error(`[Storage Fatal] Persistent storage full:`, innerErr);
+    }
+  }
+
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key: realKey } }));
   }
@@ -169,6 +201,9 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
     timestamp: getCurrentTimestamp()
   };
   logs.unshift(newLog); // newer first
+  if (logs.length > 200) {
+    logs.length = 200;
+  }
   saveToStorage(KEYS.AUDIT_LOGS, logs);
   return newLog;
 }
@@ -624,6 +659,9 @@ export const samsDb = {
       sent_status: 'sent'
     };
     list.unshift(newNoti);
+    if (list.length > 100) {
+      list.length = 100;
+    }
     saveToStorage(KEYS.NOTIFICATIONS, list);
     
     addAuditLog('INSERT', 'notifications', newNoti.id, `إرسال إشعار: (${noti.title}) متوجه إلى ${noti.recipient_type}`);
@@ -655,6 +693,9 @@ export const samsDb = {
       read: false
     };
     list.unshift(newNoti); // add to top
+    if (list.length > 100) {
+      list.length = 100;
+    }
     saveToStorage('sams_admin_notifications', list);
 
     // Trigger audio tone & dispatch visual notification event

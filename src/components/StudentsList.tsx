@@ -909,7 +909,7 @@ export default function StudentsList() {
               <thead className="sticky top-0 z-20">
                 <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
-                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب / الطالبة</th>
+                  <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">المجموعة والصف الدراسي</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم ولي الأمر</th>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
@@ -917,7 +917,6 @@ export default function StudentsList() {
               </thead>
               <tbody className="divide-y divide-slate-100 whitespace-nowrap">
                 {filteredStudents.length > 0 ? filteredStudents.map((student, index) => {
-                  const studentTitle = getStudentTitle(student);
                   const isFemale = getStudentGender(student) === 'female';
                   return (
                   <tr key={student.id} className="hover:bg-blue-50/30 dark:hover:bg-slate-800/50 transition-colors">
@@ -936,13 +935,6 @@ export default function StudentsList() {
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{student.name}</p>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-bold ${
-                              isFemale 
-                                ? 'bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border border-pink-200 dark:border-pink-800' 
-                                : 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                            }`}>
-                              {studentTitle}
-                            </span>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{student.registration_id}</p>
@@ -1002,7 +994,7 @@ export default function StudentsList() {
                         <button onClick={() => handleEditClick(student)} className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors" title="تعديل">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" title={`أرشفة ${studentTitle}`}>
+                        <button onClick={() => handleDeleteClick(student)} className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" title="أرشفة السجل">
                           <Archive className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                         </button>
                       </div>

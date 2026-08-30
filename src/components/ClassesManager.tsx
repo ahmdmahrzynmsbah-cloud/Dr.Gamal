@@ -343,12 +343,34 @@ export default function ClassesManager() {
     return { total, present, absent, percentage };
   };
 
-  // Calculate fee status for a student
+  // Calculate fee status for a student with detailed monthly breakdown
   const getStudentFeeStatus = (studentId: string) => {
     const payments = samsDb.getFees().filter(p => p.student_id === studentId);
-    if (payments.length === 0) return { label: 'غير مسدد', isPaid: false, totalAmount: 0 };
+    const recentMonths = ['يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026'];
+    const currentMonth = 'أغسطس 2026';
+    
+    const monthlyStatus = recentMonths.map(m => {
+      const payment = payments.find(p => p.month === m);
+      return {
+        month: m,
+        monthName: m.split(' ')[0],
+        isPaid: !!payment,
+        amount: payment ? payment.amount : 0,
+        receipt: payment ? payment.receipt_number : null,
+        isCurrent: m === currentMonth
+      };
+    });
+
+    const isCurrentPaid = monthlyStatus.find(m => m.month === currentMonth)?.isPaid || false;
     const paidSum = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-    return { label: `مسدد (${paidSum} ج.م)`, isPaid: true, totalAmount: paidSum };
+
+    return {
+      label: isCurrentPaid ? `مسدد (${paidSum} ج.م)` : 'غير مسدد',
+      isPaid: isCurrentPaid,
+      totalAmount: paidSum,
+      monthlyStatus,
+      isCurrentPaid
+    };
   };
 
   useEffect(() => {
@@ -1355,19 +1377,46 @@ ${sig}`;
                           </div>
                         </td>
 
-                        {/* Fee Status */}
-                        <td className="p-3.5 text-center">
-                          {feeStats.isPaid ? (
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 text-xs font-bold px-2.5 py-1 rounded-xl">
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              {feeStats.label}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 text-xs font-bold px-2.5 py-1 rounded-xl">
-                              <CreditCard className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                              غير مسدد
-                            </span>
-                          )}
+                        {/* Fee & Months Detailed Status */}
+                        <td className="p-3.5 text-center min-w-[200px]">
+                          <div className="space-y-1.5 flex flex-col items-center">
+                            {/* Monthly Cards Row */}
+                            <div className="flex items-center gap-1 flex-wrap justify-center">
+                              {feeStats.monthlyStatus?.map(m => (
+                                <span
+                                  key={m.month}
+                                  title={m.isPaid ? `${m.month}: تم السداد (${m.amount} ج.م) ✓` : `${m.month}: غير مدفوع ✗`}
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black border transition-all ${
+                                    m.isPaid
+                                      ? 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-700 shadow-2xs'
+                                      : m.isCurrent
+                                      ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-700 shadow-2xs'
+                                      : 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800 shadow-2xs'
+                                  }`}
+                                >
+                                  <span>{m.monthName}</span>
+                                  {m.isPaid ? (
+                                    <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
+                                  ) : (
+                                    <X className="w-3 h-3 text-rose-700 dark:text-rose-400 stroke-[3]" />
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                            
+                            {/* Current Month State Tag */}
+                            {feeStats.isPaid ? (
+                              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                                <span>مسدد أغسطس ({feeStats.totalAmount} ج.م)</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                <span>مستحق لشهر أغسطس</span>
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Status */}

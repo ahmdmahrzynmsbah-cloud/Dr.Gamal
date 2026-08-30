@@ -131,8 +131,8 @@ export function saveToStorage<T>(baseKey: string, data: T) {
       if (existingLogs) {
         try {
           const parsed = JSON.parse(existingLogs);
-          if (Array.isArray(parsed) && parsed.length > 50) {
-            localStorage.setItem(logsKey, JSON.stringify(parsed.slice(0, 50)));
+          if (Array.isArray(parsed) && parsed.length > 2000) {
+            localStorage.setItem(logsKey, JSON.stringify(parsed.slice(0, 2000)));
           }
         } catch {}
       }
@@ -201,8 +201,8 @@ export function addAuditLog(actionType: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_D
     timestamp: getCurrentTimestamp()
   };
   logs.unshift(newLog); // newer first
-  if (logs.length > 200) {
-    logs.length = 200;
+  if (logs.length > 5000) {
+    logs.length = 5000;
   }
   saveToStorage(KEYS.AUDIT_LOGS, logs);
   return newLog;

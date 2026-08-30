@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight, Info } from "lucide-react";
+import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Check, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight, Info } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -1075,15 +1075,53 @@ export default function StudentsList() {
                   </div>
                 </div>
 
+                {/* Attendance and Fees Quick Summary */}
                 {(() => {
                   const stats = getStudentAttendanceStats(selectedProfile.id);
+                  const payments = samsDb.getFees().filter(p => p.student_id === selectedProfile.id);
+                  const recentMonths = ['يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026'];
+                  const currentMonth = 'أغسطس 2026';
+
                   return (
-                    <div className={`p-3 border rounded-xl space-y-2 text-xs ${stats.bgClass}`}>
-                      <div className="flex items-center justify-between font-bold text-[11px]">
-                        <span>حضور وانتظام {getStudentTitle(selectedProfile)}</span>
-                        <span className={`font-extrabold ${stats.statusColor}`}>{stats.statusLabel}</span>
+                    <div className="space-y-2">
+                      <div className={`p-3 border rounded-xl space-y-1.5 text-xs ${stats.bgClass}`}>
+                        <div className="flex items-center justify-between font-bold text-[11px]">
+                          <span>حضور وانتظام {getStudentTitle(selectedProfile)}</span>
+                          <span className={`font-extrabold ${stats.statusColor}`}>{stats.statusLabel}</span>
+                        </div>
+                        <p className={`text-[10px] ${stats.statusColor} opacity-80 leading-relaxed`}>{stats.description}</p>
                       </div>
-                      <p className={`text-[10px] ${stats.statusColor} opacity-80 leading-relaxed`}>{stats.description}</p>
+
+                      {/* Fee Months Summary Badges */}
+                      <div className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          <span className="flex items-center gap-1">
+                            <CreditCard className="w-3.5 h-3.5 text-amber-500" />
+                            <span>موقف الاشتراكات الشهرية:</span>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {recentMonths.map(m => {
+                            const isPaid = payments.some(p => p.month === m);
+                            const isCurrent = m === currentMonth;
+                            return (
+                              <span
+                                key={m}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black border ${
+                                  isPaid
+                                    ? 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-700'
+                                    : isCurrent
+                                    ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-700'
+                                    : 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800'
+                                }`}
+                              >
+                                <span>{m.split(' ')[0]}</span>
+                                {isPaid ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400 stroke-[3]" /> : <X className="w-3 h-3 text-rose-700 dark:text-rose-400 stroke-[3]" />}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   );
                 })()}

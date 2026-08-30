@@ -938,13 +938,77 @@ export default function FeesTracker() {
 
           </div>
 
+                  {/* Interactive Visual Months Navigator Bar */}
+          <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-[#0D5C8C] dark:text-sky-400" />
+                <span>شريط الشهور الدراسية (اضغط للتنقل السريع بين الشهور):</span>
+              </span>
+              <span className="text-[11px] font-bold text-slate-400">
+                العام الدراسي 2026 - 2027
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin">
+              {MONTHS_LIST.map((month) => {
+                const isSelected = month === selectedMonth;
+                // Count paid students for this month
+                const paidCount = classStudents.filter(st => 
+                  payments.some(p => p.student_id === st.id && p.category === 'tuition' && p.month === month)
+                ).length;
+                const totalCount = classStudents.length;
+                const monthPercent = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
+                const isPast = MONTHS_LIST.indexOf(month) < currentMonthIdx;
+
+                return (
+                  <button
+                    key={month}
+                    type="button"
+                    onClick={() => setSelectedMonth(month)}
+                    className={`shrink-0 px-3 py-2 rounded-xl border text-right transition-all cursor-pointer flex flex-col gap-1 min-w-[110px] ${
+                      isSelected
+                        ? 'bg-[#0D5C8C] text-white border-[#0D5C8C] shadow-md shadow-[#0D5C8C]/20 scale-102 ring-2 ring-[#0D5C8C]/30'
+                        : isPast && monthPercent === 100
+                        ? 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80'
+                        : isPast && monthPercent < 50
+                        ? 'bg-rose-50/60 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800 hover:bg-rose-100/70'
+                        : 'bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1 w-full">
+                      <span className={`text-xs font-black ${isSelected ? 'text-white' : ''}`}>
+                        {month.split(' ')[0]}
+                      </span>
+                      <span className={`text-[10px] font-mono font-bold ${
+                        isSelected 
+                          ? 'text-sky-200' 
+                          : monthPercent >= 80 
+                          ? 'text-emerald-600 dark:text-emerald-400' 
+                          : monthPercent >= 40 
+                          ? 'text-amber-600 dark:text-amber-400' 
+                          : 'text-rose-600 dark:text-rose-400'
+                      }`}>
+                        {monthPercent}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] opacity-85 font-medium">
+                      <span>{month.split(' ')[1]}</span>
+                      <span>{paidCount}/{totalCount} طالب</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Subscription Analytics Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">إجمالي الطلاب (حسب التصفية)</span>
-                <span className="text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 dark:text-slate-100">{classStudents.length} طلاب</span>
+                <span className="text-sm sm:text-base sm:text-lg font-black text-slate-800 dark:text-slate-100">{classStudents.length} طلاب</span>
               </div>
               <div className="p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-slate-600 dark:text-slate-300">
                 <UserCheck className="w-4.5 h-4.5" />
@@ -954,11 +1018,11 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">الاشتراكات المحصلة</span>
-                <span className="text-sm sm:text-base sm:text-lg font-black text-emerald-600">
+                <span className="text-sm sm:text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">
                   {paidStudentsInClass.length} <span className="text-xs text-slate-400 font-bold">طالب ({collectionPercentage}%)</span>
                 </span>
               </div>
-              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/40 rounded-lg text-emerald-600">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="w-4.5 h-4.5" />
               </div>
             </div>
@@ -966,9 +1030,9 @@ export default function FeesTracker() {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between shadow-3xs">
               <div className="space-y-1 text-right">
                 <span className="text-[10px] text-slate-400 font-bold block">المحصل لشهر {selectedMonth}</span>
-                <span className="text-sm sm:text-base sm:text-lg font-black text-[#0D5C8C]">{totalCollectedForMonth.toLocaleString()} ج.م</span>
+                <span className="text-sm sm:text-base sm:text-lg font-black text-[#0D5C8C] dark:text-sky-400">{totalCollectedForMonth.toLocaleString()} ج.م</span>
               </div>
-              <div className="p-2.5 bg-[#0D5C8C]/5 rounded-lg text-[#0D5C8C]">
+              <div className="p-2.5 bg-sky-50 dark:bg-sky-950/60 rounded-lg text-[#0D5C8C] dark:text-sky-400">
                 <TrendingUp className="w-4.5 h-4.5" />
               </div>
             </div>
@@ -978,7 +1042,7 @@ export default function FeesTracker() {
                 <span className="text-[10px] text-slate-400 font-bold block">المديونية المتبقية (المتأخرات)</span>
                 <span className="text-sm sm:text-base sm:text-lg font-black text-rose-600 dark:text-rose-400">{outstandingDebt.toLocaleString()} ج.م</span>
               </div>
-              <div className="p-2.5 bg-rose-50 dark:bg-rose-900/40 rounded-lg text-rose-500">
+              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/60 rounded-lg text-rose-500 dark:text-rose-400">
                 <XCircle className="w-4.5 h-4.5" />
               </div>
             </div>
@@ -987,13 +1051,33 @@ export default function FeesTracker() {
 
           {/* Students Subscription Matrix */}
           <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-50 pb-3">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">مصفوفة سداد الاشتراكات لطلاب {selectedClass === 'all' ? selectedGrade : '(' + classes.find(c => c.id === selectedClass)?.name + ')'}</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] bg-[#0D5C8C]/5 text-[#0D5C8C] px-3 py-1 rounded-full font-bold">الشهر المعروض: {selectedMonth}</span>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-gray-50 dark:border-gray-700/60 pb-3">
+              <div>
+                <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm sm:text-base">
+                  مصفوفة وبطاقات سداد الاشتراكات لطلاب {selectedClass === 'all' ? selectedGrade : '(' + classes.find(c => c.id === selectedClass)?.name + ')'}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  عرض تفصيلي لبطاقات الشهور والمدفوعات لكل طالب
+                </p>
+              </div>
+
+              {/* Color Codes Legend */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span>أخضر: تم السداد ✓</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span>أحمر: متأخر ✗</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-[11px] font-bold text-amber-800 dark:text-amber-300">
+                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <span>أصفر: مستحق الآن</span>
+                </div>
                 <button
                   onClick={() => setShowPrintReportModal(true)}
-                  className="flex items-center gap-1 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white px-3 py-1 rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                  className="flex items-center gap-1.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>طباعة الكشف</span>
@@ -1007,12 +1091,14 @@ export default function FeesTracker() {
                   <tr>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 w-20 whitespace-nowrap">كود الطالب</th>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب</th>
-                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">حالة الشهور الفائتة ({timelineMonths.length} شهور)</th>
+                    <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                      سجل الشهور ({timelineMonths.length} شهور)
+                    </th>
                     <th className="p-3 text-center bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اشتراك شهر {selectedMonth} الحالي</th>
                     <th className="p-3 text-left bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">الإجراء المالي الفوري</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200 font-sans">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/60 text-xs text-slate-700 dark:text-slate-200 font-sans">
                   {filteredClassStudents.map(student => {
                     // Check if paid for current month
                     const currentMonthPayment = payments.find(
@@ -1023,22 +1109,22 @@ export default function FeesTracker() {
                     const isPaidThisMonth = !!currentMonthPayment;
 
                     return (
-                      <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-all">
+                      <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all">
                         
                         {/* Student Reg ID */}
-                        <td className="p-3 font-mono font-extrabold text-[#0D5C8C]">#{student.registration_id}</td>
+                        <td className="p-3 font-mono font-extrabold text-[#0D5C8C] dark:text-sky-400">#{student.registration_id}</td>
                         
                         {/* Student Name */}
                         <td className="p-3">
                           <div className="flex flex-col">
-                            <span className="font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-[13px]">{student.name}</span>
-                            <span className="text-[9px] text-slate-400 font-medium">الهاتف: {student.phone} | ولي الأمر: {student.parent_phone}</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px]">{student.name}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">الهاتف: {student.phone} | ولي الأمر: {student.parent_phone}</span>
                           </div>
                         </td>
 
-                        {/* Visual Rolling Timeline of past 4 months */}
+                        {/* Visual Rolling Timeline of past months */}
                         <td className="p-3">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             {timelineMonths.map((m) => {
                               const paidForThisTimelineMonth = payments.some(
                                 p => p.student_id === student.id && 
@@ -1047,24 +1133,43 @@ export default function FeesTracker() {
                               );
                               
                               const isTargetMonth = m === selectedMonth;
+                              const monthNameOnly = m.split(' ')[0];
+
+                              if (paidForThisTimelineMonth) {
+                                return (
+                                  <span 
+                                    key={m} 
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-black bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-600 shadow-2xs"
+                                    title={`${m}: تم السداد بنجاح ✓`}
+                                  >
+                                    <span>{monthNameOnly}</span>
+                                    <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
+                                  </span>
+                                );
+                              }
+
+                              if (isTargetMonth) {
+                                return (
+                                  <span 
+                                    key={m} 
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-amber-100 text-amber-950 border border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-700 shadow-2xs"
+                                    title={`${m}: الشهر المالي الحالي - مستحق`}
+                                  >
+                                    <span>{monthNameOnly}</span>
+                                    <span className="text-[10px] text-amber-800 dark:text-amber-300 font-black">مستحق</span>
+                                  </span>
+                                );
+                              }
 
                               return (
-                                <div 
+                                <span 
                                   key={m} 
-                                  className={`flex flex-col items-center px-1.5 py-0.5 rounded text-[8px] font-bold border transition-all ${
-                                    paidForThisTimelineMonth 
-                                      ? 'bg-emerald-50/70 border-emerald-200 text-emerald-700' 
-                                      : isTargetMonth 
-                                      ? 'bg-slate-100/50 border-slate-200 dark:border-slate-700 text-slate-400'
-                                      : 'bg-rose-50/70 border-rose-200 text-rose-700 font-semibold'
-                                  }`}
-                                  title={`${m}: ${paidForThisTimelineMonth ? 'مدفوع 🟢' : 'غير مدفوع 🔴'}`}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-black bg-rose-100 text-rose-950 border border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800 shadow-2xs"
+                                  title={`${m}: متأخر وغير مسدد ✗`}
                                 >
-                                  <span>{m.split(' ')[0]}</span>
-                                  <span className="text-[7px]">
-                                    {paidForThisTimelineMonth ? '✓' : '✖'}
-                                  </span>
-                                </div>
+                                  <span>{monthNameOnly}</span>
+                                  <X className="w-3.5 h-3.5 text-rose-700 dark:text-rose-400 stroke-[3]" />
+                                </span>
                               );
                             })}
                           </div>
@@ -1073,14 +1178,14 @@ export default function FeesTracker() {
                         {/* Current Month Payment Badge */}
                         <td className="p-3 text-center">
                           {isPaidThisMonth ? (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 rounded-full font-bold text-[10px]">
-                              <Check className="w-3 h-3 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-100 text-emerald-950 border-2 border-emerald-400 dark:bg-emerald-950/90 dark:text-emerald-200 dark:border-emerald-500 rounded-full font-black text-xs shadow-xs">
+                              <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
                               <span>مدفوع ({currentMonthPayment.amount} ج.م)</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-rose-50 dark:bg-rose-900/40 text-rose-800 border border-rose-100 dark:border-rose-800 rounded-full font-bold text-[10px] animate-pulse">
-                              <AlertCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
-                              <span>غير مدفوع</span>
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-100 text-rose-950 border-2 border-rose-400 dark:bg-rose-950/90 dark:text-rose-200 dark:border-rose-700 rounded-full font-black text-xs shadow-xs">
+                              <AlertCircle className="w-4 h-4 text-rose-700 dark:text-rose-400" />
+                              <span>غير مدفوع ({activeGradeMonthlyFee} ج.م)</span>
                             </span>
                           )}
                         </td>
@@ -1099,29 +1204,29 @@ export default function FeesTracker() {
                                   setWhatsAppMessage(confirmMsg);
                                   setShowWhatsAppModal(true);
                                 }}
-                                className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                                className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-700 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-colors cursor-pointer"
                                 title="إرسال إيصال وتأكيد استلام على واتساب لولي الأمر"
                               >
-                                <MessageSquare className="w-3 h-3 text-emerald-600" />
+                                <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                 <span className="hidden sm:inline">إرسال واتساب</span>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => setSelectedReceipt(currentMonthPayment)}
-                                className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-[#0D5C8C] rounded-lg font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[#0D5C8C] dark:text-sky-300 border border-slate-200 dark:border-slate-700 rounded-lg font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
                                 title="طباعة الإيصال الورقي"
                               >
-                                <Printer className="w-3 h-3" />
+                                <Printer className="w-3.5 h-3.5" />
                                 <span>إيصال #{currentMonthPayment.receipt_number.split('-').pop()}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setPaymentToDelete(currentMonthPayment)}
-                                className="p-1 text-slate-300 hover:text-red-600 rounded transition-colors cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                                 title="إلغاء المعاملة وحذفها"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           ) : (
@@ -1224,35 +1329,37 @@ export default function FeesTracker() {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50/50 transition-all">
                       
-                      <td className="p-3 font-mono font-bold text-indigo-800">{item.receipt_number}</td>
-                      <td className="p-3 font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">{s ? s.name : 'ـ طالب مُستبعد ـ'}</td>
+                      <td className="p-3 font-mono font-bold text-indigo-700 dark:text-indigo-300">{item.receipt_number}</td>
+                      <td className="p-3 font-bold text-slate-800 dark:text-slate-100">{s ? s.name : 'ـ طالب مُستبعد ـ'}</td>
                       
                       {/* Category */}
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-[#0D5C8C]/5 text-[#0D5C8C]">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-sky-50 dark:bg-sky-950 text-[#0D5C8C] dark:text-sky-300 border border-sky-200 dark:border-sky-800">
                           اشتراك الشهر الدراسي
                         </span>
                       </td>
 
                       {/* Detail */}
-                      <td className="p-3 text-center text-slate-500 dark:text-slate-400 font-sans">
-                        {item.month || 'اشتراك شهري'}
+                      <td className="p-3 text-center">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 dark:bg-slate-700/60 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 font-sans">
+                          {item.month || 'اشتراك شهري'}
+                        </span>
                       </td>
 
                       {/* Date */}
-                      <td className="p-3 text-center text-slate-400 font-sans">{item.payment_date}</td>
+                      <td className="p-3 text-center text-slate-500 dark:text-slate-400 font-sans text-xs">{item.payment_date}</td>
                       
                       {/* Amount */}
-                      <td className="p-3 font-bold text-[#0D5C8C]">{item.amount.toLocaleString()} ج.م</td>
+                      <td className="p-3 font-bold text-[#0D5C8C] dark:text-sky-400">{item.amount.toLocaleString()} ج.م</td>
                       
                       {/* Method */}
                       <td className="p-3">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
                           item.payment_method === 'cash'
-                            ? 'bg-emerald-50 text-emerald-800'
+                            ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                             : item.payment_method === 'card'
-                            ? 'bg-indigo-50 text-indigo-800'
-                            : 'bg-amber-50 text-amber-800'
+                            ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                            : 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                         }`}>
                           {item.payment_method === 'cash' ? 'نقدي' : item.payment_method === 'card' ? 'فيزا POS' : 'حوالة ومسجل'}
                         </span>
@@ -1263,7 +1370,7 @@ export default function FeesTracker() {
                         <div className="flex justify-end gap-1">
                           <button
                             onClick={() => setSelectedReceipt(item)}
-                            className="text-xs text-[#0D5C8C] hover:bg-[#0D5C8C]/5 px-2 py-1 rounded-md flex items-center gap-1 cursor-pointer"
+                            className="text-xs text-[#0D5C8C] dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950 px-2.5 py-1 rounded-md flex items-center gap-1 cursor-pointer border border-sky-100 dark:border-sky-800"
                             title="عرض الإيصال لطباعته"
                           >
                             <Printer className="w-3.5 h-3.5" />

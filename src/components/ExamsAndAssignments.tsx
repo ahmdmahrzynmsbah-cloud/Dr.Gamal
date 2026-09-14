@@ -1248,7 +1248,7 @@ ${sig}`;
         </div>
 
         {/* Navigation sub-tabs */}
-        <div className="relative max-w-full shrink-0 overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+        <div className="relative max-w-full shrink-0 overflow-hidden ">
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
             <button
               onClick={() => {

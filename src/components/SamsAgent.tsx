@@ -227,7 +227,7 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
       </div>
 
       {/* Suggested Quick Buttons */}
-      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+      <div className="relative w-full overflow-hidden ">
         <div className="p-2 bg-slate-50/80 border-t border-gray-100 dark:border-gray-700 overflow-x-auto flex gap-2 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
           {quickPrompts.map((p, i) => (
             <button

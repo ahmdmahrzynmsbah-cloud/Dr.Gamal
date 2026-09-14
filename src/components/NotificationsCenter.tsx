@@ -591,7 +591,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
       </div>
 
       {/* Primary Sub-Tabs Switcher */}
-      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+      <div className="relative w-full overflow-hidden ">
         <div className="flex border-b border-gray-200 dark:border-gray-700 gap-1 sm:gap-2 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
           <button
             type="button"

@@ -381,47 +381,43 @@ export default function ParentsList() {
       <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
         
         {/* Filters Panel */}
-        <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth pb-2 pt-1" style={{ WebkitOverflowScrolling: 'touch' }}>
-            {/* Search Box */}
-            <div className="relative min-w-[280px] whitespace-nowrap flex-shrink-0 select-none flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="ابحث باسم ولي الأمر، هاتف، أو اسم الطالب..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full font-sans text-xs border border-slate-200 dark:border-slate-700 pr-9 pl-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right"
-                dir="rtl"
-              />
-            </div>
-
-            {/* Grade Filter of Children */}
-            <select
-              value={gradeFilter}
-              onChange={(e) => setGradeFilter(e.target.value)}
-              className="whitespace-nowrap flex-shrink-0 select-none font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
-            >
-              <option value="all">كل المراحل الدراسية للأبناء</option>
-              <option value="الأول الإعدادي">الأول الإعدادي</option>
-              <option value="الثاني الإعدادي">الثاني الإعدادي</option>
-              <option value="الثالث الإعدادي">الثالث الإعدادي</option>
-              <option value="الأول الثانوي">الأول الثانوي</option>
-              <option value="الثاني الثانوي">الثاني الثانوي</option>
-              <option value="الثالث الثانوي">الثالث الثانوي</option>
-            </select>
-
-            {/* Multi Siblings Filter */}
-            <select
-              value={multiChildrenFilter}
-              onChange={(e) => setMultiChildrenFilter(e.target.value)}
-              className="whitespace-nowrap flex-shrink-0 select-none font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
-            >
-              <option value="all">كل أولياء الأمور</option>
-              <option value="multi">من لديهم أكثر من ابن في السنتر (أشقاء)</option>
-              <option value="single">من لديهم ابن واحد فقط</option>
-            </select>
+        <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full pb-2 pt-1">
+          {/* Search Box */}
+          <div className="relative w-full md:flex-1 min-w-[280px]">
+            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="ابحث باسم ولي الأمر، هاتف، أو اسم الطالب..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full font-sans text-xs border border-slate-200 dark:border-slate-700 pr-9 pl-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right"
+              dir="rtl"
+            />
           </div>
+          {/* Grade Filter of Children */}
+          <select
+            value={gradeFilter}
+            onChange={(e) => setGradeFilter(e.target.value)}
+            className="w-full md:w-auto font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
+          >
+            <option value="all">كل المراحل الدراسية للأبناء</option>
+            <option value="الأول الإعدادي">الأول الإعدادي</option>
+            <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+            <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+            <option value="الأول الثانوي">الأول الثانوي</option>
+            <option value="الثاني الثانوي">الثاني الثانوي</option>
+            <option value="الثالث الثانوي">الثالث الثانوي</option>
+          </select>
+          {/* Multi Siblings Filter */}
+          <select
+            value={multiChildrenFilter}
+            onChange={(e) => setMultiChildrenFilter(e.target.value)}
+            className="w-full md:w-auto font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
+          >
+            <option value="all">كل أولياء الأمور</option>
+            <option value="multi">من لديهم أكثر من ابن في السنتر (أشقاء)</option>
+            <option value="single">من لديهم ابن واحد فقط</option>
+          </select>
         </div>
 
         {/* Mobile Cards View */}

@@ -701,7 +701,7 @@ export default function FeesTracker() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+      <div className="relative w-full overflow-hidden ">
         <div className="flex border-b border-slate-100 dark:border-slate-700 gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-3xs overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
           <button
             onClick={() => setActiveTab('subscriptions')}
@@ -952,7 +952,7 @@ export default function FeesTracker() {
               </span>
             </div>
             
-            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_85%,transparent_100%)]">
+            <div className="relative w-full overflow-hidden ">
               <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {MONTHS_LIST.map((month) => {
                   const isSelected = month === selectedMonth;
@@ -1126,7 +1126,7 @@ export default function FeesTracker() {
                       </div>
 
                       {/* Middle Row: Timeline Months */}
-                      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+                      <div className="relative w-full overflow-hidden ">
                         <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar scroll-smooth pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
                           {timelineMonths.map((m) => {
                             const paidForThisTimelineMonth = payments.some(

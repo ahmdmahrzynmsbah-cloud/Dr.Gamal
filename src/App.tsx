@@ -993,7 +993,7 @@ export default function App() {
 
         {/* Viewport scroll area containing current Tab view */}
         <main className="flex-1 p-3 sm:p-5 md:p-8 pb-24 lg:pb-8 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-4 sm:space-y-6 md:space-y-8">
-          <div key={activeTab} className="max-w-7xl mx-auto">
+          <div key={activeTab} className="w-full mx-auto">
             {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'students' && <StudentsList />}
             {activeTab === 'parents' && <ParentsList />}

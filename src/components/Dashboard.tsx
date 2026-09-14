@@ -107,8 +107,9 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
           <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-slate-100">الأداء العام للسنتر</h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
-        <div className="relative max-w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)] self-start md:self-auto">
-          <div className="flex items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 font-sans overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+
+        <div className="self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 font-sans">
             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
             <span className="whitespace-nowrap flex-shrink-0 select-none">توقيت النظام:</span>
             <span className="font-bold whitespace-nowrap flex-shrink-0 select-none">

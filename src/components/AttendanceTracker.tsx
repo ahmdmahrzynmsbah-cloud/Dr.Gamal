@@ -497,17 +497,17 @@ export default function AttendanceTracker() {
               )}
             </div>
             
-            <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full">
-              <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 h-10 px-3 w-full sm:w-auto shrink-0">
+            <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full border-t border-slate-100 dark:border-slate-700 pt-4 mt-2">
+              <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 h-10 px-3 w-full md:w-auto">
                 <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400 ml-2 shrink-0" />
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 select-none hidden md:inline-block ml-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 select-none ml-2">
                   {new Date(selectedDate).toLocaleDateString('ar-EG', { weekday: 'short' })}
                 </span>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-transparent border-none text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-0 cursor-pointer p-0 m-0 w-full sm:w-[110px] outline-hidden text-left"
+                  className="bg-transparent border-none text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-0 cursor-pointer p-0 m-0 outline-hidden text-left w-full sm:w-[110px]"
                   dir="ltr"
                 />
               </div>
@@ -518,7 +518,7 @@ export default function AttendanceTracker() {
                   setSelectedGrade(e.target.value);
                   setSelectedClass(''); // reset class when grade changes
                 }}
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 focus:border-[#1A7FAA] outline-hidden cursor-pointer w-full md:w-auto"
               >
                 <option value="">جميع الصفوف</option>
                 {uniqueGrades.map(grade => (
@@ -529,7 +529,7 @@ export default function AttendanceTracker() {
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 w-full sm:w-auto focus:border-[#1A7FAA] outline-hidden cursor-pointer shrink-0"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg px-3 h-10 focus:border-[#1A7FAA] outline-hidden cursor-pointer w-full md:w-auto"
               >
                 <option value="" disabled>اختر المجموعة...</option>
                 
@@ -538,44 +538,108 @@ export default function AttendanceTracker() {
                 ))}
               </select>
 
-              <div className="relative flex-1 min-w-[200px] max-w-full sm:flex-1">
+              <div className="relative min-w-[200px] flex-1 w-full md:w-auto">
                 <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="بحث عن طالب..."
-                  className="w-full min-w-0 max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pr-9 pl-3 h-10 text-xs focus:border-[#1A7FAA] outline-hidden text-slate-700 dark:text-slate-200 font-bold placeholder:text-slate-400"
+                  className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pr-9 pl-3 h-10 text-xs focus:border-[#1A7FAA] outline-hidden text-slate-700 dark:text-slate-200 font-bold placeholder:text-slate-400"
                 />
               </div>
             </div>
-
-            {/* Mobile actions */}
-            {selectedClass !== 'all' && (
-              <div className="flex sm:hidden items-center gap-2 w-full">
-                <button
-                  onClick={markUnscannedAsAbsent}
-                  className="h-10 flex-1 bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 hover:text-rose-700 border border-rose-200 dark:border-rose-700 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  غياب الباقي
-                </button>
-                <button
-                  onClick={() => {
-                    setTimeout(() => window.print(), 100);
-                  }}
-                  className="h-10 flex-1 bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-700 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Printer className="w-4 h-4 shrink-0" />
-                  طباعة الكشف
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* Students Table */}
-          <div className="flex-1 overflow-auto max-h-[65vh] border border-slate-100 dark:border-slate-700 rounded-xl">
-            <table className="w-full text-sm text-right relative border-collapse">
+          {/* Students List: Mobile Cards / Desktop Table */}
+          <div className="flex-1 overflow-auto max-h-[65vh] border border-slate-100 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800">
+            
+            {/* Mobile View: High-efficiency Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60">
+              {filteredStudents.length > 0 ? filteredStudents.map(student => {
+                const studentAtt = attendance.find(a => a.student_id === student.id && a.date === selectedDate);
+                const status = studentAtt ? studentAtt.status : 'pending';
+
+                return (
+                  <div key={student.id} className="p-3.5 space-y-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors">
+                    {/* Top Row: Info & Status */}
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug truncate">{student.name}</p>
+                        <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">#{student.registration_id}</p>
+                      </div>
+                      <div className="shrink-0 mt-0.5">
+                        {status === 'present' && <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold"><Check className="w-3 h-3" /> حاضر</span>}
+                        {status === 'absent' && <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800 px-2 py-0.5 rounded-full text-[10px] font-bold"><X className="w-3 h-3" /> غائب</span>}
+                        {status === 'excused' && <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">مستأذن</span>}
+                        {status === 'pending' && <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full text-[10px] font-bold">لم يُسجل</span>}
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Actions */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/40">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => { samsDb.saveAttendance(student.id, student.class_id, selectedDate, 'present'); loadData(); }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
+                            status === 'present' 
+                              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' 
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                          }`}
+                        >
+                          حاضر
+                        </button>
+                        <button
+                          onClick={() => { samsDb.saveAttendance(student.id, student.class_id, selectedDate, 'absent'); loadData(); }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
+                            status === 'absent' 
+                              ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-800' 
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                          }`}
+                        >
+                          غائب
+                        </button>
+                        <button
+                          onClick={() => { samsDb.saveAttendance(student.id, student.class_id, selectedDate, 'excused'); loadData(); }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${
+                            status === 'excused' 
+                              ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300 border-amber-200 dark:border-amber-800' 
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                          }`}
+                        >
+                          استئذان
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenAttendanceMsg(student, status)}
+                          className="p-1.5 rounded-lg transition-colors text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenAttendanceMsg(student, status)}
+                          className="p-1.5 rounded-lg transition-colors text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-950/50"
+                        >
+                          <Smartphone className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div className="p-8 text-center text-slate-400 space-y-2">
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    {selectedClass === '' ? 'اختر المجموعة لعرض الطلاب' : 'لا يوجد طلاب'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <table className="w-full text-sm text-right relative border-collapse">
               <thead className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black sticky top-0 z-20 border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
                   <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100">الطالب</th>
@@ -658,7 +722,7 @@ export default function AttendanceTracker() {
               </tbody>
             </table>
           </div>
-
+        </div>
 
         </div>
       </div>

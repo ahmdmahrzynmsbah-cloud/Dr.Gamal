@@ -107,96 +107,98 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
           <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-slate-100">الأداء العام للسنتر</h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2 font-medium">كل بيانات السنتر ومتابعة الطلاب متحدثة أول بأول قدامك</p>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 self-start md:self-auto font-sans max-w-full overflow-x-auto no-scrollbar">
-          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
-          <span className="whitespace-nowrap shrink-0">توقيت النظام:</span>
-          <span className="font-bold whitespace-nowrap shrink-0">
-            {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </span>
-          <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">
-            {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-          </span>
+        <div className="relative max-w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)] self-start md:self-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 font-sans overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
+            <span className="whitespace-nowrap flex-shrink-0 select-none">توقيت النظام:</span>
+            <span className="font-bold whitespace-nowrap flex-shrink-0 select-none">
+              {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+            <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 select-none">
+              {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Grid Statistics Cards - 4 Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
+      {/* Grid Statistics Cards - 2 Columns on Mobile, 4 on Desktop */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
         
         {/* Total Students Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">إجمالي الطلاب المقيدين</p>
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-xl sm:text-2xl font-black text-[#1A1A2E] dark:text-slate-100">{totalStudents}</span>
-              <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold whitespace-nowrap">+{activeStudents} نشط</span>
+        <div className="bg-white dark:bg-slate-800/90 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[#0D5C8C] dark:border-sky-500 border-r-4 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer" onClick={() => onNavigateToTab('students')} id="stat_students_card">
+          <div className="space-y-1 sm:space-y-2 min-w-0">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold font-sans truncate">إجمالي المقيدين</p>
+            <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-lg sm:text-2xl font-black text-[#1A1A2E] dark:text-slate-100">{totalStudents}</span>
+              <span className="text-[10px] sm:text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold whitespace-nowrap">+{activeStudents} نشط</span>
             </div>
-            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold leading-tight">({suspendedStudents} معلق / {totalStudents - activeStudents - suspendedStudents} مؤرشف)</p>
+            <p className="text-[9px] sm:text-[10px] text-amber-600 dark:text-amber-400 font-bold leading-tight truncate">({suspendedStudents} معلق / {totalStudents - activeStudents - suspendedStudents} مؤرشف)</p>
           </div>
-          <div className="p-3 bg-[#0D5C8C]/10 dark:bg-sky-500/20 rounded-xl text-[#0D5C8C] dark:text-sky-300 shrink-0">
-            <Users className="w-5 h-5 lg:w-6 lg:h-6" />
+          <div className="p-2 sm:p-3 bg-[#0D5C8C]/10 dark:bg-sky-500/20 rounded-lg sm:rounded-xl text-[#0D5C8C] dark:text-sky-300 shrink-0 self-end sm:self-center">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </div>
         </div>
 
         {/* Attendance Rate Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">نسبة حضور اليوم</p>
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-xl sm:text-2xl font-black text-[#1A7FAA] dark:text-sky-400">{attendanceRate}%</span>
-              <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold">مستقر</span>
+        <div className="bg-white dark:bg-slate-800/90 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-[#1A7FAA] dark:border-sky-400 border-r-4 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer" onClick={() => onNavigateToTab('attendance')} id="stat_attendance_card">
+          <div className="space-y-1 sm:space-y-2 min-w-0">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold font-sans truncate">نسبة حضور اليوم</p>
+            <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-lg sm:text-2xl font-black text-[#1A7FAA] dark:text-sky-400">{attendanceRate}%</span>
+              <span className="text-[10px] sm:text-[11px] bg-emerald-50 dark:bg-emerald-950/80 px-1.5 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-bold">مستقر</span>
             </div>
-            <p className="text-[10px] text-slate-400 font-sans font-bold">آخر تسجيل: {lastRecordedDate}</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-400 font-sans font-bold truncate">آخر تسجيل: {lastRecordedDate}</p>
           </div>
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-emerald-600 dark:text-emerald-400 shrink-0">
-            <UserCheck className="w-5 h-5 lg:w-6 lg:h-6" />
+          <div className="p-2 sm:p-3 bg-emerald-50 dark:bg-emerald-950/50 rounded-lg sm:rounded-xl text-emerald-600 dark:text-emerald-400 shrink-0 self-end sm:self-center">
+            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </div>
         </div>
 
         {/* Classes Card */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold font-sans">المجموعات الدراسية</p>
+        <div className="bg-white dark:bg-slate-800/90 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-yellow-400 dark:border-amber-400 border-r-4 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer" onClick={() => onNavigateToTab('classes')} id="stat_classes_card">
+          <div className="space-y-1 sm:space-y-2 min-w-0">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold font-sans truncate">المجموعات الدراسية</p>
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-300">{totalClasses}</span>
-              <span className="text-sm font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 dark:text-amber-200">مجموعات</span>
+              <span className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100">{totalClasses}</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-300">مجموعة</span>
             </div>
-            <p className="text-[10px] text-[#0D5C8C] dark:text-sky-400 font-black font-sans">تحديث فوري</p>
+            <p className="text-[9px] sm:text-[10px] text-[#0D5C8C] dark:text-sky-400 font-black font-sans truncate">تحديث فوري</p>
           </div>
-          <div className="p-3 bg-amber-50 dark:bg-amber-950/50 rounded-xl text-amber-600 dark:text-amber-300 shrink-0">
-            <BookOpen className="w-5 h-5 lg:w-6 lg:h-6" />
+          <div className="p-2 sm:p-3 bg-amber-50 dark:bg-amber-950/50 rounded-lg sm:rounded-xl text-amber-600 dark:text-amber-300 shrink-0 self-end sm:self-center">
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </div>
         </div>
 
         {/* Financial Collection Rate Card - Colored alert state */}
-        <div className={`p-5 rounded-2xl shadow-xs hover:shadow-md transition-all flex items-center justify-between cursor-pointer ${
+        <div className={`p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer ${
           fees.length === 0
-            ? 'bg-slate-50 dark:bg-slate-900/50 dark:bg-slate-800/90 border border-slate-400 border-r-4 text-slate-700 dark:text-slate-200'
+            ? 'bg-slate-50 dark:bg-slate-900/50 border border-slate-400 border-r-4 text-slate-700 dark:text-slate-200'
             : pendingRevenue > 0
             ? 'bg-[#FEF2F2] dark:bg-rose-950/50 border border-[#C0152A] dark:border-rose-500 border-r-4 text-[#C0152A] dark:text-rose-200'
             : 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-600 dark:border-emerald-400 border-r-4 text-emerald-800 dark:text-emerald-200'
         }`} onClick={() => onNavigateToTab('fees')} id="stat_revenue_card">
-          <div className="space-y-2">
-            <p className={`text-xs font-extrabold font-sans ${fees.length === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات المالية والرسوم</p>
+          <div className="space-y-1 sm:space-y-2 min-w-0">
+            <p className={`text-[11px] sm:text-xs font-extrabold font-sans truncate ${fees.length === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات والرسوم</p>
             <div className="flex items-baseline gap-1 flex-wrap">
-              <span className="text-xl sm:text-2xl font-black">{totalRevenue.toLocaleString()}</span>
-              <span className="text-sm font-bold">ج.م</span>
+              <span className="text-lg sm:text-2xl font-black">{totalRevenue.toLocaleString()}</span>
+              <span className="text-xs sm:text-sm font-bold">ج.م</span>
             </div>
-            <p className="text-[10px] font-bold flex items-center gap-1">
+            <p className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1 truncate">
               {fees.length === 0 ? (
-                <span className="text-slate-400">لا توجد رسوم مستحقة بعد</span>
+                <span className="text-slate-400">لا توجد رسوم</span>
               ) : (
-                <span>مستحقة: {pendingRevenue.toLocaleString()} ج.م</span>
+                <span>متبقي: {pendingRevenue.toLocaleString()} ج.م</span>
               )}
             </p>
           </div>
-          <div className={`p-3 rounded-xl shrink-0 ${
+          <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 self-end sm:self-center ${
             fees.length === 0
               ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               : pendingRevenue > 0
               ? 'bg-red-100/60 dark:bg-rose-900/60 text-[#C0152A] dark:text-rose-200'
               : 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-200'
           }`}>
-            <CreditCard className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
           </div>
         </div>
 

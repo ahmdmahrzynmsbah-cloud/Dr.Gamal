@@ -591,63 +591,65 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
       </div>
 
       {/* Primary Sub-Tabs Switcher */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 gap-1 sm:gap-2 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0">
-        <button
-          type="button"
-          onClick={() => { setActiveSubTab('inbox'); setSuccessInfo(''); }}
-          className={`px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
-            activeSubTab === 'inbox'
-              ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Inbox className="w-4 h-4 shrink-0" />
-          <span>الإشعارات المباشرة</span>
-          {unreadAdminCount > 0 && (
-            <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold animate-pulse">
-              {unreadAdminCount}
-            </span>
-          )}
-        </button>
+      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+        <div className="flex border-b border-gray-200 dark:border-gray-700 gap-1 sm:gap-2 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <button
+            type="button"
+            onClick={() => { setActiveSubTab('inbox'); setSuccessInfo(''); }}
+            className={`whitespace-nowrap flex-shrink-0 select-none px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 ${
+              activeSubTab === 'inbox'
+                ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+          >
+            <Inbox className="w-4 h-4 shrink-0" />
+            <span>الإشعارات المباشرة</span>
+            {unreadAdminCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-red-500 text-white rounded-full text-[10px] font-bold animate-pulse">
+                {unreadAdminCount}
+              </span>
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => { setActiveSubTab('parents'); setSuccessInfo(''); }}
-          className={`px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
-            activeSubTab === 'parents'
-              ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Smartphone className="w-4 h-4 shrink-0" />
-          <span>دليل أولياء الأمور</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => { setActiveSubTab('parents'); setSuccessInfo(''); }}
+            className={`whitespace-nowrap flex-shrink-0 select-none px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 ${
+              activeSubTab === 'parents'
+                ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+          >
+            <Smartphone className="w-4 h-4 shrink-0" />
+            <span>دليل أولياء الأمور</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => { setActiveSubTab('broadcast'); setSuccessInfo(''); }}
-          className={`px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
-            activeSubTab === 'broadcast'
-              ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Send className="w-4 h-4 shrink-0" />
-          <span>بث إشعار / تعميم</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => { setActiveSubTab('broadcast'); setSuccessInfo(''); }}
+            className={`whitespace-nowrap flex-shrink-0 select-none px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 ${
+              activeSubTab === 'broadcast'
+                ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+          >
+            <Send className="w-4 h-4 shrink-0" />
+            <span>بث إشعار / تعميم</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => { setActiveSubTab('logs'); setSuccessInfo(''); }}
-          className={`px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap ${
-            activeSubTab === 'logs'
-              ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Calendar className="w-4 h-4 shrink-0" />
-          <span>سجل الرسائل ({notifications.length})</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => { setActiveSubTab('logs'); setSuccessInfo(''); }}
+            className={`whitespace-nowrap flex-shrink-0 select-none px-3.5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-black border-b-2 transition-all cursor-pointer flex items-center gap-1.5 sm:gap-2 ${
+              activeSubTab === 'logs'
+                ? 'border-[#0D5C8C] text-[#0D5C8C] dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40 rounded-t-xl'
+                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+          >
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span>سجل الرسائل ({notifications.length})</span>
+          </button>
+        </div>
       </div>
 
       {/* Success alert */}

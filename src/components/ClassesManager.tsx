@@ -1228,43 +1228,45 @@ ${sig}`;
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row flex-wrap items-center justify-between gap-4">
-          <div className="relative w-full md:w-96 max-w-full min-w-[200px]">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={studentSearchTerm}
-              onChange={(e) => setStudentSearchTerm(e.target.value)}
-              placeholder="ابحث باسم الطالب، رقم القيد، أو هاتف ولي الأمر..."
-              className="w-full min-w-[200px] max-w-full flex-1 text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 py-2.5 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-bold">
-              <Filter className="w-3.5 h-3.5 text-slate-400" />
-              <span>تصفية النتائج:</span>
+        <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+          <div className="bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth pb-2 pt-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="relative min-w-[280px] whitespace-nowrap flex-shrink-0 select-none flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={studentSearchTerm}
+                onChange={(e) => setStudentSearchTerm(e.target.value)}
+                placeholder="ابحث باسم الطالب، رقم القيد، أو هاتف ولي الأمر..."
+                className="w-full text-xs font-sans border border-slate-200 dark:border-slate-700 pr-9 pl-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C]"
+              />
             </div>
 
-            <select
-              value={studentStatusFilter}
-              onChange={(e) => setStudentStatusFilter(e.target.value as any)}
-              className="text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
-            >
-              <option value="all">جميع الحالات (نشط وموقوف)</option>
-              <option value="active">الطلاب النشطون فقط</option>
-              <option value="inactive">الطلاب الموقوفون فقط</option>
-            </select>
+            <div className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 select-none">
+              <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-bold ml-1">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <span>تصفية النتائج:</span>
+              </div>
 
-            <select
-              value={attendanceFilter}
-              onChange={(e) => setAttendanceFilter(e.target.value as any)}
-              className="text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
-            >
-              <option value="all">جميع معدلات الحضور</option>
-              <option value="excellent">انضباط ممتاز (≥90%)</option>
-              <option value="warning">إنذار غياب متكرر (≥3 غيابات) ⚠️</option>
-            </select>
+              <select
+                value={studentStatusFilter}
+                onChange={(e) => setStudentStatusFilter(e.target.value as any)}
+                className="whitespace-nowrap flex-shrink-0 select-none text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
+              >
+                <option value="all">جميع الحالات (نشط وموقوف)</option>
+                <option value="active">الطلاب النشطون فقط</option>
+                <option value="inactive">الطلاب الموقوفون فقط</option>
+              </select>
+
+              <select
+                value={attendanceFilter}
+                onChange={(e) => setAttendanceFilter(e.target.value as any)}
+                className="whitespace-nowrap flex-shrink-0 select-none text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
+              >
+                <option value="all">جميع معدلات الحضور</option>
+                <option value="excellent">انضباط ممتاز (≥90%)</option>
+                <option value="warning">إنذار غياب متكرر (≥3 غيابات) ⚠️</option>
+              </select>
+            </div>
           </div>
         </div>
 

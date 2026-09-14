@@ -701,30 +701,32 @@ export default function FeesTracker() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-100 dark:border-slate-700 gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-3xs">
-        <button
-          onClick={() => setActiveTab('subscriptions')}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'subscriptions'
-              ? 'bg-[#0D5C8C] text-white shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
-          }`}
-        >
-          منصة الاشتراكات الشهرية 🗓️
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('all_receipts');
-            setShowGeneralPayForm(false);
-          }}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'all_receipts'
-              ? 'bg-[#0D5C8C] text-white shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
-          }`}
-        >
-          دفتر الإيصالات والمدفوعات التاريخي 📑
-        </button>
+      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+        <div className="flex border-b border-slate-100 dark:border-slate-700 gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-3xs overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <button
+            onClick={() => setActiveTab('subscriptions')}
+            className={`whitespace-nowrap flex-shrink-0 select-none flex-1 min-w-fit px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'subscriptions'
+                ? 'bg-[#0D5C8C] text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
+            }`}
+          >
+            منصة الاشتراكات الشهرية 🗓️
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('all_receipts');
+              setShowGeneralPayForm(false);
+            }}
+            className={`whitespace-nowrap flex-shrink-0 select-none flex-1 min-w-fit px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'all_receipts'
+                ? 'bg-[#0D5C8C] text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
+            }`}
+          >
+            دفتر الإيصالات والمدفوعات التاريخي 📑
+          </button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -950,32 +952,33 @@ export default function FeesTracker() {
               </span>
             </div>
             
-            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin">
-              {MONTHS_LIST.map((month) => {
-                const isSelected = month === selectedMonth;
-                // Count paid students for this month
-                const paidCount = classStudents.filter(st => 
-                  payments.some(p => p.student_id === st.id && p.category === 'tuition' && p.month === month)
-                ).length;
-                const totalCount = classStudents.length;
-                const monthPercent = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
-                const isPast = MONTHS_LIST.indexOf(month) < currentMonthIdx;
+            <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_85%,transparent_100%)]">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+                {MONTHS_LIST.map((month) => {
+                  const isSelected = month === selectedMonth;
+                  // Count paid students for this month
+                  const paidCount = classStudents.filter(st => 
+                    payments.some(p => p.student_id === st.id && p.category === 'tuition' && p.month === month)
+                  ).length;
+                  const totalCount = classStudents.length;
+                  const monthPercent = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
+                  const isPast = MONTHS_LIST.indexOf(month) < currentMonthIdx;
 
-                return (
-                  <button
-                    key={month}
-                    type="button"
-                    onClick={() => setSelectedMonth(month)}
-                    className={`shrink-0 px-3 py-2 rounded-xl border text-right transition-all cursor-pointer flex flex-col gap-1 min-w-[110px] ${
-                      isSelected
-                        ? 'bg-[#0D5C8C] text-white border-[#0D5C8C] shadow-md shadow-[#0D5C8C]/20 scale-102 ring-2 ring-[#0D5C8C]/30'
-                        : isPast && monthPercent === 100
-                        ? 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80'
-                        : isPast && monthPercent < 50
-                        ? 'bg-rose-50/60 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800 hover:bg-rose-100/70'
-                        : 'bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
+                  return (
+                    <button
+                      key={month}
+                      type="button"
+                      onClick={() => setSelectedMonth(month)}
+                      className={`whitespace-nowrap flex-shrink-0 select-none px-3 py-2 rounded-xl border text-right transition-all cursor-pointer flex flex-col gap-1 min-w-[110px] ${
+                        isSelected
+                          ? 'bg-[#0D5C8C] text-white border-[#0D5C8C] shadow-md shadow-[#0D5C8C]/20 scale-102 ring-2 ring-[#0D5C8C]/30'
+                          : isPast && monthPercent === 100
+                          ? 'bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80'
+                          : isPast && monthPercent < 50
+                          ? 'bg-rose-50/60 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800 hover:bg-rose-100/70'
+                          : 'bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
                     <div className="flex items-center justify-between gap-1 w-full">
                       <span className={`text-xs font-black ${isSelected ? 'text-white' : ''}`}>
                         {month.split(' ')[0]}
@@ -999,6 +1002,7 @@ export default function FeesTracker() {
                   </button>
                 );
               })}
+              </div>
             </div>
           </div>
 
@@ -1086,7 +1090,164 @@ export default function FeesTracker() {
             </div>
 
             <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
-              <table className="min-w-full text-right relative border-collapse" dir="rtl">
+              
+              {/* Mobile View: High-efficiency Cards */}
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
+                {filteredClassStudents.length > 0 ? filteredClassStudents.map(student => {
+                  const currentMonthPayment = payments.find(
+                    p => p.student_id === student.id && 
+                         p.category === 'tuition' && 
+                         p.month === selectedMonth
+                  );
+                  const isPaidThisMonth = !!currentMonthPayment;
+
+                  return (
+                    <div key={student.id} className="p-3.5 space-y-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors">
+                      {/* Top Row: Info & Status */}
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug truncate">{student.name}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-mono font-extrabold text-[#0D5C8C] dark:text-sky-400">#{student.registration_id}</span>
+                            <span className="text-[10px] text-slate-400">الهاتف: {student.phone} | ولي الأمر: {student.parent_phone}</span>
+                          </div>
+                        </div>
+                        <div className="shrink-0 mt-0.5">
+                          {isPaidThisMonth ? (
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs">
+                              <Check className="w-3 h-3" /> مدفوع ({currentMonthPayment.amount} ج.م)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs">
+                              <AlertCircle className="w-3 h-3" /> غير مدفوع ({activeGradeMonthlyFee} ج.م)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Middle Row: Timeline Months */}
+                      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+                        <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar scroll-smooth pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+                          {timelineMonths.map((m) => {
+                            const paidForThisTimelineMonth = payments.some(
+                              p => p.student_id === student.id && 
+                                   p.category === 'tuition' && 
+                                   p.month === m
+                            );
+                            const isTargetMonth = m === selectedMonth;
+                            const monthNameOnly = m.split(' ')[0];
+
+                            if (paidForThisTimelineMonth) {
+                              return (
+                                <span key={m} className="whitespace-nowrap flex-shrink-0 select-none inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-100 text-emerald-950 border border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-600 shrink-0">
+                                  <span>{monthNameOnly}</span>
+                                  <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
+                                </span>
+                              );
+                            }
+                            if (isTargetMonth) {
+                              return (
+                                <span key={m} className="whitespace-nowrap flex-shrink-0 select-none inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-950 border border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-700 shrink-0">
+                                  <span>{monthNameOnly}</span>
+                                  <span className="text-[9px] text-amber-800 dark:text-amber-300 font-black">مستحق</span>
+                                </span>
+                              );
+                            }
+                            return (
+                              <span key={m} className="whitespace-nowrap flex-shrink-0 select-none inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-100 text-rose-950 border border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800 shrink-0">
+                                <span>{monthNameOnly}</span>
+                                <X className="w-3 h-3 text-rose-700 dark:text-rose-400 stroke-[3]" />
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Actions */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/40">
+                        {isPaidThisMonth ? (
+                          <div className="flex flex-wrap items-center gap-1.5 w-full justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setWhatsAppStudent(student);
+                                const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+                                const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
+                                const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nتحية طيبة وبعد من إدارة *${centerTitle}* 🏛️\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل القسط الشهري لشهر (*${selectedMonth}*) بقيمة *${currentMonthPayment.amount} ج.م*. رقم الإيصال: *${currentMonthPayment.receipt_number}*.\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`);
+                                setWhatsAppMessage(confirmMsg);
+                                setShowWhatsAppModal(true);
+                              }}
+                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-700 rounded-lg font-bold flex items-center gap-1.5 text-xs transition-colors cursor-pointer"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <span className="hidden sm:inline">إرسال واتساب</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedReceipt(currentMonthPayment)}
+                              className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[#0D5C8C] dark:text-sky-300 border border-slate-200 dark:border-slate-700 rounded-lg font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                              <span>إيصال</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentToDelete(currentMonthPayment)}
+                              className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-1.5 w-full justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setQuickPayStudent(student);
+                                setQuickPayAmount(activeGradeMonthlyFee);
+                                setShowQuickPayModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white rounded-lg font-bold flex items-center gap-1 transition-all cursor-pointer text-xs shadow-2xs"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>سداد سريع</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setWhatsAppStudent(student);
+                                const defaultMsg = generateWhatsAppReminderText(
+                                  student.name,
+                                  student.parent_name,
+                                  selectedMonth,
+                                  activeGradeMonthlyFee,
+                                  student.grade_level
+                                );
+                                setWhatsAppMessage(defaultMsg);
+                                setShowWhatsAppModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1 transition-all cursor-pointer text-xs shadow-2xs"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>تنبيه واتساب</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="p-8 text-center text-slate-400 space-y-2">
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                      {searchQuery ? 'لا يوجد طلاب يطابقون بحثك ضمن الشروط المحددة.' : 'لا يوجد طلاب مسجلين ضمن هذه الشروط حالياً.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <table className="min-w-full text-right relative border-collapse" dir="rtl">
                 <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 w-20 whitespace-nowrap">كود الطالب</th>
@@ -1282,8 +1443,10 @@ export default function FeesTracker() {
                 </tbody>
               </table>
             </div>
+            
+          </div>
 
-            {/* General Instructions Card */}
+          {/* General Instructions Card */}
             <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 rounded-xl flex items-start gap-2 text-right">
               <span className="text-sm">💡</span>
               <div className="space-y-1">
@@ -1309,7 +1472,75 @@ export default function FeesTracker() {
           </div>
 
           <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
-            <table className="min-w-full text-right relative border-collapse" dir="rtl">
+            
+            {/* Mobile View: High-efficiency Cards */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
+              {payments.length > 0 ? payments.map(item => {
+                const s = students.find(studentItem => studentItem.id === item.student_id);
+
+                return (
+                  <div key={item.id} className="p-3.5 space-y-3 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors">
+                    {/* Top Row: Receipt ID & Name */}
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug truncate">{s ? s.name : 'ـ طالب مُستبعد ـ'}</p>
+                        <p className="text-[10px] font-mono font-bold text-indigo-700 dark:text-indigo-400 mt-0.5">#{item.receipt_number}</p>
+                      </div>
+                      <div className="text-left shrink-0">
+                         <span className="font-bold text-sm text-[#0D5C8C] dark:text-sky-400 block">{item.amount.toLocaleString()} ج.م</span>
+                         <span className="text-[10px] text-slate-400 block">{item.payment_date}</span>
+                      </div>
+                    </div>
+
+                    {/* Middle Row: Details */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 dark:bg-sky-900/40 text-[#0D5C8C] dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                          اشتراك الشهر الدراسي
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-700/60 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600">
+                          {item.month || 'اشتراك شهري'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          item.payment_method === 'cash'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800'
+                            : item.payment_method === 'card'
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800'
+                            : 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800'
+                        }`}>
+                          {item.payment_method === 'cash' ? 'نقدي' : item.payment_method === 'card' ? 'فيزا POS' : 'حوالة ومسجل'}
+                        </span>
+                    </div>
+
+                    {/* Bottom Row: Actions */}
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/40">
+                      <button
+                        onClick={() => setSelectedReceipt(item)}
+                        className="text-[11px] font-bold text-[#0D5C8C] dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-sky-100 dark:border-sky-800/50"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        عرض الإيصال
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentToDelete(item)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                        title="حذف السجل"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div className="p-8 text-center text-slate-400 space-y-2">
+                   <p className="text-xs font-bold text-slate-600 dark:text-slate-300">لا توجد أي معاملات سداد مسجلة حتى الآن.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <table className="min-w-full text-right relative border-collapse" dir="rtl">
               <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
                   <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
@@ -1402,7 +1633,8 @@ export default function FeesTracker() {
             </table>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
 
       {/* QUICK SUBSCRIPTION PAYMENT MODAL */}

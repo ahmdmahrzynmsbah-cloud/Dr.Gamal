@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { samsDb } from '../utils/db';
 import { Student, ClassRoom } from '../types';
-import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Check, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight, Info } from "lucide-react";
+import { Search, Plus, Filter, Edit, Trash2, RefreshCw, ShieldAlert, CheckCircle, Check, Eye, X, BookOpen, CreditCard, Calendar, Phone, User, Users, Archive, RotateCcw, ArrowRight, Info, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from 'motion/react';
 import StudentFullReport from './StudentFullReport';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
@@ -873,38 +873,175 @@ export default function StudentsList() {
           />
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
         </div>
-        <div className="flex w-full md:w-auto items-center gap-3 overflow-x-auto no-scrollbar">
-          <select value={educationTypeFilter} onChange={e => setEducationTypeFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-bold">
-            <option value="all">كل أنواع التعليم (عام / أزهر)</option>
-            <option value="عام">عام</option>
-            <option value="أزهر">أزهر</option>
-          </select>
-          <select value={gradeLevelFilter} onChange={e => setGradeLevelFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
-            <option value="all">كل الصفوف الدراسية</option>
-            <option value="الأول الإعدادي">الأول الإعدادي</option>
-            <option value="الثاني الإعدادي">الثاني الإعدادي</option>
-            <option value="الثالث الإعدادي">الثالث الإعدادي</option>
-            <option value="الأول الثانوي">الأول الثانوي</option>
-            <option value="الثاني الثانوي">الثاني الثانوي</option>
-            <option value="الثالث الثانوي">الثالث الثانوي</option>
-          </select>
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
-              <option value="all">كل المجموعات (الكل)</option>
-              {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>)}
+        
+        <div className="relative w-full md:w-auto overflow-hidden [mask-image:linear-gradient(to_left,black_85%,transparent_100%)]">
+          <div className="flex w-full items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <select value={educationTypeFilter} onChange={e => setEducationTypeFilter(e.target.value)} className="whitespace-nowrap flex-shrink-0 select-none bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-bold">
+              <option value="all">كل أنواع التعليم (عام / أزهر)</option>
+              <option value="عام">عام</option>
+              <option value="أزهر">أزهر</option>
+            </select>
+            <select value={gradeLevelFilter} onChange={e => setGradeLevelFilter(e.target.value)} className="whitespace-nowrap flex-shrink-0 select-none bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
+              <option value="all">كل الصفوف الدراسية</option>
+              <option value="الأول الإعدادي">الأول الإعدادي</option>
+              <option value="الثاني الإعدادي">الثاني الإعدادي</option>
+              <option value="الثالث الإعدادي">الثالث الإعدادي</option>
+              <option value="الأول الثانوي">الأول الثانوي</option>
+              <option value="الثاني الثانوي">الثاني الثانوي</option>
+              <option value="الثالث الثانوي">الثالث الثانوي</option>
+            </select>
+            <div className="whitespace-nowrap flex-shrink-0 select-none flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <select value={classFilter} onChange={e => setClassFilter(e.target.value)} className="bg-transparent text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
+                <option value="all">كل المجموعات (الكل)</option>
+                {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.grade_level} - {c.education_type || 'عام'})</option>)}
+              </select>
+            </div>
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="whitespace-nowrap flex-shrink-0 select-none bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
+              <option value="all">كل الحالات (مفعل/غير مفعل)</option>
+              <option value="active">المنتظمون فقط (مفعل)</option>
+              <option value="inactive">المجمدون فقط (غير مفعل)</option>
             </select>
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
-            <option value="all">كل الحالات (مفعل/غير مفعل)</option>
-            <option value="active">المنتظمون فقط (مفعل)</option>
-            <option value="inactive">المجمدون فقط (غير مفعل)</option>
-          </select>
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="overflow-auto max-h-[calc(100vh-250px)]">
+        
+        {/* Mobile View: High-efficiency Student Cards */}
+        <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60">
+          {filteredStudents.length > 0 ? filteredStudents.map((student) => {
+            const isFemale = getStudentGender(student) === 'female';
+            const className = classes.find(c => c.id === student.class_id)?.name || '-';
+            const eduType = (student.education_type || classes.find(c => c.id === student.class_id)?.education_type || 'عام');
+            const cleanPhone = (student.parent_phone || '').replace(/\D/g, '');
+            const waNumber = cleanPhone.startsWith('01') ? '2' + cleanPhone : cleanPhone;
+
+            return (
+              <div key={student.id} className="p-3.5 space-y-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors">
+                {/* Top row: Avatar + Name + Status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 font-bold text-base ${
+                      isFemale 
+                        ? 'bg-pink-50 dark:bg-pink-950/40 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-300' 
+                        : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300'
+                    }`}>
+                      {student.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug truncate">{student.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/60 px-1.5 py-0.5 rounded">
+                          #{student.registration_id}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-sans truncate">
+                          {student.grade_level}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                    student.status === 'active'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800'
+                      : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800'
+                  }`}>
+                    {student.status === 'active' ? 'منتظم' : 'غير منتظم'}
+                  </span>
+                </div>
+
+                {/* Middle row: Group & Edu Type badges */}
+                <div className="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] text-slate-400 shrink-0">المجموعة:</span>
+                    <span className="font-bold text-[#0D5C8C] dark:text-sky-400 text-[11px] truncate">{className}</span>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold border shrink-0 ${
+                    eduType === 'أزهر'
+                      ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                      : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                  }`}>
+                    {eduType}
+                  </span>
+                </div>
+
+                {/* Bottom row: Parent Contact & Quick Actions */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-700/40">
+                  {student.parent_phone ? (
+                    <div className="flex items-center gap-1.5">
+                      <a
+                        href={`tel:${student.parent_phone}`}
+                        className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                        dir="ltr"
+                      >
+                        <Phone className="w-3 h-3 text-[#0D5C8C]" />
+                        {student.parent_phone}
+                      </a>
+                      {cleanPhone.length >= 10 && (
+                        <a
+                          href={`https://wa.me/${waNumber}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-lg transition-colors"
+                          title="محادثة واتساب"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">بدون هاتف</span>
+                  )}
+
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => {
+                        setSelectedProfile(student);
+                        setShowBriefProfile(true);
+                      }} 
+                      className="p-1.5 text-slate-400 hover:text-[#1A7FAA] hover:bg-sky-50 dark:hover:bg-sky-900/40 rounded-lg transition-colors" 
+                      title="عرض الملف"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setSelectedProfile(student);
+                        setShowFullReport(true);
+                      }} 
+                      className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 rounded-lg transition-colors" 
+                      title="التقرير الشامل"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleEditClick(student)} 
+                      className="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors" 
+                      title="تعديل"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteClick(student)} 
+                      className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-lg transition-colors cursor-pointer" 
+                      title="أرشفة السجل"
+                    >
+                      <Archive className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }) : (
+            <div className="p-8 text-center text-slate-400 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600" />
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-300">لا توجد سجلات مطابقة للبحث</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-auto max-h-[calc(100vh-250px)]">
           <table className="w-full text-sm text-right relative border-collapse">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">

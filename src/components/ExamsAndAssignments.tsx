@@ -1248,52 +1248,54 @@ ${sig}`;
         </div>
 
         {/* Navigation sub-tabs */}
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar max-w-full shrink-0">
-          <button
-            onClick={() => {
-              setActiveSubTab('grading');
-              setSuccessMsg('');
-              setErrorMsg('');
-            }}
-            className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-              activeSubTab === 'grading'
-                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
-            }`}
-          >
-            <Notebook className="w-4 h-4 text-emerald-500" />
-            <span>رصد الدرجات والتسليم</span>
-          </button>
-          <button
-            onClick={() => {
-              setActiveSubTab('exams');
-              setSuccessMsg('');
-              setErrorMsg('');
-            }}
-            className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-              activeSubTab === 'exams'
-                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
-            }`}
-          >
-            <Award className="w-4 h-4 text-blue-500" />
-            <span>إدارة الامتحانات</span>
-          </button>
-          <button
-            onClick={() => {
-              setActiveSubTab('assignments');
-              setSuccessMsg('');
-              setErrorMsg('');
-            }}
-            className={`flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-              activeSubTab === 'assignments'
-                ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
-            }`}
-          >
-            <Calendar className="w-4 h-4 text-amber-500" />
-            <span>إدارة الواجبات</span>
-          </button>
+        <div className="relative max-w-full shrink-0 overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <button
+              onClick={() => {
+                setActiveSubTab('grading');
+                setSuccessMsg('');
+                setErrorMsg('');
+              }}
+              className={`whitespace-nowrap flex-shrink-0 select-none flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                activeSubTab === 'grading'
+                  ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
+              }`}
+            >
+              <Notebook className="w-4 h-4 text-emerald-500" />
+              <span>رصد الدرجات والتسليم</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveSubTab('exams');
+                setSuccessMsg('');
+                setErrorMsg('');
+              }}
+              className={`whitespace-nowrap flex-shrink-0 select-none flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                activeSubTab === 'exams'
+                  ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
+              }`}
+            >
+              <Award className="w-4 h-4 text-blue-500" />
+              <span>إدارة الامتحانات</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveSubTab('assignments');
+                setSuccessMsg('');
+                setErrorMsg('');
+              }}
+              className={`whitespace-nowrap flex-shrink-0 select-none flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                activeSubTab === 'assignments'
+                  ? 'bg-white dark:bg-slate-800 text-[#0D5C8C] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:text-slate-100'
+              }`}
+            >
+              <Calendar className="w-4 h-4 text-amber-500" />
+              <span>إدارة الواجبات</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1448,31 +1450,19 @@ ${sig}`;
               </div>
 
               {/* Action utilities */}
-              <div className="grid grid-cols-2 gap-2 w-full xl:w-auto xl:flex xl:items-center xl:gap-2.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={triggerPrintPDF}
-                  className="w-full xl:w-auto px-2.5 sm:px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-[11px] sm:text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
-                >
-                  <Printer className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span className="hidden sm:inline">تصدير PDF / طباعة الكشف</span>
-                  <span className="sm:hidden">طباعة PDF</span>
-                </button>
-
+              <div className="grid grid-cols-1 w-full xl:w-auto xl:flex xl:items-center xl:gap-2.5 shrink-0">
                 {isEditingSheet ? (
                   <button
                     onClick={handleMarkAllPerfect}
                     className="w-full xl:w-auto px-2.5 sm:px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span className="hidden sm:inline">تعبئة الدرجة كاملة للجميع</span>
-                    <span className="sm:hidden">درجة كاملة</span>
+                    <span>تعبئة الدرجة كاملة للجميع</span>
                   </button>
                 ) : (
                   <span className="w-full xl:w-auto text-[11px] sm:text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-2 sm:px-3.5 py-2 rounded-xl border border-emerald-100 dark:border-emerald-800 font-bold flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-pulse shrink-0" />
-                    <span className="hidden sm:inline">الدرجات معتمدة ومحفوظة</span>
-                    <span className="sm:hidden">الدرجات معتمدة</span>
+                    <span>الدرجات معتمدة ومحفوظة</span>
                   </span>
                 )}
               </div>
@@ -1541,14 +1531,14 @@ ${sig}`;
                   <ListPlus className="w-4 h-4 text-[#0D5C8C]" />
                   قائمة كشف طلاب المجموعة للرصد والتقييم
                 </h4>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">
-                    العدد الكلي للطلاب: <strong className="text-[#0D5C8C] font-mono text-xs">{activeClassStudents.length}</strong> طالب
+                    العدد الكلي للطلاب: <strong className="text-[#0D5C8C] dark:text-sky-400 font-mono text-xs">{activeClassStudents.length}</strong> طالب
                   </span>
                   <button
                     type="button"
                     onClick={triggerPrintPDF}
-                    className="px-3.5 py-1.5 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 border border-amber-200 dark:border-amber-700 text-amber-900 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                    className="w-full sm:w-auto justify-center px-3.5 py-1.5 bg-amber-50 dark:bg-amber-900/40 hover:bg-amber-100 border border-amber-200 dark:border-amber-700 text-amber-900 dark:text-amber-300 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     <span>تصدير تقرير PDF</span>
@@ -1557,8 +1547,201 @@ ${sig}`;
               </div>
 
               <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
-                <table className="min-w-full text-right relative border-collapse" dir="rtl">
-                  <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
+                
+                {/* Mobile View: High-efficiency Cards */}
+                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
+                  {activeClassStudents.length === 0 ? (
+                    <div className="p-8 text-center text-slate-400 space-y-2">
+                       <p className="text-xs font-bold text-slate-600 dark:text-slate-300">لا توجد سجلات طلاب مضافين لهذه المجموعة بعد.</p>
+                    </div>
+                  ) : (
+                    activeClassStudents.map(student => {
+                      const tempObj = tempGrades[student.id] || { score: 0, flag: false, notes: '' };
+                      const scorePercent = activeEvaluationObj.max_score > 0 
+                        ? Math.round((tempObj.score / activeEvaluationObj.max_score) * 100) 
+                        : 0;
+                      const monthlyAbsence = getStudentMonthlyAbsences(student.id);
+
+                      return (
+                        <div key={student.id} className={`p-3.5 space-y-3 transition-colors ${tempObj.flag && gradingType === 'exam' ? 'bg-red-50/30' : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/60'}`}>
+                          
+                          {/* Top Row: Name & ID */}
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug flex items-center gap-2">
+                                <span className="truncate">{student.name}</span>
+                                {monthlyAbsence.count >= 3 && (
+                                  <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full animate-pulse shrink-0">
+                                    <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                                    ({monthlyAbsence.count})
+                                  </span>
+                                )}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[10px]">
+                                <span className="font-mono font-extrabold text-[#0D5C8C] dark:text-sky-400">#{student.registration_id}</span>
+                                <span className="text-slate-400">ولي الأمر: {student.parent_phone || 'لا يوجد'}</span>
+                              </div>
+                            </div>
+                            <div className="shrink-0 text-left">
+                               <span className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-baseline gap-1">
+                                 {isEditingSheet ? (
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={activeEvaluationObj.max_score}
+                                      disabled={gradingType === 'exam' && tempObj.flag}
+                                      value={tempObj.score === 0 ? '' : tempObj.score}
+                                      placeholder="0"
+                                      onFocus={(e) => e.target.select()}
+                                      onChange={(e) => {
+                                        const rawVal = e.target.value;
+                                        const val = rawVal === '' ? 0 : Number(rawVal);
+                                        setTempGrades(prev => ({
+                                          ...prev,
+                                          [student.id]: {
+                                            ...prev[student.id],
+                                            score: val
+                                          }
+                                        }));
+                                      }}
+                                      className="w-14 text-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 disabled:bg-slate-100 disabled:opacity-50 disabled:text-slate-400 rounded-lg p-1.5 font-mono font-bold text-sm focus:outline-hidden focus:border-[#0D5C8C]"
+                                    />
+                                 ) : (
+                                   getScoreBadge(tempObj.score, activeEvaluationObj.max_score, tempObj.flag)
+                                 )}
+                               </span>
+                            </div>
+                          </div>
+
+                          {/* Middle Row: Action Toggles & Notes */}
+                          <div className="flex flex-col gap-2">
+                             {/* Flag Toggle (Absent/Submitted) */}
+                             <div className="flex justify-start">
+                                {isEditingSheet ? (
+                                  gradingType === 'exam' ? (
+                                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700/60 w-fit" dir="ltr">
+                                      <span className={`text-[11px] font-extrabold tracking-tight transition-all duration-150 ${tempObj.flag ? 'text-rose-600' : 'text-slate-400'}`}>غائب</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setTempGrades(prev => ({
+                                            ...prev,
+                                            [student.id]: {
+                                              ...prev[student.id],
+                                              flag: !tempObj.flag,
+                                              score: !tempObj.flag ? 0 : tempObj.score
+                                            }
+                                          }));
+                                        }}
+                                        className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${tempObj.flag ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                                      >
+                                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 shadow-xs ring-0 transition duration-200 ease-in-out ${tempObj.flag ? 'translate-x-0' : 'translate-x-5'}`} />
+                                      </button>
+                                      <span className={`text-[11px] font-extrabold tracking-tight transition-all duration-150 ${!tempObj.flag ? 'text-emerald-600' : 'text-slate-400'}`}>حاضر</span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700/60 w-fit" dir="ltr">
+                                      <span className={`text-[11px] font-extrabold tracking-tight transition-all duration-150 ${!tempObj.flag ? 'text-amber-600' : 'text-slate-400'}`}>لم يسلم</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setTempGrades(prev => ({
+                                            ...prev,
+                                            [student.id]: {
+                                              ...prev[student.id],
+                                              flag: !tempObj.flag,
+                                              score: !tempObj.flag ? activeEvaluationObj.max_score : 0
+                                            }
+                                          }));
+                                        }}
+                                        className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${tempObj.flag ? 'bg-emerald-500' : 'bg-amber-400'}`}
+                                      >
+                                        <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 shadow-xs ring-0 transition duration-200 ease-in-out ${tempObj.flag ? 'translate-x-5' : 'translate-x-0'}`} />
+                                      </button>
+                                      <span className={`text-[11px] font-extrabold tracking-tight transition-all duration-150 ${tempObj.flag ? 'text-emerald-600' : 'text-slate-400'}`}>سلم</span>
+                                    </div>
+                                  )
+                                ) : (
+                                  gradingType === 'exam' ? (
+                                    tempObj.flag ? (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">🔴 غائب</span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">🟢 حاضر</span>
+                                    )
+                                  ) : (
+                                    tempObj.flag ? (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">✔️ تم التسليم</span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">❌ لم يسلم</span>
+                                    )
+                                  )
+                                )}
+                             </div>
+
+                             {/* Notes Input/Display */}
+                             {isEditingSheet ? (
+                                <input
+                                  type="text"
+                                  placeholder="ملاحظات (مثلاً: متميز، يحتاج للمراجعة...)"
+                                  value={tempObj.notes}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTempGrades(prev => ({
+                                      ...prev,
+                                      [student.id]: {
+                                        ...prev[student.id],
+                                        notes: val
+                                      }
+                                    }));
+                                  }}
+                                  className="w-full text-right border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-2.5 text-xs focus:outline-hidden focus:border-[#0D5C8C]"
+                                />
+                             ) : (
+                                tempObj.notes && (
+                                  <div className="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                     <span className="font-bold text-slate-700 dark:text-slate-200 text-xs">{tempObj.notes}</span>
+                                  </div>
+                                )
+                             )}
+                          </div>
+
+                          {/* Bottom Row: Results & Actions */}
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/40">
+                             <div className="font-mono font-bold text-slate-600 dark:text-slate-300">
+                                {tempObj.flag && gradingType === 'exam' ? (
+                                  <span className="text-rose-600 dark:text-rose-400">0%</span>
+                                ) : (
+                                  <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
+                                    {scorePercent}%
+                                  </span>
+                                )}
+                             </div>
+                             
+                             <button
+                                type="button"
+                                onClick={() => handleOpenGradeWhatsAppModal(student, {
+                                  type: gradingType,
+                                  title: gradingType === 'exam' ? (activeEvaluationObj as any).name : (activeEvaluationObj as any).title,
+                                  score: tempObj.score,
+                                  maxScore: activeEvaluationObj.max_score,
+                                  flag: tempObj.flag
+                                })}
+                                className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                <span>إرسال النتيجة</span>
+                              </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <table className="min-w-full text-right relative border-collapse" dir="rtl" id="grades_print_table">
+                    <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                     <tr>
                       <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم القيد</th>
                       <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب وبياناته</th>
@@ -1789,6 +1972,7 @@ ${sig}`;
                   </tbody>
                 </table>
               </div>
+            </div>
 
               {/* Save Sheet Action Button */}
               {activeClassStudents.length > 0 && (
@@ -1806,7 +1990,7 @@ ${sig}`;
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-end">
                     {isEditingSheet ? (
                       <>
                         {/* Cancel button if there are existing grades in DB */}
@@ -1820,32 +2004,32 @@ ${sig}`;
                               loadAllData();
                               setIsEditingSheet(false);
                             }}
-                            className="px-5 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                            className="w-full sm:w-auto px-5 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer text-center"
                           >
                             إلغاء التعديل
                           </button>
                         )}
                         <button
                           onClick={handleSaveBulkGrades}
-                          className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+                          className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Save className="w-4 h-4" />
                           <span>حفظ واعتماد كشف درجات المجموعة بالكامل</span>
                         </button>
                       </>
                     ) : (
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                         <button
                           type="button"
                           onClick={triggerPrintPDF}
-                          className="px-6 py-3.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+                          className="w-full sm:w-auto px-6 py-3.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Printer className="w-4 h-4 text-amber-200" />
                           <span>تصدير PDF / طباعة كشف الدرجات</span>
                         </button>
                         <button
                           onClick={() => setIsEditingSheet(true)}
-                          className="px-8 py-3.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+                          className="w-full sm:w-auto px-8 py-3.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Edit className="w-4 h-4" />
                           <span>تعديل ورصد الدرجات</span>
@@ -2014,19 +2198,19 @@ ${sig}`;
           <div className="lg:col-span-7 space-y-4">
             
             {/* Search filter */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
-              <div className="relative flex-1 min-w-[200px] max-w-full">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex flex-wrap sm:flex-nowrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="ابحث باسم الامتحان، تصنيفه، أو اسم المجموعة..."
                   value={examSearch}
                   onChange={(e) => setExamSearch(e.target.value)}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
+                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">إجمالي الامتحانات: {exams.length}</span>
+              <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap w-full sm:w-auto text-center sm:text-right">إجمالي الامتحانات: {exams.length}</span>
             </div>
 
             {/* List */}
@@ -2041,32 +2225,32 @@ ${sig}`;
                   const gradedCount = examGrades.filter(g => g.exam_id === exam.id).length;
 
                   return (
-                    <div key={exam.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex items-center justify-between gap-4">
-                      <div className="space-y-1.5 text-right">
+                    <div key={exam.id} className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1.5 text-right w-full sm:w-auto">
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm">{exam.name}</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-100 text-sm">{exam.name}</span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black ${
-                            exam.type === 'comprehensive' ? 'bg-rose-50 text-[#C0152A] border border-rose-100' : 'bg-blue-50 text-[#0D5C8C] border border-blue-100'
+                            exam.type === 'comprehensive' ? 'bg-rose-50 text-[#C0152A] border border-rose-100 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-900' : 'bg-blue-50 text-[#0D5C8C] border border-blue-100 dark:bg-sky-950/60 dark:text-sky-400 dark:border-sky-900'
                           }`}>
                             { {quiz: 'امتحان حصة', comprehensive: 'امتحان شامل', monthly: 'اختبار شهري', midterm: 'منتصف الفصل', final: 'اختبار نهائي' }[exam.type] || 'امتحان مخصص'}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-                          <span className="font-bold text-[#0D5C8C]">{cls ? cls.name : 'بدون مجموعة'}</span>
-                          <span>•</span>
+                          <span className="font-bold text-[#0D5C8C] dark:text-sky-400">{cls ? cls.name : 'بدون مجموعة'}</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>الدرجة من: <strong className="text-amber-600 dark:text-amber-400">{exam.max_score}</strong></span>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>المدة: <strong>{exam.duration_mins} د</strong></span>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>التاريخ: {exam.date}</span>
                         </div>
-                        <div className="text-[10px] text-emerald-600 font-bold">
+                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
                           تم رصد درجات ({gradedCount}) طلاب لهذه المادة.
                         </div>
                       </div>
 
                       {/* Controls */}
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-700/60 justify-end">
                         <button
                           onClick={() => {
                             setSelectedClassId(exam.class_id);
@@ -2077,22 +2261,22 @@ ${sig}`;
                               triggerPrintPDF();
                             }, 100);
                           }}
-                          className="p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                          className="px-2.5 py-1.5 sm:p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                           title="تصدير كشف PDF / طباعة"
                         >
                           <Printer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                          <span className="hidden sm:inline">طباعة PDF</span>
+                          <span>طباعة PDF</span>
                         </button>
                         <button
                           onClick={() => handleEditExamClick(exam)}
-                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
+                          className="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="تعديل"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setExamToDelete(exam)}
-                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
+                          className="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -2229,19 +2413,19 @@ ${sig}`;
           <div className="lg:col-span-7 space-y-4">
             
             {/* Search filter */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex items-center gap-3">
-              <div className="relative flex-1 min-w-[200px] max-w-full">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-3xs flex flex-wrap sm:flex-nowrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="ابحث بموضوع الواجب، اسم المجموعة..."
                   value={assignmentSearch}
                   onChange={(e) => setAssignmentSearch(e.target.value)}
-                  className="w-full min-w-[200px] max-w-full flex-1 text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
+                  className="w-full text-right pr-9 pl-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden"
                   dir="rtl"
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
               </div>
-              <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">إجمالي الواجبات: {assignments.length}</span>
+              <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap w-full sm:w-auto text-center sm:text-right">إجمالي الواجبات: {assignments.length}</span>
             </div>
 
             {/* List */}
@@ -2256,25 +2440,25 @@ ${sig}`;
                   const gradedCount = assignmentGrades.filter(g => g.assignment_id === asg.id && g.completed).length;
 
                   return (
-                    <div key={asg.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex items-center justify-between gap-4">
-                      <div className="space-y-1.5 text-right flex-1">
+                    <div key={asg.id} className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs hover:border-slate-200 dark:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1.5 text-right flex-1 w-full sm:w-auto">
                         <div>
-                          <span className="font-extrabold text-slate-800 dark:text-slate-100 dark:text-slate-100 text-sm block leading-relaxed">{asg.title}</span>
+                          <span className="font-extrabold text-slate-800 dark:text-slate-100 text-sm block leading-relaxed">{asg.title}</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
-                          <span className="font-bold text-[#0D5C8C]">{cls ? cls.name : 'بدون مجموعة'}</span>
-                          <span>•</span>
+                          <span className="font-bold text-[#0D5C8C] dark:text-sky-400">{cls ? cls.name : 'بدون مجموعة'}</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>الدرجة القصوى: <strong className="text-amber-600 dark:text-amber-400">{asg.max_score}</strong></span>
-                          <span>•</span>
+                          <span className="hidden sm:inline">•</span>
                           <span>تاريخ التسليم: <strong>{asg.due_date}</strong></span>
                         </div>
-                        <div className="text-[10px] text-emerald-600 font-bold">
+                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
                           تم تسليم الواجب من قبل ({gradedCount}) طلاب حتى الآن.
                         </div>
                       </div>
 
                       {/* Controls */}
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-700/60 justify-end">
                         <button
                           onClick={() => {
                             setSelectedClassId(asg.class_id);
@@ -2285,22 +2469,22 @@ ${sig}`;
                               triggerPrintPDF();
                             }, 100);
                           }}
-                          className="p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                          className="px-2.5 py-1.5 sm:p-2 bg-amber-50 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 rounded-lg border border-amber-200 dark:border-amber-700 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
                           title="تصدير كشف PDF / طباعة"
                         >
                           <Printer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                          <span className="hidden sm:inline">طباعة PDF</span>
+                          <span>طباعة PDF</span>
                         </button>
                         <button
                           onClick={() => handleEditAssignmentClick(asg)}
-                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
+                          className="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="تعديل"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setAssignmentToDelete(asg)}
-                          className="p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
+                          className="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg border border-slate-100 dark:border-slate-700 transition-all cursor-pointer"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -2477,29 +2661,29 @@ ${sig}`;
                   />
                 </div>
 
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 justify-end">
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800 justify-end">
                   <button
                     type="button"
-                    onClick={() => setWhatsAppModalStudent(null)}
-                    className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
+                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer order-1 sm:order-3"
                   >
-                    إلغاء
+                    <MessageCircle className="w-4 h-4 fill-current text-white" />
+                    <span>إرسال عبر الواتساب 📱</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSendSmsDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
-                    className="px-4 py-2.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer order-2 sm:order-2"
                   >
                     <Smartphone className="w-4 h-4" />
                     <span>إرسال كرسالة نصية (SMS)</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleSendWhatsAppDirect(whatsAppModalStudent.student, whatsAppModalStudent.count || 0, customWhatsAppMsg)}
-                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    onClick={() => setWhatsAppModalStudent(null)}
+                    className="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer order-3 sm:order-1"
                   >
-                    <MessageCircle className="w-4 h-4 fill-current text-white" />
-                    <span>إرسال عبر الواتساب 📱</span>
+                    إلغاء
                   </button>
                 </div>
               </div>

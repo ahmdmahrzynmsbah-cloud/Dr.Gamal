@@ -189,6 +189,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -812,13 +813,16 @@ export default function App() {
         <header className="h-16 sm:h-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 px-4 sm:px-8 flex items-center justify-between shrink-0 shadow-sm z-30 print:hidden w-full max-w-full min-w-0 transition-all">
           
           {/* Logo and Branding section */}
-          <div className="flex items-center gap-4 shrink-0 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl lg:hidden cursor-pointer transition-colors"
+              className="p-2 ml-0.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl lg:hidden cursor-pointer transition-colors"
+              aria-label="فتح القائمة الجانبية"
             >
               <Menu className="w-6 h-6" />
             </button>
+
+            {/* Mobile Brand Title Badge removed as requested */}
 
             {/* Desktop Sidebar Toggle */}
             <button
@@ -955,7 +959,7 @@ export default function App() {
           {/* Info badges, User details */}
           
           {/* Notifications & User Details */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0 min-w-0">
 
             {/* Install PWA Button */}
             <InstallPWAButton />
@@ -966,7 +970,7 @@ export default function App() {
             {/* Notification Bell linking directly to dedicated Notifications Center */}
             <button 
               onClick={() => setActiveTab('notifications')}
-              className={`relative p-2.5 rounded-2xl cursor-pointer transition-all duration-200 ${
+              className={`relative p-2 sm:p-2.5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 ${
                 activeTab === 'notifications'
                   ? 'bg-[#0D5C8C]/10 text-[#0D5C8C] dark:bg-sky-950/50 dark:text-sky-400 ring-2 ring-[#0D5C8C]/20'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
@@ -975,7 +979,7 @@ export default function App() {
             >
               <Bell className="w-5 h-5" />
               {unreadNotisCount > 0 && (
-                <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-slate-800"></span>
                 </span>
@@ -988,7 +992,7 @@ export default function App() {
         </header>
 
         {/* Viewport scroll area containing current Tab view */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-6 sm:space-y-8">
+        <main className="flex-1 p-3 sm:p-5 md:p-8 pb-24 lg:pb-8 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-4 sm:space-y-6 md:space-y-8">
           <div key={activeTab} className="max-w-7xl mx-auto">
             {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
             {activeTab === 'students' && <StudentsList />}
@@ -1016,9 +1020,149 @@ export default function App() {
           </div>
         </main>
 
+        {/* Mobile Bottom Navigation Bar (Thumb friendly, native app feel) */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-around px-2 py-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] print:hidden safe-area-pb" dir="rtl">
+          {/* 1. Dashboard */}
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              activeTab === 'dashboard'
+                ? 'text-[#0D5C8C] dark:text-sky-400 font-black'
+                : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-bold">الرئيسية</span>
+          </button>
 
+          {/* 2. Students */}
+          <button
+            onClick={() => setActiveTab('students')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              activeTab === 'students'
+                ? 'text-[#0D5C8C] dark:text-sky-400 font-black'
+                : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <GraduationCap className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-bold">الطلاب</span>
+          </button>
+
+          {/* 3. Attendance */}
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              activeTab === 'attendance'
+                ? 'text-[#0D5C8C] dark:text-sky-400 font-black'
+                : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <CalendarCheck2 className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-bold">الحضور</span>
+          </button>
+
+          {/* 4. Fees */}
+          <button
+            onClick={() => setActiveTab('fees')}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              activeTab === 'fees'
+                ? 'text-[#0D5C8C] dark:text-sky-400 font-black'
+                : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium'
+            }`}
+          >
+            <CreditCard className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-bold">الحسابات</span>
+          </button>
+
+          {/* 5. More Menu */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all font-medium"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] mt-0.5 font-bold">المزيد</span>
+          </button>
+        </nav>
 
       </div>
+
+      {/* Mobile Search Modal Overlay */}
+      <AnimatePresence>
+        {mobileSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 p-4 md:hidden flex flex-col"
+            dir="rtl"
+          >
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[85vh]">
+              {/* Modal Search Header */}
+              <div className="p-3 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
+                <Search className="w-5 h-5 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="ابحث باسم طالب، رقم قيد، مرحلة..."
+                  className="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 outline-none text-right font-sans"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-slate-600 text-xs">
+                    ✕
+                  </button>
+                )}
+                <button
+                  onClick={() => setMobileSearchOpen(false)}
+                  className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold shrink-0"
+                >
+                  إغلاق
+                </button>
+              </div>
+
+              {/* Modal Results */}
+              <div className="overflow-y-auto p-2 divide-y divide-slate-100 dark:divide-slate-700/60">
+                {searchResults.students.length > 0 ? (
+                  searchResults.students.map((student) => (
+                    <button
+                      key={student.id}
+                      onClick={() => {
+                        localStorage.setItem('sams_global_search', student.name);
+                        setActiveTab('students');
+                        setSearchQuery('');
+                        setMobileSearchOpen(false);
+                      }}
+                      className="w-full p-3 text-right hover:bg-sky-50/70 dark:hover:bg-slate-700/60 transition-all flex items-center justify-between text-xs cursor-pointer rounded-xl"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-800 dark:text-slate-100">{student.name}</div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-2 font-mono">
+                          <span>قيد: #{student.registration_id}</span>
+                          <span>•</span>
+                          <span>{student.grade_level}</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-[#0D5C8C] dark:text-sky-300 font-semibold bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-lg border border-blue-100 dark:border-blue-800/40">
+                        {student.status === 'active' ? 'نشط' : 'غير نشط'}
+                      </span>
+                    </button>
+                  ))
+                ) : searchQuery ? (
+                  <div className="p-8 text-center text-slate-400 text-xs space-y-2">
+                    <SearchX className="w-8 h-8 opacity-40 mx-auto" />
+                    <p className="font-bold text-slate-600 dark:text-slate-300">لم نعثر على نتائج</p>
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-slate-400 text-xs font-medium">
+                    اكتب اسم الطالب أو رقم القيد في مربع البحث بالأعلى
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Animated Visual Notification Banner (Top Right/Center) */}
       <AnimatePresence>

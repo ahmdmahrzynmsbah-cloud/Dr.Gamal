@@ -227,16 +227,18 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
       </div>
 
       {/* Suggested Quick Buttons */}
-      <div className="p-2 bg-slate-50/80 border-t border-gray-100 dark:border-gray-700 overflow-x-auto flex gap-2 no-scrollbar">
-        {quickPrompts.map((p, i) => (
-          <button
-            key={i}
-            onClick={() => handleCommand(p.replace(' ', ''))}
-            className="whitespace-nowrap px-2.5 py-1 text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-gray-700 hover:border-[#0D5C8C] hover:text-[#0D5C8C] rounded-full transition-all shadow-2xs hover:shadow-xs shrink-0 cursor-pointer"
-          >
-            {p}
-          </button>
-        ))}
+      <div className="relative w-full overflow-hidden [mask-image:linear-gradient(to_left,black_90%,transparent_100%)]">
+        <div className="p-2 bg-slate-50/80 border-t border-gray-100 dark:border-gray-700 overflow-x-auto flex gap-2 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {quickPrompts.map((p, i) => (
+            <button
+              key={i}
+              onClick={() => handleCommand(p.replace(' ', ''))}
+              className="whitespace-nowrap flex-shrink-0 select-none px-2.5 py-1 text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-gray-200 dark:border-gray-700 hover:border-[#0D5C8C] hover:text-[#0D5C8C] rounded-full transition-all shadow-2xs hover:shadow-xs cursor-pointer"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Input */}

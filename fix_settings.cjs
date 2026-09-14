@@ -2,21 +2,16 @@ const fs = require('fs');
 const path = './src/components/SettingsManager.tsx';
 let content = fs.readFileSync(path, 'utf8');
 
-// Replace section headers
-content = content.replace(/className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50\/50 flex items-center justify-between text-right"/g, 
-  'className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right"');
+// The class we want to replace
+const oldSelectClass = 'className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"';
+const newSelectClass = 'className="flex-1 min-w-0 truncate bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"';
 
-// Replace toggles rows
-content = content.replace(/className="p-3\.5 bg-slate-50\/80 rounded-xl border border-slate-200\/60 flex items-center justify-between gap-3"/g,
-  'className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"');
+content = content.replaceAll(oldSelectClass, newSelectClass);
 
-// Replace specific label line 266
-content = content.replace(/<div className="flex items-center justify-between">\s*<label className="block text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">\s*تخصيص نغمة التنبيه/g,
-  '<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">\n                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">\n                  تخصيص نغمة التنبيه');
-
-// Replace footer actions
-content = content.replace(/className="flex items-center justify-between p-4 bg-slate-55\/10 border border-gray-150 rounded-2xl"/g,
-  'className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 p-4 bg-slate-50/50 border border-gray-100 dark:border-gray-700 rounded-2xl"');
+// Also let's shrink the buttons slightly on mobile just in case
+content = content.replace(/className="px-3 py-1.5 rounded-lg bg-\[#0D5C8C\]/g, 'className="px-2 sm:px-3 py-1.5 rounded-lg bg-[#0D5C8C]');
+content = content.replace(/className="px-3 py-1.5 rounded-lg bg-emerald-600/g, 'className="px-2 sm:px-3 py-1.5 rounded-lg bg-emerald-600');
+content = content.replace(/className="px-3 py-1.5 rounded-lg bg-indigo-600/g, 'className="px-2 sm:px-3 py-1.5 rounded-lg bg-indigo-600');
 
 fs.writeFileSync(path, content, 'utf8');
-console.log('Done');
+console.log('Fixed settings');

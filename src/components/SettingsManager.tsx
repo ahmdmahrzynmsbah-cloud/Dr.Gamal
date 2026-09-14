@@ -291,7 +291,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                         setToneAttendance(e.target.value);
                         playNotificationTone(e.target.value as NotificationTone);
                       }}
-                      className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="flex-1 min-w-0 truncate bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
                     >
                       {TONE_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
@@ -303,7 +303,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                     <button
                       type="button"
                       onClick={() => playNotificationTone(toneAttendance as NotificationTone)}
-                      className="px-3 py-1.5 rounded-lg bg-[#0D5C8C] hover:bg-[#0a4a70] text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
+                      className="px-2 sm:px-3 py-1.5 rounded-lg bg-[#0D5C8C] hover:bg-[#0a4a70] text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
                       title="تجربة سماع النغمة الحالية"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
@@ -334,7 +334,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                         setToneFees(e.target.value);
                         playNotificationTone(e.target.value as NotificationTone);
                       }}
-                      className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="flex-1 min-w-0 truncate bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
                     >
                       {TONE_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
@@ -346,7 +346,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                     <button
                       type="button"
                       onClick={() => playNotificationTone(toneFees as NotificationTone)}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
+                      className="px-2 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
                       title="تجربة سماع النغمة الحالية"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
@@ -377,7 +377,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                         setToneAdmin(e.target.value);
                         playNotificationTone(e.target.value as NotificationTone);
                       }}
-                      className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                      className="flex-1 min-w-0 truncate bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 sm:px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
                     >
                       {TONE_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
@@ -389,7 +389,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                     <button
                       type="button"
                       onClick={() => playNotificationTone(toneAdmin as NotificationTone)}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
+                      className="px-2 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer shrink-0"
                       title="تجربة سماع النغمة الحالية"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />

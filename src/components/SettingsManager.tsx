@@ -183,7 +183,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
       <form onSubmit={handleSaveSettings} className="space-y-6">
         {/* ROW 0: Dark Mode & Theme Settings */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right">
             <div className="flex items-center gap-2">
               <Palette className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">تفضيلات مظهر الواجهة والوضع الداكن (Dark Mode)</h3>
@@ -211,7 +211,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 0.5: Audio Notification Tones & Alert Controls */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right">
             <div className="flex items-center gap-2">
               <Volume2 className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">إعدادات النغمات والتنبيهات الصوتية والمباشرة (Notification Sound Tones)</h3>
@@ -225,7 +225,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
             
             {/* Toggles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex items-center justify-between gap-3">
+              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-1.5">
                     {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
@@ -244,7 +244,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                 />
               </div>
 
-              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex items-center justify-between gap-3">
+              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-1.5">
                     <Bell className="w-4 h-4 text-amber-500" />
@@ -263,7 +263,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
             {/* Category-Specific Sound Dropdowns with Trial Listen Button */}
             <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-700 dark:border-slate-800">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
                   تخصيص نغمة التنبيه لكل نوع من الإشعارات (انقر زر الاستماع لتجربة الصوت):
                 </label>
@@ -472,7 +472,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 2: Custom Notification Templates */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">2. تخصيص قوالب وصيغ الرسائل التلقائية (الغياب وغيرها)</h3>
@@ -484,7 +484,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
           <div className="p-4 sm:p-5 space-y-4 text-right">
             <div className="p-3 bg-amber-50 dark:bg-amber-900/40 rounded-xl border border-amber-100 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
                <b>ملاحظة المتغيرات:</b> يمكنك استخدام الرموز التالية داخل أي قالب، ليقوم النظام بتعويضها تلقائياً بالاسم الفعلي للطالب وولي الأمر عند الإرسال:
-              <div className="grid grid-cols-3 gap-2 mt-2 text-center text-[10px]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 text-center text-[10px]">
                 <div className="bg-white dark:bg-slate-800 p-1 rounded border border-amber-200 dark:border-amber-700"><code className="font-bold text-rose-600 dark:text-rose-400 font-mono">{"{اسم_الطالب}"}</code> لاسم الطالب</div>
                 <div className="bg-white dark:bg-slate-800 p-1 rounded border border-amber-200 dark:border-amber-700"><code className="font-bold text-rose-600 dark:text-rose-400 font-mono">{"{اسم_ولي_الأمر}"}</code> لولي أمر الطالب</div>
                 <div className="bg-white dark:bg-slate-800 p-1 rounded border border-amber-200 dark:border-amber-700"><code className="font-bold text-[#0D5C8C] font-mono">{"{التاريخ}"}</code> لتاريخ اليوم تلقائياً</div>
@@ -551,7 +551,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
 
         {/* ROW 3: Centralized WhatsApp Integrations */}
         <div className={`bg-white dark:bg-slate-800 rounded-2xl border ${whatsappEnabled ? 'border-gray-100' : 'border-gray-200'} shadow-2xs overflow-hidden transition-colors`}>
-          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex items-center justify-between text-right">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right">
             <div className="flex items-center gap-2">
               <Key className="w-4.5 h-4.5 text-[#0D5C8C]" />
               <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100 dark:text-slate-100">3. بوابات الإرسال السحابي للواتسآب (إرسال صامت بالخلفية)</h3>
@@ -598,7 +598,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                 <div className="flex justify-between items-center">
                   <span className="px-2 py-1 bg-sky-105/10 text-sky-800 text-[10px] font-black rounded">خيار 2: UltraMsg (بوابة المدارس الاحترافية بالخلفية)</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-200">رقم السيرفر (Instance ID):</label>
                     <input
@@ -629,7 +629,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center justify-between p-4 bg-slate-55/10 border border-gray-150 rounded-2xl">
+        <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 p-4 bg-slate-50/50 border border-gray-100 dark:border-gray-700 rounded-2xl">
           <button
             type="button"
             onClick={() => setShowResetConfirm(true)}

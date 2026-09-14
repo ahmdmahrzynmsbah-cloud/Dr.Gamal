@@ -702,7 +702,7 @@ export default function FeesTracker() {
 
       {/* Navigation Tabs */}
       <div className="relative w-full overflow-hidden ">
-        <div className="flex border-b border-slate-100 dark:border-slate-700 gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-3xs overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex border-b border-slate-100 dark:border-slate-700 gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-3xs overflow-x-auto no-scrollbar scroll-smooth mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
           <button
             onClick={() => setActiveTab('subscriptions')}
             className={`whitespace-nowrap flex-shrink-0 select-none flex-1 min-w-fit px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -953,7 +953,7 @@ export default function FeesTracker() {
             </div>
             
             <div className="relative w-full overflow-hidden ">
-              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {MONTHS_LIST.map((month) => {
                   const isSelected = month === selectedMonth;
                   // Count paid students for this month
@@ -1089,7 +1089,7 @@ export default function FeesTracker() {
               </div>
             </div>
 
-            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs mask-edges">
               
               {/* Mobile View: High-efficiency Cards */}
               <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
@@ -1127,7 +1127,7 @@ export default function FeesTracker() {
 
                       {/* Middle Row: Timeline Months */}
                       <div className="relative w-full overflow-hidden ">
-                        <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar scroll-smooth pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar scroll-smooth pb-1 mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
                           {timelineMonths.map((m) => {
                             const paidForThisTimelineMonth = payments.some(
                               p => p.student_id === student.id && 
@@ -1471,7 +1471,7 @@ export default function FeesTracker() {
             <span className="text-xxs font-bold text-slate-400">إجمالي السجلات المستردة: {payments.length} إيصالات</span>
           </div>
 
-          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs mask-edges">
             
             {/* Mobile View: High-efficiency Cards */}
             <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">

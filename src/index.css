@@ -533,3 +533,9 @@ html.dark body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Faded edges for scrollable ribbons (تشويش الحواف) */
+.mask-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent);
+}

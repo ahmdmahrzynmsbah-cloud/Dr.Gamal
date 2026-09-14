@@ -605,6 +605,199 @@ export default function ClassesManager() {
     }
   };
 
+  // Full Page Archive View
+  if (showArchiveModal) {
+    return (
+      <div className="space-y-6 animate-fade-in" dir="rtl">
+        {/* Header */}
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowArchiveModal(false)}
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-900/50 hover:bg-slate-200 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl transition-colors cursor-pointer flex items-center gap-2 font-bold text-sm"
+            >
+              <ArrowRight className="w-5 h-5" />
+              <span>رجوع</span>
+            </button>
+            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-2xl flex items-center justify-center border border-amber-200 dark:border-amber-800">
+              <Archive className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white">أرشيف الطلاب المؤرشفين</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-sans">إدارة واستعادة أو حذف بيانات الطلاب نهائياً</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[70vh]">
+          {/* Search */}
+          <div className="relative shrink-0 mb-6">
+            <Search className="w-5 h-5 text-slate-400 absolute right-4 top-3.5" />
+            <input
+              type="text"
+              value={archivedSearchTerm}
+              onChange={(e) => setArchivedSearchTerm(e.target.value)}
+              placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
+              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-600 font-sans transition-colors"
+            />
+          </div>
+
+          {/* Archived list */}
+          <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+            {(() => {
+              const archivedList = samsDb.getArchivedStudents().filter(st => 
+                !archivedSearchTerm || 
+                st.name.includes(archivedSearchTerm) || 
+                st.registration_id.includes(archivedSearchTerm)
+              );
+
+              if (archivedList.length === 0) {
+                return (
+                  <div className="text-center py-20 text-slate-400 space-y-3">
+                    <Archive className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600" />
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">لا يوجد طلاب في الأرشيف حالياً</p>
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  {/* Mobile Card View */}
+                  <div className="md:hidden flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-250px)] pb-10">
+                    {archivedList.map(st => (
+                      <div key={st.id} className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0 text-amber-500">
+                              <Archive className="w-5 h-5 opacity-50" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{st.name}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{st.registration_id}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] text-slate-400 font-semibold">الصف الدراسي</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] text-slate-400 font-semibold">رقم الهاتف</span>
+                            <span className="flex items-center gap-1 font-mono font-bold text-slate-700 dark:text-slate-300"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-700/50">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              samsDb.restoreStudent(st.id);
+                              loadData();
+                              setSuccessText(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
+                            }}
+                            className="flex-1 py-2 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>استعادة</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setArchivedStudentToPermanentDelete(st)}
+                            className="flex-1 py-2 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>حذف نهائي</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-auto max-h-[calc(100vh-250px)] rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+                    <table className="w-full text-sm text-right relative border-collapse min-w-[800px]">
+                      <thead className="sticky top-0 z-20">
+                        <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-extrabold border-b-2 border-slate-300 dark:border-slate-700 shadow-xs whitespace-nowrap">
+                          <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm pr-6 sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">م</th>
+                          <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[200px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">بيانات الطالب</th>
+                          <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[150px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">الصف الدراسي</th>
+                          <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm min-w-[140px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">رقم هاتف الطالب / ولي الأمر</th>
+                          <th className="px-3 sm:px-4 py-2.5 sm:py-3.5 text-xs sm:text-sm text-left pl-6 min-w-[160px] sticky top-0 z-20 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs">إجراءات التحكم</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 whitespace-nowrap">
+                        {archivedList.map((st, index) => (
+                          <tr key={st.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm pr-6 text-xs text-slate-400 font-mono">
+                              {(index + 1).toString().padStart(2, '0')}
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0 text-amber-500 font-bold text-sm sm:text-base sm:text-lg">
+                                  <Archive className="w-5 h-5 opacity-50" />
+                                </div>
+                                <div>
+                                  <p className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{st.name}</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">#{st.registration_id}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-bold text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {st.grade_level}</span>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
+                              <div className="flex flex-col gap-1 text-slate-600 dark:text-slate-400">
+                                <span className="flex items-center gap-1 font-mono text-xs"><Phone className="w-3.5 h-3.5" /> {st.phone || st.parent_phone || '-'}</span>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-left pl-6">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    samsDb.restoreStudent(st.id);
+                                    loadData();
+                                    setSuccessText(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
+                                  }}
+                                  className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                  <span>استعادة</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setArchivedStudentToPermanentDelete(st)}
+                                  className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>حذف نهائي</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* Permanent Delete Modal for Archive view handled globally below */}
+      </div>
+    );
+  }
+
   // Dedicated Group Students Full View Render
   if (selectedClassForStudents) {
     const currentClassStudents = students.filter(s => s.class_id === selectedClassForStudents.id);
@@ -963,7 +1156,7 @@ export default function ClassesManager() {
                   </div>
 
                   {/* Students table */}
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto mask-edges">
                     <table className="w-full text-right border-collapse border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-xs">
                       <thead>
                         <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-extrabold border-b border-slate-300 dark:border-slate-600 dark:border-slate-600">
@@ -1059,121 +1252,107 @@ export default function ClassesManager() {
         )}
       </AnimatePresence>
 
-        {/* Top Navigation & Group Header */}
-        <div className="bg-gradient-to-r from-[#0D5C8C] via-[#126b9e] to-[#0A4B73] text-white p-4 sm:p-6 rounded-3xl shadow-lg space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedClassForStudents(null)}
-                className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all cursor-pointer flex items-center gap-2 text-xs font-bold shrink-0 border border-white/10"
-                title="الرجوع إلى قائمة المجموعات"
-              >
-                <ArrowRight className="w-4 h-4" />
-                <span>الرجوع للمجموعات</span>
-              </button>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-amber-400 text-slate-950 font-black px-2.5 py-0.5 rounded-full">
-                    صفحة طلاب المجموعة المخصصة
-                  </span>
-                  <span className="text-xs text-sky-200 font-sans">
-                    {selectedClassForStudents.grade_level}
-                  </span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold mt-1 flex items-center gap-2">
-                  <GraduationCap className="w-7 h-7 text-amber-300" />
-                  <span>طلاب مجموعة: {selectedClassForStudents.name}</span>
-                </h2>
-              </div>
+        {/* Top Navigation & Group Header (Clean Mode-Aware) */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-3xl p-4 sm:p-5 relative overflow-hidden">
+          {/* Card Header Row */}
+          <div className="flex items-center justify-between gap-2 mb-4 relative z-10 w-full">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-[#0D5C8C] dark:text-blue-400 shrink-0" />
+              <h2 className="text-sm sm:text-xl font-extrabold text-slate-900 dark:text-white truncate">
+                {selectedClassForStudents.name}
+              </h2>
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[11px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 shrink-0 whitespace-nowrap">
+                {selectedClassForStudents.grade_level}
+              </span>
             </div>
-
-            {/* Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end mt-4 md:mt-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setNewStudentForm({
-                    name: '',
-                    phone: '',
-                    parent_name: '',
-                    parent_phone: '',
-                    grade_level: selectedClassForStudents.grade_level || 'الأول الإعدادي',
-                    birth_date: '2016-01-01',
-                    status: 'active'
-                  });
-                  setShowAddStudentModal(true);
-                }}
-                className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>إضافة طالب</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
-                  const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
-                  const sig = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
-
-                  const defaultBroadcastMsg = `السلام عليكم ورحمة الله وبركاته،
-أولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - ${centerTitle}،
-تحية طيبة وبعد،
-
-نود إحاطتكم بجدول مواعيد المجموعة (${formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.
-
-شاكرين لكم حسن التعاون.
-
-${sig}`;
-                  setGroupWhatsAppMsg(defaultBroadcastMsg);
-                  setShowGroupWhatsAppModal(true);
-                }}
-                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
-              >
-                <MessageCircle className="w-3.5 h-3.5 fill-current text-white" />
-                <span>تنبيه واتساب</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowPrintRosterModal(true)}
-                className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] rounded-lg shadow-sm flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer flex-1 md:flex-none justify-center"
-                title="طباعة كشف طلاب المجموعة وتصديره كـ PDF"
-              >
-                <Printer className="w-3.5 h-3.5 text-slate-950" />
-                <span>طباعة الكشف</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowArchiveModal(true)}
-                className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] rounded-lg border border-white/20 flex items-center gap-1.5 transition-all cursor-pointer flex-1 md:flex-none justify-center"
-                title="عرض الأرشيف والطلاب المؤرشفين"
-              >
-                <Archive className="w-3.5 h-3.5 text-amber-300" />
-                <span>الأرشيف ({samsDb.getArchivedStudents().length})</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedClassForStudents(null)}
+              className="flex items-center gap-1 text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors bg-slate-50 dark:bg-slate-900/50 px-2 sm:px-3 py-1.5 rounded-lg shrink-0 border border-slate-200 dark:border-slate-700/50"
+              title="الرجوع إلى قائمة المجموعات"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              <span>رجوع</span>
+            </button>
           </div>
 
-          {/* Group Metadata Footer */}
-          <div className="flex flex-wrap items-center gap-4 text-xs pt-3 border-t border-white/10 font-sans">
-            <div className="flex items-center gap-1.5 text-sky-100">
-              <Calendar className="w-4 h-4 text-amber-300" />
-              <span>المواعيد: <strong>{formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}</strong></span>
+          {/* Action Buttons Grid */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-4 relative z-10">
+            <button
+              type="button"
+              onClick={() => {
+                setNewStudentForm({
+                  name: '',
+                  phone: '',
+                  parent_name: '',
+                  parent_phone: '',
+                  grade_level: selectedClassForStudents.grade_level || 'الأول الإعدادي',
+                  birth_date: '2016-01-01',
+                  status: 'active'
+                });
+                setShowAddStudentModal(true);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="truncate">إضافة</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+                const centerTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'سنتر الدكتور في اللغة العربية';
+                const sig = isAlsafa ? '#سيستم الصفا للمواد الشرعية' : '#سيستم الدكتور في اللغة العربية';
+                const defaultBroadcastMsg = `السلام عليكم ورحمة الله وبركاته،\nأولياء أمور الطلاب الكرام بمجموعة (${selectedClassForStudents.name}) - ${centerTitle}،\nتحية طيبة وبعد،\nنود إحاطتكم بجدول مواعيد المجموعة (${formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}). نرجو التكرم بحث الطلاب على الانضباط والمتابعة المستمرة.\nشاكرين لكم حسن التعاون.\n\n${sig}`;
+                setGroupWhatsAppMsg(defaultBroadcastMsg);
+                setShowGroupWhatsAppModal(true);
+              }}
+              className="bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs border border-slate-200 dark:border-slate-600/50 transition-all active:scale-95 cursor-pointer"
+            >
+              <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="truncate">تنبيه</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowPrintRosterModal(true)}
+              className="bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs border border-slate-200 dark:border-slate-600/50 transition-all active:scale-95 cursor-pointer"
+              title="طباعة كشف طلاب المجموعة وتصديره كـ PDF"
+            >
+              <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0D5C8C] dark:text-blue-400 shrink-0" />
+              <span className="truncate">طباعة</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowArchiveModal(true)}
+            className="w-full py-1.5 text-center text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg mt-1.5 transition-colors flex items-center justify-center gap-1.5 relative z-10"
+            title="عرض الأرشيف والطلاب المؤرشفين"
+          >
+            <Archive className="w-3 h-3" />
+            <span>الأرشيف ({samsDb.getArchivedStudents().length})</span>
+          </button>
+
+          {/* Metadata Chips */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-2.5 mt-2.5 border-t border-slate-100 dark:border-slate-700 relative z-10">
+            <div className="flex flex-col items-center justify-center gap-0.5 bg-slate-50 dark:bg-slate-900/50 py-1.5 px-1 rounded-lg text-center border border-slate-100 dark:border-slate-700/50">
+              <Calendar className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-blue-400" />
+              <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold truncate w-full">{formatScheduleDisplay(selectedClassForStudents.schedule_time, selectedClassForStudents.schedule_days)}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sky-100">
-              <Users className="w-4 h-4 text-emerald-300" />
-              <span>إجمالي المقيدين: <strong>{totalStudents} طالب</strong></span>
+            
+            <div className="flex flex-col items-center justify-center gap-0.5 bg-slate-50 dark:bg-slate-900/50 py-1.5 px-1 rounded-lg text-center border border-slate-100 dark:border-slate-700/50">
+              <Users className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-blue-400" />
+              <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold truncate w-full">{totalStudents} طالب</span>
             </div>
-            <div className="flex items-center gap-1.5 text-sky-100">
-              <CheckCircle className="w-4 h-4 text-sky-300" />
-              <span>متوسط نسبة الحضور: <strong>{groupAvgAttendance}%</strong></span>
+            
+            <div className="flex flex-col items-center justify-center gap-0.5 bg-slate-50 dark:bg-slate-900/50 py-1.5 px-1 rounded-lg text-center border border-slate-100 dark:border-slate-700/50">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold truncate w-full">{groupAvgAttendance}%</span>
             </div>
           </div>
         </div>
-
         {/* Alerts & Messages */}
         {errorText && (
           <div className="p-4 bg-red-50 dark:bg-red-900/40 border border-red-200 text-[#C0152A] rounded-xl text-xs flex items-center gap-2">
@@ -1228,8 +1407,8 @@ ${sig}`;
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col md:flex-row flex-wrap items-center gap-3 w-full pb-2 pt-1">
-          <div className="relative w-full md:flex-1 min-w-[280px]">
+        <div className="bg-white dark:bg-slate-800 p-2 sm:p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs flex flex-col gap-3 w-full pb-2 pt-1">
+          <div className="relative w-full">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -1240,7 +1419,7 @@ ${sig}`;
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 w-full no-scrollbar mask-edges">
             <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 font-bold ml-1 shrink-0">
               <Filter className="w-3.5 h-3.5 text-slate-400" />
               <span>تصفية النتائج:</span>
@@ -1249,7 +1428,7 @@ ${sig}`;
             <select
               value={studentStatusFilter}
               onChange={(e) => setStudentStatusFilter(e.target.value as any)}
-              className="w-full sm:w-auto text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
+              className="shrink-0 min-w-max text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
             >
               <option value="all">جميع الحالات (نشط وموقوف)</option>
               <option value="active">الطلاب النشطون فقط</option>
@@ -1259,7 +1438,7 @@ ${sig}`;
             <select
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value as any)}
-              className="w-full sm:w-auto text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
+              className="shrink-0 min-w-max text-xs font-sans border border-slate-200 dark:border-slate-700 px-3 h-10 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] bg-white dark:bg-slate-800 cursor-pointer"
             >
               <option value="all">جميع معدلات الحضور</option>
               <option value="excellent">انضباط ممتاز (≥90%)</option>
@@ -1289,7 +1468,163 @@ ${sig}`;
               <p className="text-slate-400 text-xs font-sans">يمكنك إضافة طالب جديد مباشرة إلى هذه المجموعة باستخدام الزر بالأعلى.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto max-h-[75vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+            
+            <>
+              
+              {/* Mobile Card View (responsive) */}
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 max-h-[75vh] overflow-y-auto">
+                {filteredGroupStudents.map((student) => {
+                  const attStats = getStudentAttendanceStats(student.id);
+                  const feeStats = getStudentFeeStatus(student.id);
+                  const parentPhoneClean = (student.parent_phone || student.phone || '').replace(/[^0-9]/g, '');
+                  const formattedParentPhone = parentPhoneClean.startsWith('0') ? '2' + parentPhoneClean : parentPhoneClean;
+                  
+                  return (
+                    <div key={student.id} className="p-3.5 space-y-3 bg-white dark:bg-slate-800 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition-colors">
+                      {/* Top: Name & ID */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-slate-900 dark:text-slate-50 text-sm flex items-center gap-2 flex-wrap">
+                            <span className="whitespace-nowrap">{student.name}</span>
+                            {attStats.absent >= 3 && (
+                              <span className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">
+                                <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400 shrink-0" />
+                                <span>غياب متكرر ({attStats.absent})</span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-mono font-bold text-[#0D5C8C] bg-slate-100 dark:bg-slate-700/60 px-1.5 py-0.5 rounded">
+                              #{student.registration_id}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-sans truncate">
+                              الصف: {student.grade_level || selectedClassForStudents.grade_level}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                          student.status === 'active' 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800'
+                            : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800'
+                        }`}>
+                          {student.status === 'active' ? 'نشط بالسنتر' : 'موقوف'}
+                        </span>
+                      </div>
+
+                      {/* Middle: Attendance & Fees */}
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                        {/* Attendance */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center text-[10px] font-bold">
+                            <span className="text-slate-500">الحضور</span>
+                            <span className={attStats.percentage >= 90 ? 'text-emerald-600' : attStats.percentage >= 75 ? 'text-amber-600' : 'text-rose-600'}>
+                              {attStats.percentage}%
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                attStats.percentage >= 90 ? 'bg-emerald-500' : attStats.percentage >= 75 ? 'bg-amber-500' : 'bg-rose-500'
+                              }`}
+                              style={{ width: `${attStats.percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                        {/* Fees */}
+                        <div className="flex flex-col items-end justify-center">
+                          {feeStats.isPaid ? (
+                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>مسدد ({feeStats.totalAmount})</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>مستحق الشهر</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bottom: Contact & Actions */}
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-700/40">
+                        {student.parent_phone ? (
+                          <div className="flex items-center gap-1.5">
+                            <a
+                              href={`tel:${student.parent_phone}`}
+                              className="flex items-center gap-1 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/60 px-2 py-1 rounded-lg hover:bg-slate-200 transition-colors"
+                              dir="ltr"
+                            >
+                              <Phone className="w-3 h-3 text-[#0D5C8C]" />
+                              {student.parent_phone}
+                            </a>
+                            {parentPhoneClean.length >= 10 && (
+                              <a
+                                href={`https://wa.me/${formattedParentPhone}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته،\nإلى ولي أمر: ${student.name}\nتحية طيبة وبعد...`)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-lg transition-colors"
+                                title="محادثة واتساب"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">بدون هاتف</span>
+                        )}
+                        
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedStudentForReport(student)}
+                            className="p-1.5 text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-900/40 rounded-lg transition-colors"
+                            title="عرض الكشف الكامل"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTransferStudent(student);
+                              setTargetClassIdForTransfer('');
+                            }}
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/40 rounded-lg transition-colors"
+                            title="نقل لمجموعة أخرى"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingStudent(student)}
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/40 rounded-lg transition-colors"
+                            title="تعديل البيانات"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              samsDb.softDeleteStudent(student.id);
+                              loadData();
+                              setSuccessText(`تم نقل (${student.name}) إلى الأرشيف بنجاح.`);
+                            }}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-lg transition-colors"
+                            title="نقل إلى الأرشيف"
+                          >
+                            <Archive className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+
+              <div className="hidden md:block overflow-x-auto max-h-[75vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs mask-edges">
+
               <table className="w-full text-right border-collapse min-w-[900px] relative">
                 <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>
@@ -1501,7 +1836,8 @@ ${sig}`;
                   })}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -2059,119 +2395,7 @@ ${sig}`;
           )}
         </AnimatePresence>
 
-        {/* Archived Students Modal */}
-        <AnimatePresence>
-          {showArchiveModal && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-2xl max-w-3xl w-full p-4 sm:p-6 text-right space-y-5 max-h-[85vh] flex flex-col"
-              >
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4 shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-amber-100 text-amber-800 dark:text-amber-300 rounded-2xl">
-                      <Archive className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 dark:text-slate-50 text-sm sm:text-base">أرشيف الطلاب المؤرشفين</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-sans">إدارة واستعادة أو حذف بيانات الطلاب الموجودين في الأرشيف</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowArchiveModal(false)}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Search */}
-                <div className="relative shrink-0">
-                  <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
-                  <input
-                    type="text"
-                    value={archivedSearchTerm}
-                    onChange={(e) => setArchivedSearchTerm(e.target.value)}
-                    placeholder="بحث في الطلاب المؤرشفين بالاسم أو رقم القيد..."
-                    className="w-full min-w-[200px] max-w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pr-10 pl-4 py-2 text-xs focus:outline-none focus:border-amber-600 font-sans"
-                  />
-                </div>
-
-                {/* Archived list */}
-                <div className="overflow-y-auto flex-1 space-y-3 pr-1">
-                  {(() => {
-                    const archivedList = samsDb.getArchivedStudents().filter(st => 
-                      !archivedSearchTerm || 
-                      st.name.includes(archivedSearchTerm) || 
-                      st.registration_id.includes(archivedSearchTerm)
-                    );
-
-                    if (archivedList.length === 0) {
-                      return (
-                        <div className="text-center py-12 text-slate-400 space-y-2">
-                          <Archive className="w-10 h-10 mx-auto text-slate-300" />
-                          <p className="text-xs font-bold">لا يوجد طلاب في الأرشيف حالياً</p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="space-y-2">
-                        {archivedList.map(st => (
-                          <div key={st.id} className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-900 dark:text-slate-50 text-xs">{st.name}</span>
-                                <span className="text-[10px] bg-amber-100 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md font-mono font-bold">
-                                  {st.registration_id}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap gap-3">
-                                <span>الصف: {st.grade_level}</span>
-                                <span>الهاتف: {st.phone || st.parent_phone || '-'}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              {/* Restore */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  samsDb.restoreStudent(st.id);
-                                  loadData();
-                                  setSuccessText(`تمت استعادة الطالب (${st.name}) بنجاح وإعادته للقائمة النشطة.`);
-                                }}
-                                className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
-                              >
-                                <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>استعادة الطالب</span>
-                              </button>
-
-                              {/* Permanent Delete */}
-                              <button
-                                type="button"
-                                onClick={() => setArchivedStudentToPermanentDelete(st)}
-                                className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                                <span>حذف نهائي</span>
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Permanent Delete Confirmation Modal */}
+                {/* Permanent Delete Confirmation Modal */}
         <AnimatePresence>
           {archivedStudentToPermanentDelete && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-[60] animate-fade-in" dir="rtl">

@@ -1249,7 +1249,7 @@ ${sig}`;
 
         {/* Navigation sub-tabs */}
         <div className="relative max-w-full shrink-0 overflow-hidden ">
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto no-scrollbar scroll-smooth mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
             <button
               onClick={() => {
                 setActiveSubTab('grading');
@@ -1546,7 +1546,7 @@ ${sig}`;
                 </div>
               </div>
 
-              <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs">
+              <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-xl shadow-xs mask-edges">
                 
                 {/* Mobile View: High-efficiency Cards */}
                 <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">

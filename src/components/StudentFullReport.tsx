@@ -416,7 +416,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
             </div>
 
             {fees.length > 0 ? (
-              <div className="overflow-x-auto max-h-[50vh] overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs">
+              <div className="overflow-x-auto max-h-[50vh] overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs mask-edges">
                 
                 {/* Mobile View: High-efficiency Cards */}
                 <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">

@@ -191,7 +191,7 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
                 <p>{msg.text}</p>
 
                 {msg.data && (
-                  <div className="mt-3 overflow-x-auto text-xs border border-gray-100 dark:border-gray-700 rounded-lg bg-slate-50/50 p-2">
+                  <div className="mt-3 overflow-x-auto text-xs border border-gray-100 dark:border-gray-700 rounded-lg bg-slate-50/50 p-2 mask-edges">
                     {msg.data.type === 'success' && (
                       <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-medium bg-emerald-50 dark:bg-emerald-900/40 p-1.5 rounded">
                         <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -228,7 +228,7 @@ export default function SamsAgent({ onNavigateToTab, onRefreshData }: SamsAgentP
 
       {/* Suggested Quick Buttons */}
       <div className="relative w-full overflow-hidden ">
-        <div className="p-2 bg-slate-50/80 border-t border-gray-100 dark:border-gray-700 overflow-x-auto flex gap-2 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="p-2 bg-slate-50/80 border-t border-gray-100 dark:border-gray-700 overflow-x-auto flex gap-2 no-scrollbar scroll-smooth mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
           {quickPrompts.map((p, i) => (
             <button
               key={i}

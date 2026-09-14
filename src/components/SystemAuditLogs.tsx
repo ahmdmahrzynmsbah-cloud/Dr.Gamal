@@ -230,10 +230,10 @@ export default function SystemAuditLogs() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="flex items-center gap-3 overflow-x-auto pb-2 w-full no-scrollbar mask-edges">
             
             {/* 1. Filter by Action Type */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 shrink-0 min-w-[220px] max-w-sm flex-1">
               <label className="text-[10px] text-slate-400 font-bold block">تصفية بحسب نوع العملية</label>
               <div className="flex bg-white dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
                 <button
@@ -272,7 +272,7 @@ export default function SystemAuditLogs() {
             </div>
 
             {/* 2. Filter by Actor */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 shrink-0 min-w-[220px] max-w-sm flex-1">
               <label className="text-[10px] text-slate-400 font-bold block">تصفية بحسب القائم بالعملية (المستخدم)</label>
               <select
                 value={actorFilter}
@@ -288,7 +288,7 @@ export default function SystemAuditLogs() {
             </div>
 
             {/* 3. Filter by Table/Category */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 shrink-0 min-w-[220px] max-w-sm flex-1">
               <label className="text-[10px] text-slate-400 font-bold block">تصفية بحسب القسم/الجدول</label>
               <select
                 value={tableFilter}

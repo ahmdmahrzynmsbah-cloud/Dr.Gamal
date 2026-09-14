@@ -592,7 +592,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
 
       {/* Primary Sub-Tabs Switcher */}
       <div className="relative w-full overflow-hidden ">
-        <div className="flex border-b border-gray-200 dark:border-gray-700 gap-1 sm:gap-2 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 no-scrollbar scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex border-b border-gray-200 dark:border-gray-700 gap-1 sm:gap-2 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 no-scrollbar scroll-smooth mask-edges" style={{ WebkitOverflowScrolling: 'touch' }}>
           <button
             type="button"
             onClick={() => { setActiveSubTab('inbox'); setSuccessInfo(''); }}
@@ -1006,7 +1006,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
             </div>
 
             {/* Parents List Table */}
-            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xs">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xs mask-edges">
               <table className="min-w-full text-right relative border-collapse" dir="rtl">
                 <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                   <tr>

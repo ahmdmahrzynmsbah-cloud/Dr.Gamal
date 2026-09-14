@@ -381,9 +381,9 @@ export default function ParentsList() {
       <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-4">
         
         {/* Filters Panel */}
-        <div className="flex flex-col md:flex-row flex-wrap items-center gap-3 w-full pb-2 pt-1">
+        <div className="flex flex-col gap-3 w-full pb-2 pt-1">
           {/* Search Box */}
-          <div className="relative w-full md:flex-1 min-w-[280px]">
+          <div className="relative w-full">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -394,11 +394,12 @@ export default function ParentsList() {
               dir="rtl"
             />
           </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 w-full no-scrollbar mask-edges">
           {/* Grade Filter of Children */}
           <select
             value={gradeFilter}
             onChange={(e) => setGradeFilter(e.target.value)}
-            className="w-full md:w-auto font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
+            className="shrink-0 min-w-max font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
           >
             <option value="all">كل المراحل الدراسية للأبناء</option>
             <option value="الأول الإعدادي">الأول الإعدادي</option>
@@ -412,12 +413,13 @@ export default function ParentsList() {
           <select
             value={multiChildrenFilter}
             onChange={(e) => setMultiChildrenFilter(e.target.value)}
-            className="w-full md:w-auto font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
+            className="shrink-0 min-w-max font-sans text-xs border border-slate-200 dark:border-slate-700 h-10 px-3 rounded-xl focus:outline-hidden focus:border-[#0D5C8C] text-right bg-white dark:bg-slate-800"
           >
             <option value="all">كل أولياء الأمور</option>
             <option value="multi">من لديهم أكثر من ابن في السنتر (أشقاء)</option>
             <option value="single">من لديهم ابن واحد فقط</option>
           </select>
+          </div>
         </div>
 
         {/* Mobile Cards View */}
@@ -516,7 +518,7 @@ export default function ParentsList() {
         </div>
 
         {/* Desktop Database Grid */}
-        <div className="hidden md:block overflow-x-auto max-h-[65vh] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-xs">
+        <div className="hidden md:block overflow-x-auto max-h-[65vh] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl shadow-xs mask-edges">
           <table className="min-w-full text-right relative border-collapse" dir="rtl">
             <thead className="sticky top-0 z-20">
               <tr className="bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-black border-b-2 border-slate-300 dark:border-slate-700 shadow-xs">

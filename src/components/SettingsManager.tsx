@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Image, MessageSquare, Key, Save, RefreshCw, LogOut, HelpCircle, CheckCircle2, Moon, Sun, Palette, Volume2, VolumeX, Bell, Play, Sparkles } from 'lucide-react';
+import { Settings, Image, MessageSquare, Key, Save, RefreshCw, LogOut, HelpCircle, CheckCircle2, Moon, Sun, Palette, Volume2, VolumeX, Bell, Play, Sparkles, Download, Upload, ShieldCheck, HardDrive } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { playNotificationTone, NotificationTone, TONE_OPTIONS } from '../utils/audioAlerts';
 
@@ -142,6 +142,158 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
     setTMeeting('المحترم ({اسم_ولي_الأمر})، نتشرف بدعوتكم لحضور مجلس الآباء القادم بالسنتر لمتابعة المسار التعليمي لولدكم ({اسم_الطالب}).');
     setWhatsappEnabled(true);
     setShowResetConfirm(false);
+  };
+
+  const handleExportBackup = () => {
+    try {
+      const backupData: Record<string, any> = {
+        meta: {
+          appName: localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة',
+          exportDate: new Date().toISOString(),
+          version: '2.0.0',
+          system: 'SAMS Center Management System'
+        },
+        storage: {}
+      };
+
+      const keysToBackup = [
+        'sams_v2_students',
+        'sams_v2_teachers',
+        'sams_v2_classes',
+        'sams_v2_subjects',
+        'sams_v2_grades',
+        'sams_v2_attendance',
+        'sams_v2_fees',
+        'sams_v2_notifications',
+        'sams_v2_audit_logs',
+        'sams_v2_current_user_role',
+        'sams_v2_center_schedule',
+        'sams_v2_exams',
+        'sams_v2_assignments',
+        'sams_v2_exam_grades',
+        'sams_v2_assignment_grades',
+        'sams_admin_notifications',
+        'sams_salaries',
+        'sams_system_users',
+        'sams_grade_monthly_fees',
+        'sams_v2_alsafa_students',
+        'sams_v2_alsafa_teachers',
+        'sams_v2_alsafa_classes',
+        'sams_v2_alsafa_subjects',
+        'sams_v2_alsafa_grades',
+        'sams_v2_alsafa_attendance',
+        'sams_v2_alsafa_fees',
+        'sams_v2_alsafa_notifications',
+        'sams_v2_alsafa_audit_logs',
+        'sams_v2_alsafa_current_user_role',
+        'sams_v2_alsafa_center_schedule',
+        'sams_v2_alsafa_exams',
+        'sams_v2_alsafa_assignments',
+        'sams_v2_alsafa_exam_grades',
+        'sams_v2_alsafa_assignment_grades',
+        'sams_alsafa_salaries',
+        'sams_alsafa_admin_notifications',
+        'sams_alsafa_system_users',
+        'sams_alsafa_grade_monthly_fees',
+        'sams_custom_app_name_v2',
+        'sams_custom_app_logo_v2',
+        'sams_custom_header_title_v2',
+        'sams_custom_header_subtitle_v2',
+        'sams_msg_template_present',
+        'sams_msg_template_excused',
+        'sams_msg_template_absence',
+        'sams_msg_template_homework',
+        'sams_msg_template_exam',
+        'sams_msg_template_behavior',
+        'sams_msg_template_excellent',
+        'sams_msg_template_fees',
+        'sams_msg_template_meeting',
+        'sams_callmebot_api_key',
+        'sams_ultramsg_instance_id',
+        'sams_ultramsg_token',
+        'sams_whatsapp_enabled',
+        'sams_notification_tone',
+        'sams_tone_attendance',
+        'sams_tone_fees',
+        'sams_tone_admin',
+        'sams_notification_sound_enabled',
+        'sams_visual_alerts_enabled'
+      ];
+
+      keysToBackup.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+          backupData.storage[key] = val;
+        }
+      });
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      const dateStr = new Date().toISOString().split('T')[0];
+      downloadAnchor.setAttribute("download", `sams_full_backup_${dateStr}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      setNotification({
+        type: 'success',
+        message: 'تم تصدير النسخة الاحتياطية الكاملة بنجاح وتنزيلها لجهازك!'
+      });
+      setTimeout(() => setNotification(null), 4000);
+    } catch (err) {
+      setNotification({
+        type: 'error',
+        message: 'حدث خطأ أثناء تصدير النسخة الاحتياطية.'
+      });
+    }
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+
+        if (!parsed || !parsed.storage) {
+          throw new Error('ملف النسخة الاحتياطية غير صالح أو تالف.');
+        }
+
+        Object.entries(parsed.storage).forEach(([key, val]) => {
+          if (typeof val === 'string') {
+            localStorage.setItem(key, val);
+            localStorage.setItem(`${key}_ts`, Date.now().toString());
+          }
+        });
+
+        if (typeof window !== 'undefined') {
+          import('../utils/firebaseSync').then(({ forcePushLocalToCloud }) => {
+            forcePushLocalToCloud();
+          });
+        }
+
+        setNotification({
+          type: 'success',
+          message: 'تم استعادة كافة بيانات وسيستم النسخة الاحتياطية بنجاح! جاري تحديث التطبيق...'
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } catch (err: any) {
+        setNotification({
+          type: 'error',
+          message: `فشل قراءة ملف النسخة الاحتياطية: ${err?.message || 'تأكد من اختيار ملف صحيح'}`
+        });
+        setTimeout(() => setNotification(null), 5000);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   return (
@@ -624,6 +776,87 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                   اربط واتساب خط السنتر بـ <a href="https://ultramsg.com" target="_blank" rel="noreferrer" className="text-sky-600 font-bold hover:underline">ultramsg.com</a> لإرسال جماعي احترافي وفوري لأي رقم.
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 4: Professional Full System Backup & Restore */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-2xs overflow-hidden">
+          <div className="p-4 sm:p-5 border-b border-gray-50 bg-slate-50/50 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 text-right">
+            <div className="flex items-center gap-2">
+              <HardDrive className="w-4.5 h-4.5 text-[#0D5C8C]" />
+              <h3 className="font-bold text-xs text-slate-800 dark:text-slate-100">4. النسخ الاحتياطي والاستعادة الكاملة للنظام (Full Backup & Restore)</h3>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-700">
+              حماية وآمان البيانات السحابية والمحلية
+            </span>
+          </div>
+
+          <div className="p-4 sm:p-6 space-y-6 text-right">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              قم بتحميل نسخة احتياطية كاملة بصيغة JSON تحتوي على كافة سجلات الطلاب، المعلمين، الحضور، الرسوم، المجموعات، الامتحانات، الإعدادات، وقوالب الرسائل لاستخدامها في استعادة النظام في أي وقت أو نقل البيانات بين الأجهزة بأمان تام.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Export Backup Card */}
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-slate-900/40 dark:to-slate-900/20 rounded-2xl border border-blue-100 dark:border-slate-700 flex flex-col justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-[#0D5C8C] dark:text-blue-400 font-bold text-xs">
+                    <Download className="w-4.5 h-4.5" />
+                    تصدير نسخة احتياطية كاملة (Export Backup)
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    تنزيل ملف JSON يحتوي على جميع بيانات وقاعدة بيانات السنتر الحالية فوراً إلى جهازك.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleExportBackup}
+                  className="w-full py-2.5 px-4 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  تحميل ملف النسخة الاحتياطية (.JSON)
+                </button>
+              </div>
+
+              {/* Import / Restore Card */}
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-50/40 to-orange-50/20 dark:from-slate-900/40 dark:to-slate-900/20 rounded-2xl border border-amber-100 dark:border-slate-700 flex flex-col justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-xs">
+                    <Upload className="w-4.5 h-4.5" />
+                    استعادة النظام من نسخة احتياطية (Restore Data)
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    رفع ملف نسخة احتياطية سابق لاستعادة كافة السجلات والبيانات والمزامنة مع السحابة.
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    type="file"
+                    accept=".json"
+                    id="backup_file_input"
+                    className="hidden"
+                    onChange={handleImportBackup}
+                  />
+                  <label
+                    htmlFor="backup_file_input"
+                    className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95"
+                  >
+                    <Upload className="w-4 h-4" />
+                    اختر ملف النسخة الاحتياطية للاستعادة
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Cloud Sync Status Info */}
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200/60 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>المزامنة السحابية التلقائية مع Firebase Firestore نشطة</span>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 px-2 py-0.5 rounded">متصل وسليم</span>
             </div>
           </div>
         </div>

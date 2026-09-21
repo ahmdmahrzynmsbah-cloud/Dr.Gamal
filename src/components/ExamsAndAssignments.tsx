@@ -285,7 +285,7 @@ ${sig}`;
     if (gradeContext.type === 'exam') {
       resultText = isMissing ? '🔴 *الطالب/ة كان غائباً عن الامتحان*' : `📊 *الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
     } else {
-      resultText = isMissing ? '🔴 *لم يقم الطالب/ة بتسليم الواجب*' : `📊 *درجة الواجب:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
+      resultText = isMissing ? '🔴 *نحيطكم علماً بأن الطالب/ة لم يقم بتسليم الواجب المطلوب اليوم.*' : '🟢 *نحيطكم علماً بأن الطالب/ة قام بتسليم الواجب المطلوب اليوم بنجاح.*';
     }
 
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
@@ -462,13 +462,22 @@ ${sig}`;
         </span>
       );
     }
-    if (gradingType === 'assignment' && !flag) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          لم يسلم ❌
-        </span>
-      );
+    if (gradingType === 'assignment') {
+      if (flag) {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            سلم ✔️
+          </span>
+        );
+      } else {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+            لم يسلم ❌
+          </span>
+        );
+      }
     }
 
     const missed = maxScore - score;
@@ -576,10 +585,7 @@ ${sig}`;
       return;
     }
 
-    if (assignmentForm.max_score <= 0) {
-      setErrorMsg('الدرجة القصوى للواجب يجب أن تكون أكبر من صفر.');
-      return;
-    }
+
 
     const assignmentData: Assignment = {
       id: editingAssignmentId || `as-${Date.now()}`,
@@ -639,20 +645,23 @@ ${sig}`;
     const maxLimit = activeEvaluationObj.max_score;
     let hasValidationError = false;
 
-    // First validate scores
-    const groupStudents = students.filter(s => s.class_id === selectedClassId);
-    for (const student of groupStudents) {
-      const entry = tempGrades[student.id];
-      if (entry) {
-        if (!entry.flag && (entry.score < 0 || entry.score > maxLimit)) {
-          setErrorMsg(`خطأ: الدرجة المدخلة للطالب (${student.name}) هي ${entry.score} وتتجاوز الحد الأقصى المسموح به لـ (${(activeEvaluationObj as any).name || (activeEvaluationObj as any).title}) وهو ${maxLimit} درجة.`);
-          hasValidationError = true;
-          break;
+    // First validate scores (only for exams)
+    if (gradingType === 'exam') {
+      const groupStudents = students.filter(s => s.class_id === selectedClassId);
+      for (const student of groupStudents) {
+        const entry = tempGrades[student.id];
+        if (entry) {
+          if (!entry.flag && (entry.score < 0 || entry.score > maxLimit)) {
+            setErrorMsg(`خطأ: الدرجة المدخلة للطالب (${student.name}) هي ${entry.score} وتتجاوز الحد الأقصى المسموح به لـ (${(activeEvaluationObj as any).name || (activeEvaluationObj as any).title}) وهو ${maxLimit} درجة.`);
+            hasValidationError = true;
+            break;
+          }
         }
       }
+      if (hasValidationError) return;
     }
 
-    if (hasValidationError) return;
+    const groupStudents = students.filter(s => s.class_id === selectedClassId);
 
     // Save
     if (gradingType === 'exam') {
@@ -675,12 +684,12 @@ ${sig}`;
           id: '',
           assignment_id: selectedEvaluationId,
           student_id: student.id,
-          score: entry.flag ? Number(entry.score) : 0, // if completed/flag, take score, else 0
-          completed: entry.flag, // completed status
+          score: entry.flag ? 10 : 0,
+          completed: Boolean(entry.flag),
           teacher_notes: entry.notes
         });
       });
-      setSuccessMsg(`تم رصد وحفظ تقييم واجب اليوم (${(activeEvaluationObj as any).title}) لجميع طلاب المجموعة بنجاح!`);
+      setSuccessMsg(`تم رصد وحفظ كشف تسليم واجب (${(activeEvaluationObj as any).title}) لجميع طلاب المجموعة بنجاح!`);
     }
 
     loadAllData();
@@ -701,7 +710,10 @@ ${sig}`;
       };
     });
     setTempGrades(updated);
-    setSuccessMsg('تم ملء درجات جميع الطلاب افتراضياً بالدرجة الكاملة وحالة الحضور/التسليم النشطة!');
+    setSuccessMsg(gradingType === 'exam' 
+      ? 'تم ملء درجات جميع الطلاب افتراضياً بالدرجة الكاملة وحالة الحضور!' 
+      : 'تم تحديد جميع طلاب المجموعة كـ (تم التسليم) بنجاح!'
+    );
   };
 
   // Student list inside the active class
@@ -760,6 +772,23 @@ ${sig}`;
         gradeLabel = gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌';
       }
 
+      if (gradingType === 'assignment') {
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; text-align: center;">
+            <td style="padding: 9px 6px; font-weight: bold; color: #475569;">${idx + 1}</td>
+            <td style="padding: 9px 6px; font-family: monospace; font-weight: bold; color: #0d5c8c;">${student.registration_id}</td>
+            <td style="padding: 9px 6px; text-align: right; font-weight: bold; color: #0f172a;">${student.name}</td>
+            <td style="padding: 9px 6px;">
+              ${isAbsentOrMissing 
+                ? `<span style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 4px 10px; border-radius: 6px;">لم يسلم ❌</span>`
+                : `<span style="color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 4px 10px; border-radius: 6px;">تم التسليم ✔️</span>`
+              }
+            </td>
+            <td style="padding: 9px 6px; text-align: right; color: #475569; font-size: 11px;">${tempObj.notes || '-'}</td>
+          </tr>
+        `;
+      }
+
       return `
         <tr style="border-bottom: 1px solid #e2e8f0; text-align: center;">
           <td style="padding: 9px 6px; font-weight: bold; color: #475569;">${idx + 1}</td>
@@ -767,8 +796,8 @@ ${sig}`;
           <td style="padding: 9px 6px; text-align: right; font-weight: bold; color: #0f172a;">${student.name}</td>
           <td style="padding: 9px 6px;">
             ${isAbsentOrMissing 
-              ? `<span style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">${gradingType === 'exam' ? 'غائب' : 'لم يسلم'}</span>`
-              : `<span style="color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 8px; border-radius: 4px;">${gradingType === 'exam' ? 'حاضر' : 'تم التسليم'}</span>`
+              ? `<span style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 2px 8px; border-radius: 4px;">غائب</span>`
+              : `<span style="color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 8px; border-radius: 4px;">حاضر</span>`
             }
           </td>
           <td style="padding: 9px 6px; font-weight: bold; font-size: 13px;">
@@ -910,32 +939,42 @@ ${sig}`;
           <div class="meta-item"><span class="label">اسم الاختبار/الواجب:</span><span class="val">${evalTitle} (${evalTypeLabel})</span></div>
           <div class="meta-item"><span class="label">المجموعة الدراسية:</span><span class="val">${className}</span></div>
           <div class="meta-item"><span class="label">الفصل الدراسي:</span><span class="val">${termName}</span></div>
-          <div class="meta-item"><span class="label">تاريخ الإجراء:</span><span class="val">${evalDate}</span></div>
-          <div class="meta-item"><span class="label">الدرجة العظمى:</span><span class="val" style="color: #d97706;">${maxScore} درجات</span></div>
-          <div class="meta-item"><span class="label">جهة الاعتماد:</span><span class="val">شؤون الطلاب والامتحانات</span></div>
+          <div class="meta-item"><span class="label">${gradingType === 'exam' ? 'تاريخ الامتحان:' : 'تاريخ التسليم:'}</span><span class="val">${evalDate}</span></div>
+          ${gradingType === 'exam' 
+            ? `<div class="meta-item"><span class="label">الدرجة العظمى:</span><span class="val" style="color: #d97706;">${maxScore} درجات</span></div>` 
+            : `<div class="meta-item"><span class="label">نوع البيان:</span><span class="val" style="color: #16a34a;">كشف تسليم الواجبات</span></div>`
+          }
+          <div class="meta-item"><span class="label">جهة الاعتماد:</span><span class="val">شؤون الطلاب</span></div>
         </div>
 
-        <div class="stats-bar">
+        <div class="stats-bar" style="grid-template-columns: repeat(${gradingType === 'exam' ? 5 : 4}, 1fr);">
           <div class="stat-card">
             <div class="num">${totalStudents}</div>
             <div class="txt">عدد الطلاب الكلي</div>
           </div>
           <div class="stat-card">
             <div class="num" style="color: #16a34a;">${presentCount}</div>
-            <div class="txt">${gradingType === 'exam' ? 'عدد الحاضرين' : 'عدد المسلمين'}</div>
+            <div class="txt">${gradingType === 'exam' ? 'عدد الحاضرين' : 'تم التسليم'}</div>
           </div>
           <div class="stat-card">
             <div class="num" style="color: #dc2626;">${absentCount}</div>
-            <div class="txt">${gradingType === 'exam' ? 'عدد الغائبين' : 'غير المسلمين'}</div>
+            <div class="txt">${gradingType === 'exam' ? 'عدد الغائبين' : 'لم يسلم'}</div>
           </div>
-          <div class="stat-card">
-            <div class="num" style="color: #d97706;">${avgScore} (${avgPct}%)</div>
-            <div class="txt">متوسط درجات المجموعة</div>
-          </div>
-          <div class="stat-card">
-            <div class="num" style="color: #2563eb;">${highestScore} / ${maxScore}</div>
-            <div class="txt">أعلى درجة محققة 🏆</div>
-          </div>
+          ${gradingType === 'exam' ? `
+            <div class="stat-card">
+              <div class="num" style="color: #d97706;">${avgScore} (${avgPct}%)</div>
+              <div class="txt">متوسط درجات المجموعة</div>
+            </div>
+            <div class="stat-card">
+              <div class="num" style="color: #2563eb;">${highestScore} / ${maxScore}</div>
+              <div class="txt">أعلى درجة محققة 🏆</div>
+            </div>
+          ` : `
+            <div class="stat-card">
+              <div class="num" style="color: #2563eb;">${totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0}%</div>
+              <div class="txt">نسبة التسليم</div>
+            </div>
+          `}
         </div>
 
         <table>
@@ -944,11 +983,13 @@ ${sig}`;
               <th>#</th>
               <th>رقم القيد</th>
               <th style="text-align: right;">اسم الطالب</th>
-              <th>الحالة</th>
-              <th>الدرجة</th>
-              <th>النسبة %</th>
-              <th>التقدير</th>
-              <th style="text-align: right;">ملاحظات التقييم</th>
+              <th>${gradingType === 'exam' ? 'الحالة' : 'حالة تسليم الواجب'}</th>
+              ${gradingType === 'exam' ? `
+                <th>الدرجة</th>
+                <th>النسبة %</th>
+                <th>التقدير</th>
+              ` : ''}
+              <th style="text-align: right;">ملاحظات المعلم</th>
             </tr>
           </thead>
           <tbody>
@@ -1082,32 +1123,46 @@ ${sig}`;
           {/* Meta Grid */}
           <div className="grid grid-cols-3 gap-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl mb-4 text-sm print:bg-transparent">
             <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">المجموعة</span><span className="font-black text-slate-900 dark:text-slate-50">{className}</span></div>
-            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">تاريخ التقييم</span><span className="font-black text-slate-900 dark:text-slate-50">{evalDate}</span></div>
-            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">الدرجة النهائية</span><span className="font-black text-slate-900 dark:text-slate-50">{maxScore} درجة</span></div>
+            <div className="flex flex-col gap-1"><span className="text-slate-500 dark:text-slate-400 text-xs">{gradingType === 'exam' ? 'تاريخ التقييم' : 'تاريخ تسليم الواجب'}</span><span className="font-black text-slate-900 dark:text-slate-50">{evalDate}</span></div>
+            <div className="flex flex-col gap-1">
+              <span className="text-slate-500 dark:text-slate-400 text-xs">{gradingType === 'exam' ? 'الدرجة النهائية' : 'نوع البيان'}</span>
+              <span className="font-black text-slate-900 dark:text-slate-50">{gradingType === 'exam' ? `${maxScore} درجة` : 'كشف تسليم الواجبات'}</span>
+            </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-5 gap-3 mb-6">
+          <div className={`grid ${gradingType === 'exam' ? 'grid-cols-5' : 'grid-cols-4'} gap-3 mb-6`}>
             <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 dark:border-slate-600 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
               <span className="text-xl font-black text-[#0d5c8c]">{activeClassStudents.length}</span>
               <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 mt-1">إجمالي الطلاب</span>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
               <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">{presentCount}</span>
-              <span className="text-[10px] font-bold text-emerald-600 mt-1">{gradingType === 'exam' ? 'الحضور' : 'المسلمين'}</span>
+              <span className="text-[10px] font-bold text-emerald-600 mt-1">{gradingType === 'exam' ? 'الحضور' : 'تم التسليم'}</span>
             </div>
             <div className="bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
               <span className="text-xl font-black text-rose-700 dark:text-rose-300">{absentCount}</span>
               <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 mt-1">{gradingType === 'exam' ? 'الغياب' : 'لم يسلم'}</span>
             </div>
-            <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
-              <span className="text-xl font-black text-amber-700 dark:text-amber-300">{highestScore}</span>
-              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-1">أعلى درجة</span>
-            </div>
-            <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
-              <span className="text-xl font-black text-sky-700 dark:text-sky-300">{avgScore} <span className="text-xs">({avgPct}%)</span></span>
-              <span className="text-[10px] font-bold text-sky-600 mt-1">متوسط الدرجات</span>
-            </div>
+            {gradingType === 'exam' ? (
+              <>
+                <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+                  <span className="text-xl font-black text-amber-700 dark:text-amber-300">{highestScore}</span>
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-1">أعلى درجة</span>
+                </div>
+                <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+                  <span className="text-xl font-black text-sky-700 dark:text-sky-300">{avgScore} <span className="text-xs">({avgPct}%)</span></span>
+                  <span className="text-[10px] font-bold text-sky-600 mt-1">متوسط الدرجات</span>
+                </div>
+              </>
+            ) : (
+              <div className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 p-3 rounded-xl text-center flex flex-col print:bg-transparent">
+                <span className="text-xl font-black text-sky-700 dark:text-sky-300">
+                  {activeClassStudents.length > 0 ? Math.round((presentCount / activeClassStudents.length) * 100) : 0}%
+                </span>
+                <span className="text-[10px] font-bold text-sky-600 mt-1">نسبة التسليم</span>
+              </div>
+            )}
           </div>
 
           {/* Table */}
@@ -1117,10 +1172,16 @@ ${sig}`;
                 <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">م</th>
                 <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">رقم القيد</th>
                 <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-right print:bg-slate-100 dark:bg-slate-800">اسم الطالب</th>
-                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">الحالة</th>
-                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">الدرجة</th>
-                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">النسبة</th>
-                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">التقدير</th>
+                <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">
+                  {gradingType === 'exam' ? 'الحالة' : 'حالة تسليم الواجب'}
+                </th>
+                {gradingType === 'exam' && (
+                  <>
+                    <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">الدرجة</th>
+                    <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">النسبة</th>
+                    <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">التقدير</th>
+                  </>
+                )}
                 <th className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 print:bg-slate-100 dark:bg-slate-800">ملاحظات</th>
               </tr>
             </thead>
@@ -1146,17 +1207,21 @@ ${sig}`;
                     <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-right font-bold text-slate-900 dark:text-slate-50">{student.name}</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600">
                       {isAbsentOrMissing 
-                        ? <span className="text-rose-700 dark:text-rose-300 font-bold">{gradingType === 'exam' ? 'غائب' : 'لم يسلم'}</span>
-                        : <span className="text-emerald-700 dark:text-emerald-300 font-bold">{gradingType === 'exam' ? 'حاضر' : 'تم التسليم'}</span>
+                        ? <span className="text-rose-700 dark:text-rose-300 font-bold">{gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌'}</span>
+                        : <span className="text-emerald-700 dark:text-emerald-300 font-bold">{gradingType === 'exam' ? 'حاضر 🟢' : 'تم التسليم ✔️'}</span>
                       }
                     </td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">
-                      {isAbsentOrMissing ? '0' : tempObj.score} <span className="text-xs text-slate-400">/ {maxScore}</span>
-                    </td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold" style={{ color: pct >= 80 ? '#16a34a' : pct >= 50 ? '#0284c7' : '#dc2626' }}>
-                      {isAbsentOrMissing ? '0%' : pct + '%'}
-                    </td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">{gradeLabel}</td>
+                    {gradingType === 'exam' && (
+                      <>
+                        <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">
+                          {isAbsentOrMissing ? '0' : tempObj.score} <span className="text-xs text-slate-400">/ {maxScore}</span>
+                        </td>
+                        <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold" style={{ color: pct >= 80 ? '#16a34a' : pct >= 50 ? '#0284c7' : '#dc2626' }}>
+                          {isAbsentOrMissing ? '0%' : pct + '%'}
+                        </td>
+                        <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 font-bold">{gradeLabel}</td>
+                      </>
+                    )}
                     <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-slate-500 dark:text-slate-400 text-xs">{tempObj.notes || '-'}</td>
                   </tr>
                 );
@@ -1410,7 +1475,7 @@ ${sig}`;
                     <option key={item.id} value={item.id}>
                       {gradingType === 'exam' 
                         ? `${(item as Exam).name} (درجة عظمى: ${(item as Exam).max_score})`
-                        : `${(item as Assignment).title} (درجة عظمى: ${(item as Assignment).max_score})`
+                        : `${(item as Assignment).title} (تاريخ التسليم: ${(item as Assignment).due_date})`
                       }
                     </option>
                   ))
@@ -1440,11 +1505,11 @@ ${sig}`;
                         <span>•</span>
                         <span className="flex items-center gap-1 whitespace-nowrap"><Clock className="w-3.5 h-3.5 text-slate-400" /> {(activeEvaluationObj as Exam).duration_mins} دقيقة</span>
                         <span>•</span>
+                        <span className="whitespace-nowrap">درجة التقييم العظمى: <strong className="text-amber-600 dark:text-amber-400">{(activeEvaluationObj as Exam).max_score} درجات</strong></span>
+                        <span>•</span>
                       </>
                     )}
-                    <span className="whitespace-nowrap">درجة التقييم العظمى: <strong className="text-amber-600 dark:text-amber-400">{(activeEvaluationObj as Exam | Assignment).max_score} درجات</strong></span>
-                    <span>•</span>
-                    <span className="whitespace-nowrap">تاريخ الحدث: {gradingType === 'exam' ? (activeEvaluationObj as Exam).date : (activeEvaluationObj as Assignment).due_date}</span>
+                    <span className="whitespace-nowrap">{gradingType === 'exam' ? 'تاريخ الامتحان:' : 'تاريخ تسليم الواجب:'} {gradingType === 'exam' ? (activeEvaluationObj as Exam).date : (activeEvaluationObj as Assignment).due_date}</span>
                   </div>
                 </div>
               </div>
@@ -1457,12 +1522,12 @@ ${sig}`;
                     className="w-full xl:w-auto px-2.5 sm:px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span>تعبئة الدرجة كاملة للجميع</span>
+                    <span>{gradingType === 'exam' ? 'تعبئة الدرجة كاملة للجميع' : 'تحديد تسليم الواجب للجميع'}</span>
                   </button>
                 ) : (
                   <span className="w-full xl:w-auto text-[11px] sm:text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 px-2 sm:px-3.5 py-2 rounded-xl border border-emerald-100 dark:border-emerald-800 font-bold flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-pulse shrink-0" />
-                    <span>الدرجات معتمدة ومحفوظة</span>
+                    <span>{gradingType === 'exam' ? 'الدرجات معتمدة ومحفوظة' : 'كشف التسليم معتمد ومحفوظ'}</span>
                   </span>
                 )}
               </div>
@@ -1707,12 +1772,20 @@ ${sig}`;
 
                           {/* Bottom Row: Results & Actions */}
                           <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/40">
-                             <div className="font-mono font-bold text-slate-600 dark:text-slate-300">
-                                {tempObj.flag && gradingType === 'exam' ? (
-                                  <span className="text-rose-600 dark:text-rose-400">0%</span>
+                             <div>
+                                {gradingType === 'exam' ? (
+                                  <div className="font-mono font-bold text-slate-600 dark:text-slate-300">
+                                    {tempObj.flag ? (
+                                      <span className="text-rose-600 dark:text-rose-400">0%</span>
+                                    ) : (
+                                      <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
+                                        {scorePercent}%
+                                      </span>
+                                    )}
+                                  </div>
                                 ) : (
-                                  <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
-                                    {scorePercent}%
+                                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                    {tempObj.flag ? '🟢 تم تسليم الواجب' : '🔴 لم يقم بالتسليم'}
                                   </span>
                                 )}
                              </div>
@@ -1729,7 +1802,7 @@ ${sig}`;
                                 className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
-                                <span>إرسال النتيجة</span>
+                                <span>{gradingType === 'exam' ? 'إرسال النتيجة' : 'إشعار الواجب'}</span>
                               </button>
                           </div>
                         </div>
@@ -1748,18 +1821,26 @@ ${sig}`;
                       <th className="p-3 text-center w-[180px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
                         {gradingType === 'exam' ? 'الحضور والغياب' : 'حالة تسليم الواجب'}
                       </th>
-                      <th className="p-3 text-center w-[180px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                        الدرجة المستحقة (من {activeEvaluationObj.max_score})
+                      {gradingType === 'exam' && (
+                        <th className="p-3 text-center w-[180px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                          الدرجة المستحقة (من {activeEvaluationObj.max_score})
+                        </th>
+                      )}
+                      <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                        {gradingType === 'exam' ? 'ملاحظات خاصة برصد الطالب' : 'ملاحظات المعلم'}
                       </th>
-                      <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">ملاحظات خاصة برصد الطالب</th>
-                      <th className="p-3 text-center w-[90px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النسبة %</th>
-                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">إرسال النتيجة (واتساب / SMS)</th>
+                      {gradingType === 'exam' && (
+                        <th className="p-3 text-center w-[90px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النسبة %</th>
+                      )}
+                      <th className="p-3 text-center w-[160px] bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
+                        {gradingType === 'exam' ? 'إرسال النتيجة (واتساب / SMS)' : 'إشعار ولي الأمر (واتساب)'}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 text-xs text-slate-700 dark:text-slate-200">
                     {activeClassStudents.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-400">
+                        <td colSpan={gradingType === "exam" ? 7 : 5} className="p-8 text-center text-slate-400">
                           لا توجد سجلات طلاب مضافين لهذه المجموعة بعد.
                         </td>
                       </tr>
@@ -1872,39 +1953,41 @@ ${sig}`;
                               )}
                             </td>
 
-                            {/* Score Input or Read-Only Colored Badge */}
-                            <td className="p-3 text-center">
-                              {isEditingSheet ? (
-                                <div className="flex items-center justify-center gap-2">
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    max={activeEvaluationObj.max_score}
-                                    disabled={gradingType === 'exam' && tempObj.flag} // disable score if absent
-                                    value={tempObj.score === 0 ? '' : tempObj.score}
-                                    placeholder="0"
-                                    onFocus={(e) => e.target.select()}
-                                    onChange={(e) => {
-                                      const rawVal = e.target.value;
-                                      const val = rawVal === '' ? 0 : Number(rawVal);
-                                      setTempGrades(prev => ({
-                                        ...prev,
-                                        [student.id]: {
-                                          ...prev[student.id],
-                                          score: val
-                                        }
-                                      }));
-                                    }}
-                                    className="w-20 text-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 disabled:bg-slate-100 dark:bg-slate-800 disabled:opacity-50 disabled:text-slate-400 rounded-xl p-2 font-mono font-bold text-sm focus:outline-hidden focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800"
-                                  />
-                                  <span className="text-slate-400 font-bold">/ {activeEvaluationObj.max_score}</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-center">
-                                  {getScoreBadge(tempObj.score, activeEvaluationObj.max_score, tempObj.flag)}
-                                </div>
-                              )}
-                            </td>
+                            {/* Score Input (Only for Exams) */}
+                            {gradingType === 'exam' && (
+                              <td className="p-3 text-center">
+                                {isEditingSheet ? (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={activeEvaluationObj.max_score}
+                                      disabled={tempObj.flag} // disable score if absent
+                                      value={tempObj.score === 0 ? '' : tempObj.score}
+                                      placeholder="0"
+                                      onFocus={(e) => e.target.select()}
+                                      onChange={(e) => {
+                                        const rawVal = e.target.value;
+                                        const val = rawVal === '' ? 0 : Number(rawVal);
+                                        setTempGrades(prev => ({
+                                          ...prev,
+                                          [student.id]: {
+                                            ...prev[student.id],
+                                            score: val
+                                          }
+                                        }));
+                                      }}
+                                      className="w-20 text-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 disabled:bg-slate-100 dark:bg-slate-800 disabled:opacity-50 disabled:text-slate-400 rounded-xl p-2 font-mono font-bold text-sm focus:outline-hidden focus:border-[#0D5C8C] focus:bg-white dark:bg-slate-800"
+                                    />
+                                    <span className="text-slate-400 font-bold">/ {activeEvaluationObj.max_score}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center">
+                                    {getScoreBadge(tempObj.score, activeEvaluationObj.max_score, tempObj.flag)}
+                                  </div>
+                                )}
+                              </td>
+                            )}
 
                             {/* Teacher Notes */}
                             <td className="p-3">
@@ -1935,16 +2018,18 @@ ${sig}`;
                               )}
                             </td>
 
-                            {/* Percentage Label */}
-                            <td className="p-3 text-center font-mono font-bold text-slate-600 dark:text-slate-300">
-                              {tempObj.flag && gradingType === 'exam' ? (
-                                <span className="text-rose-600 dark:text-rose-400">0%</span>
-                              ) : (
-                                <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
-                                  {scorePercent}%
-                                </span>
-                              )}
-                            </td>
+                            {/* Percentage Label (Only for Exams) */}
+                            {gradingType === 'exam' && (
+                              <td className="p-3 text-center font-mono font-bold text-slate-600 dark:text-slate-300">
+                                {tempObj.flag ? (
+                                  <span className="text-rose-600 dark:text-rose-400">0%</span>
+                                ) : (
+                                  <span className={scorePercent >= 85 ? 'text-emerald-600' : scorePercent >= 50 ? 'text-blue-600' : 'text-amber-600'}>
+                                    {scorePercent}%
+                                  </span>
+                                )}
+                              </td>
+                            )}
 
                             {/* WhatsApp Direct Grade Notification */}
                             <td className="p-3 text-center">
@@ -1958,10 +2043,10 @@ ${sig}`;
                                   flag: tempObj.flag
                                 })}
                                 className="w-full px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                                title="إرسال النتيجة لولي الأمر عبر الواتساب"
+                                title={gradingType === 'exam' ? 'إرسال النتيجة لولي الأمر عبر الواتساب' : 'إرسال إشعار تسليم الواجب لولي الأمر'}
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
-                                <span>إرسال النتيجة</span>
+                                <span>{gradingType === 'exam' ? 'إرسال النتيجة' : 'إشعار الواجب'}</span>
                               </button>
                             </td>
 
@@ -1981,12 +2066,12 @@ ${sig}`;
                     {isEditingSheet ? (
                       <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                         <Info className="w-4 h-4 animate-bounce" />
-                        أنت في وضع رصد وتعديل الدرجات حالياً... يرجى الضغط على حفظ واعتماد الكشف لتثبيتها.
+                        {gradingType === 'exam' ? 'أنت في وضع رصد وتعديل الدرجات حالياً... يرجى الضغط على حفظ واعتماد الكشف لتثبيتها.' : 'أنت في وضع رصد وتعديل تسليم الواجبات حالياً... يرجى الضغط على حفظ واعتماد الكشف لتثبيتها.'}
                       </span>
                     ) : (
                       <span className="text-emerald-600 flex items-center gap-1.5">
                         <CheckCircle className="w-4 h-4" />
-                        الدرجات مرصودة ومعتمدة بالكامل في النظام.
+                        {gradingType === 'exam' ? 'الدرجات مرصودة ومعتمدة بالكامل في النظام.' : 'حالة تسليم الواجبات معتمدة ومحفوظة بالكامل في النظام.'}
                       </span>
                     )}
                   </div>
@@ -2014,7 +2099,7 @@ ${sig}`;
                           className="w-full sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Save className="w-4 h-4" />
-                          <span>حفظ واعتماد كشف درجات المجموعة بالكامل</span>
+                          <span>{gradingType === 'exam' ? 'حفظ واعتماد كشف درجات المجموعة بالكامل' : 'حفظ واعتماد كشف تسليم الواجبات'}</span>
                         </button>
                       </>
                     ) : (
@@ -2025,14 +2110,14 @@ ${sig}`;
                           className="w-full sm:w-auto px-6 py-3.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Printer className="w-4 h-4 text-amber-200" />
-                          <span>تصدير PDF / طباعة كشف الدرجات</span>
+                          <span>{gradingType === 'exam' ? 'تصدير PDF / طباعة كشف الدرجات' : 'تصدير PDF / طباعة كشف تسليم الواجبات'}</span>
                         </button>
                         <button
                           onClick={() => setIsEditingSheet(true)}
                           className="w-full sm:w-auto px-8 py-3.5 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-extrabold rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Edit className="w-4 h-4" />
-                          <span>تعديل ورصد الدرجات</span>
+                          <span>{gradingType === 'exam' ? 'تعديل ورصد الدرجات' : 'تعديل حالة تسليم الواجبات'}</span>
                         </button>
                       </div>
                     )}
@@ -2324,32 +2409,16 @@ ${sig}`;
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {/* Max Score */}
-                <div className="space-y-1.5 min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">درجة الواجب (مثلاً من 10)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={assignmentForm.max_score}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, max_score: Number(e.target.value) })}
-                    className="w-full text-center border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 font-mono font-bold text-xs"
-                  />
-                </div>
-
-                {/* Term */}
-                <div className="space-y-1.5 min-w-0">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">الفصل الدراسي</label>
-                  <select
-                    value={assignmentForm.term}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, term: e.target.value as any })}
-                    className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
-                  >
-                    <option value="first_term">الفصل الأول</option>
-                    <option value="second_term">الفصل الثاني</option>
-                  </select>
-                </div>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 truncate">الفصل الدراسي</label>
+                <select
+                  value={assignmentForm.term}
+                  onChange={(e) => setAssignmentForm({ ...assignmentForm, term: e.target.value as any })}
+                  className="w-full min-w-0 text-right text-xs border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl bg-white dark:bg-slate-800"
+                >
+                  <option value="first_term">الفصل الأول</option>
+                  <option value="second_term">الفصل الثاني</option>
+                </select>
               </div>
 
               {/* Class Group */}
@@ -2447,8 +2516,7 @@ ${sig}`;
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
                           <span className="font-bold text-[#0D5C8C] dark:text-sky-400">{cls ? cls.name : 'بدون مجموعة'}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>الدرجة القصوى: <strong className="text-amber-600 dark:text-amber-400">{asg.max_score}</strong></span>
+
                           <span className="hidden sm:inline">•</span>
                           <span>تاريخ التسليم: <strong>{asg.due_date}</strong></span>
                         </div>

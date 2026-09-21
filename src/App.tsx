@@ -436,7 +436,7 @@ export default function App() {
       icon: <GraduationCap className="w-4 h-4" />,
       roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'students', label: 'إدارة الطلاب والقبول', icon: <UserCheck className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'students', label: 'إدارة الطلاب', icon: <UserCheck className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
         { id: 'parents', label: 'إدارة أولياء الأمور', icon: <Contact className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
         { id: 'barcodes', label: 'باركود وكروت الطلاب', icon: <QrCode className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
         { id: 'attendance', label: 'الحضور والانتظام اليومي', icon: <CalendarCheck2 className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
@@ -445,11 +445,11 @@ export default function App() {
     },
     {
       id: 'classes_group',
-      label: 'المجموعات والحصص',
+      label: 'المجموعات',
       icon: <BookOpen className="w-4 h-4" />,
       roles: ['teacher', 'secretary'],
       subItems: [
-        { id: 'classes', label: 'المجموعات والجدول والمقررات', icon: <Layers className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
+        { id: 'classes', label: 'المجموعات', icon: <Layers className="w-3.5 h-3.5" />, roles: ['teacher', 'secretary'] },
       ]
     },
     {

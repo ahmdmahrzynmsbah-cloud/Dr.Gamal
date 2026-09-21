@@ -19,6 +19,7 @@ export interface Student {
   status: 'active' | 'suspended' | 'archived'; // نشط / معلق / مؤرشف
   photo_url?: string;
   created_at: string;
+  subscription_start_date?: string; // تاريخ بدء اشتراك الطالب (اختياري، يتبع تاريخ التسجيل افتراضياً)
   deleted_at?: string; // soft delete
 }
 
@@ -133,6 +134,11 @@ export interface FeePayment {
   receipt_number: string; // رقم الإيصال
   category: 'tuition' | 'bus' | 'uniform' | 'activities'; // نوع الرسوم
   month?: string; // الشهر المدفوع له الاشتراك (مثلاً: سبتمبر 2026)
+  cycle_number?: number; // رقم دورة الشهر للطالب (1، 2، 3...)
+  period_start?: string; // تاريخ بداية فترة الشهر المسدد
+  period_end?: string; // تاريخ نهاية فترة الشهر المسدد
+  remaining_after?: number; // المتبقي بعد هذه المعاملة
+  notes?: string; // ملاحظات المعاملة المالية
 }
 
 export interface SystemNotification {

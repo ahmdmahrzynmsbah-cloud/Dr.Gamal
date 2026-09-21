@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Student, Attendance, ExamGrade, Exam, AssignmentGrade, Assignment, FeePayment, ClassRoom } from '../types';
 import { samsDb } from '../utils/db';
-import { X, Printer, Download, User, Calendar, BookOpen, CreditCard, CheckCircle, AlertCircle, Award, Target, Hash, Phone, Clock } from 'lucide-react';
+import { X, Printer, Download, User, Calendar, BookOpen, CreditCard, CheckCircle, AlertCircle, Award, Target, Hash, Phone, Clock, Coins, Check } from 'lucide-react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { calculateStudentSubscription, isStudentEnrolledInCalendarMonth, formatShortDateArabic } from '../utils/subscriptionUtils';
 
 interface Props {
   student: Student;
@@ -288,9 +289,13 @@ export default function StudentFullReport({ student, onClose }: Props) {
                       </div>
                       <div className="text-left">
                         {ag.completed ? (
-                          <p className="font-extrabold text-emerald-600 text-sm sm:text-base sm:text-lg">{ag.score} <span className="text-xs text-slate-400 font-medium">/ {ag.assignment.max_score}</span></p>
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700 px-2.5 py-1 rounded-lg">
+                            سلم ✔️
+                          </span>
                         ) : (
-                          <span className="text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/40 px-2 py-1 rounded-md">لم يتم التسليم</span>
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-700 px-2.5 py-1 rounded-lg">
+                            لم يسلم ❌
+                          </span>
                         )}
                       </div>
                     </div>
@@ -318,102 +323,164 @@ export default function StudentFullReport({ student, onClose }: Props) {
               </div>
             </div>
 
-            {/* 12-Month Colorful Subscription Cards Grid */}
-            <div className="mb-5 bg-slate-50/70 dark:bg-slate-900/50 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-              <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-3 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-sky-400" />
-                <span>خريطة سداد الشهور للعام الدراسي 2026 - 2027:</span>
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                {[
-                  'يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026',
-                  'نوفمبر 2026', 'ديسمبر 2026', 'يناير 2027', 'فبراير 2027',
-                  'مارس 2027', 'أبريل 2027', 'مايو 2027', 'يونيو 2027'
-                ].map((m, idx) => {
-                  const payment = fees.find(f => f.month === m);
-                  const isCurrent = m === 'أغسطس 2026';
-                  const isPast = idx <= 1; // July, August
-
-                  if (payment) {
-                    return (
-                      <div
-                        key={m}
-                        className="bg-emerald-50 dark:bg-emerald-950/80 border-2 border-emerald-300 dark:border-emerald-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs transition-all"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-xs text-emerald-950 dark:text-emerald-200">{m.split(' ')[0]}</span>
-                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-0.5">
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            <span>مدفوع</span>
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-emerald-200 dark:border-emerald-800">
-                          <span className="font-mono font-bold text-emerald-900 dark:text-emerald-200">{payment.amount} ج.م</span>
-                          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-mono">#{payment.receipt_number?.split('-').pop() || 'تم'}</span>
-                        </div>
+            {/* Financial Overview Cards */}
+            {(() => {
+              const subOverview = calculateStudentSubscription(student, fees, 250);
+              return (
+                <div className="space-y-4 mb-5">
+                  {/* Subscription Summary Banner */}
+                  <div className="bg-gradient-to-l from-slate-50 to-sky-50/50 dark:from-slate-900/60 dark:to-sky-950/30 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-[#0D5C8C] dark:text-sky-400" />
+                          تاريخ بدء الاشتراك: {subOverview.startDateFormatted}
+                        </span>
+                        <span className="bg-sky-100 dark:bg-sky-900/60 text-[#0D5C8C] dark:text-sky-300 px-2 py-0.5 rounded-full font-bold text-[11px]">
+                          {subOverview.registrationText}
+                        </span>
                       </div>
-                    );
-                  }
-
-                  if (isCurrent) {
-                    return (
-                      <div
-                        key={m}
-                        className="bg-amber-50 dark:bg-amber-950/80 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-xs text-amber-950 dark:text-amber-200">{m.split(' ')[0]}</span>
-                          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-0.5">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            <span>مستحق الآن</span>
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
-                          <span className="font-bold">الشهر الحالي</span>
-                          <span className="text-[10px]">بانتظار السداد</span>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  if (isPast) {
-                    return (
-                      <div
-                        key={m}
-                        className="bg-rose-50 dark:bg-rose-950/80 border-2 border-rose-300 dark:border-rose-800 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-xs text-rose-950 dark:text-rose-200">{m.split(' ')[0]}</span>
-                          <span className="text-[10px] font-bold text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            <span>متأخر</span>
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300">
-                          <span className="font-bold">غير مسدد</span>
-                          <span className="text-[10px]">مطلوب التحصيل</span>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={m}
-                      className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl p-2.5 flex flex-col justify-between opacity-70"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-slate-600 dark:text-slate-400">{m.split(' ')[0]}</span>
-                        <span className="text-[9px] text-slate-400">قادم</span>
-                      </div>
-                      <div className="mt-2 text-[10px] text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700">
-                        {m.split(' ')[1]}
+                      <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                        الدورة الحالية: <span className="font-bold text-slate-700 dark:text-slate-300">{subOverview.currentCycle.label}</span> ({subOverview.currentCycle.periodLabel})
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-2xs">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">إجمالي المسدد:</span>
+                        <span className="font-black font-sans text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm">
+                          {subOverview.totalPaid.toLocaleString()} ج.م
+                        </span>
+                      </div>
+                      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-2xs">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">المبلغ المتبقي:</span>
+                        <span className={`font-black font-sans text-xs sm:text-sm ${
+                          subOverview.totalRemainingDebt > 0 ? 'text-rose-600 dark:text-rose-400 font-extrabold' : 'text-slate-500 dark:text-slate-400'
+                        }`}>
+                          {subOverview.totalRemainingDebt > 0 ? `${subOverview.totalRemainingDebt.toLocaleString()} ج.م` : 'لا يوجد متبقي ✓'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 12-Month Colorful Subscription Cards Grid */}
+                  <div className="bg-slate-50/70 dark:bg-slate-900/50 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-3 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-sky-400" />
+                      <span>خريطة سداد الشهور (محسوبة بدقة وفقاً لتاريخ تسجيل الطالب):</span>
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                      {[
+                        'يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026',
+                        'نوفمبر 2026', 'ديسمبر 2026', 'يناير 2027', 'فبراير 2027',
+                        'مارس 2027', 'أبريل 2027', 'مايو 2027', 'يونيو 2027'
+                      ].map((m, idx) => {
+                        const payment = fees.find(f => f.month === m);
+                        const isEnrolled = isStudentEnrolledInCalendarMonth(student, m);
+                        const isCurrent = m === 'سبتمبر 2026';
+                        const isPast = idx < 2; // July, August
+
+                        if (payment) {
+                          return (
+                            <div
+                              key={m}
+                              className="bg-emerald-50 dark:bg-emerald-950/80 border-2 border-emerald-300 dark:border-emerald-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs transition-all"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-xs text-emerald-950 dark:text-emerald-200">{m.split(' ')[0]}</span>
+                                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-0.5">
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  <span>مدفوع</span>
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-emerald-200 dark:border-emerald-800">
+                                <span className="font-mono font-bold text-emerald-900 dark:text-emerald-200">{payment.amount} ج.م</span>
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-mono">#{payment.receipt_number?.split('-').pop() || 'تم'}</span>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Not enrolled yet during this calendar month
+                        if (!isEnrolled) {
+                          return (
+                            <div
+                              key={m}
+                              className="bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl p-2.5 flex flex-col justify-between opacity-60"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs text-slate-500 dark:text-slate-400">{m.split(' ')[0]}</span>
+                                <span className="text-[9px] text-slate-400">غير مسجل حينها</span>
+                              </div>
+                              <div className="mt-2 text-[10px] text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-800">
+                                قبل تاريخ التحاق الطالب
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (isCurrent) {
+                          return (
+                            <div
+                              key={m}
+                              className="bg-amber-50 dark:bg-amber-950/80 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-xs text-amber-950 dark:text-amber-200">{m.split(' ')[0]}</span>
+                                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-0.5">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  <span>مستحق الآن</span>
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                                <span className="font-bold">الشهر الحالي</span>
+                                <span className="text-[10px]">بانتظار السداد</span>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (isPast) {
+                          return (
+                            <div
+                              key={m}
+                              className="bg-rose-50 dark:bg-rose-950/80 border-2 border-rose-300 dark:border-rose-800 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-xs text-rose-950 dark:text-rose-200">{m.split(' ')[0]}</span>
+                                <span className="text-[10px] font-bold text-rose-700 dark:text-rose-300 flex items-center gap-0.5">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  <span>متأخر</span>
+                                </span>
+                              </div>
+                              <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300">
+                                <span className="font-bold">غير مسدد</span>
+                                <span className="text-[10px]">مطلوب التحصيل</span>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={m}
+                            className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl p-2.5 flex flex-col justify-between opacity-70"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-xs text-slate-600 dark:text-slate-400">{m.split(' ')[0]}</span>
+                              <span className="text-[9px] text-slate-400">قادم</span>
+                            </div>
+                            <div className="mt-2 text-[10px] text-slate-400 pt-1.5 border-t border-slate-200 dark:border-slate-700">
+                              {m.split(' ')[1]}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {fees.length > 0 ? (
               <div className="overflow-x-auto max-h-[50vh] overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl shadow-xs mask-edges">

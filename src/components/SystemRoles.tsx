@@ -30,12 +30,12 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
   
   const availableTabs = [
     { id: 'dashboard', label: 'لوحة التحكم والمؤشرات' },
-    { id: 'students', label: 'إدارة الطلاب والقبول' },
+    { id: 'students', label: 'إدارة الطلاب' },
     { id: 'parents', label: 'إدارة أولياء الأمور' },
     { id: 'barcodes', label: 'باركود الطلاب' },
     { id: 'attendance', label: 'الحضور والانتظام اليومي' },
     { id: 'exams', label: 'الامتحانات والواجبات' },
-    { id: 'classes', label: 'المجموعات والجدول والمقررات' },
+    { id: 'classes', label: 'المجموعات' },
     { id: 'fees', label: 'اشتراكات الشهر والحسابات' },
     { id: 'salaries', label: 'المرتبات والمصروفات' },
     { id: 'notifications', label: 'بث الرسائل وتواصل الآباء' },

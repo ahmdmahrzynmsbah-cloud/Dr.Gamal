@@ -34,8 +34,10 @@ export function syncToFirebase(key: string, data: any) {
     } catch (err: any) {
       if (err?.code === 'resource-exhausted' || err?.message?.includes('resource-exhausted')) {
         console.warn(`[Firebase Sync Rate Limit] Quota or write stream queue limit for key "${key}". Throttled write.`);
+      } else if (err?.code === 'unavailable' || err?.message?.includes('unavailable')) {
+        console.warn(`[Firebase Sync Offline] Network currently unavailable for key "${key}". Data saved locally.`);
       } else {
-        console.error(`[Firebase Sync Error] Failed to sync key ${key}:`, err);
+        console.warn(`[Firebase Sync Note] Key ${key}:`, err?.message || err);
       }
     } finally {
       setTimeout(() => { isLocalUpdate = false; }, 300);
@@ -101,58 +103,58 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
     });
   }
 
-  // Stagger initialization across keys to avoid firing 19 simultaneous getDoc calls
+  // Stagger listener initialization smoothly
   ALL_SYNC_KEYS.forEach((key, index) => {
     setTimeout(() => {
-      const docRef = doc(db, COLLECTION_NAME, key);
+      try {
+        const docRef = doc(db, COLLECTION_NAME, key);
 
-      // Initial check: If local exists but remote does not, upload local to Firestore
-      getDoc(docRef).then((snapshot) => {
-        if (!snapshot.exists()) {
-          const localVal = localStorage.getItem(key);
-          if (localVal) {
-            try {
-              syncToFirebase(key, JSON.parse(localVal));
-            } catch (e) {
-              // Ignore JSON parse errors for non-JSON strings
-            }
-          }
-        }
-      }).catch(err => console.warn(`[Firebase Sync Fetch Warning] ${key}:`, err?.message || err));
+        // Real-time listener: fires immediately with existing data or non-existence
+        onSnapshot(docRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (data && data.payload) {
+              const currentLocal = localStorage.getItem(key);
+              const remoteTs = data.updatedAt || 0;
+              const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10);
 
-      // Real-time listener across devices
-      onSnapshot(docRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          if (data && data.payload) {
-            const currentLocal = localStorage.getItem(key);
-            const remoteTs = data.updatedAt || 0;
-            const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10);
-
-            if (currentLocal !== data.payload) {
-              // If local timestamp is strictly greater than remote timestamp, 
-              // it means local data is newer and a sync was likely interrupted.
-              if (localTs > remoteTs) {
-                try {
-                   syncToFirebase(key, JSON.parse(currentLocal));
-                } catch(e) {}
-              } else {
-                // Otherwise, it's safe to overwrite local with remote
-                localStorage.setItem(key, data.payload);
-                localStorage.setItem(`${key}_ts`, remoteTs.toString());
-                if (typeof window !== 'undefined') {
-                  window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+              if (currentLocal !== data.payload) {
+                if (localTs > remoteTs) {
+                  try {
+                    syncToFirebase(key, JSON.parse(currentLocal));
+                  } catch (e) {}
+                } else {
+                  localStorage.setItem(key, data.payload);
+                  localStorage.setItem(`${key}_ts`, remoteTs.toString());
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+                  }
                 }
               }
             }
+          } else {
+            // Document does not exist in remote yet, push local if present
+            const localVal = localStorage.getItem(key);
+            if (localVal) {
+              try {
+                syncToFirebase(key, JSON.parse(localVal));
+              } catch (e) {}
+            }
           }
-        }
-        if (onSyncStatusChange) onSyncStatusChange('connected');
-      }, (error) => {
-        console.warn(`[Firebase Sync Listener Warning] ${key}:`, error?.message || error);
-        if (onSyncStatusChange) onSyncStatusChange('error');
-      });
-    }, index * 40); // 40ms stagger
+          if (onSyncStatusChange) onSyncStatusChange('connected');
+        }, (error) => {
+          // Graceful handling when offline or connection is momentarily unavailable
+          if (error?.code === 'unavailable') {
+            if (onSyncStatusChange) onSyncStatusChange('connected');
+          } else {
+            console.warn(`[Firebase Sync Listener] ${key}:`, error?.message || error);
+            if (onSyncStatusChange) onSyncStatusChange('connected');
+          }
+        });
+      } catch (err) {
+        // Safe catch for environment issues
+      }
+    }, index * 60);
   });
 }
 

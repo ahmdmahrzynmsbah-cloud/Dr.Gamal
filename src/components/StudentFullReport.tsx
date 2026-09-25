@@ -420,21 +420,25 @@ export default function StudentFullReport({ student, onClose }: Props) {
                         }
 
                         if (isCurrent) {
+                          const isNew = subOverview.daysSinceRegistration <= 30;
+                          const isHalf = isNew && subOverview.isRegisteredAfterDay7;
+                          const requiredFee = isHalf ? subOverview.firstMonthFee : subOverview.monthlyFee;
+
                           return (
                             <div
                               key={m}
-                              className="bg-amber-50 dark:bg-amber-950/80 border-2 border-amber-300 dark:border-amber-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
+                              className="bg-sky-50 dark:bg-sky-950/80 border-2 border-sky-300 dark:border-sky-700 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-extrabold text-xs text-amber-950 dark:text-amber-200">{m.split(' ')[0]}</span>
-                                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-0.5">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  <span>مستحق الآن</span>
+                                <span className="font-extrabold text-xs text-sky-950 dark:text-sky-200">{m.split(' ')[0]}</span>
+                                <span className="text-[10px] font-bold text-sky-700 dark:text-sky-300 flex items-center gap-0.5">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  <span>{isHalf ? 'نصف شهر' : 'شهر كامل'}</span>
                                 </span>
                               </div>
-                              <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
-                                <span className="font-bold">الشهر الحالي</span>
-                                <span className="text-[10px]">بانتظار السداد</span>
+                              <div className="mt-2 flex items-center justify-between text-[11px] pt-1.5 border-t border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-300">
+                                <span className="font-bold">{requiredFee} ج.م</span>
+                                <span className="text-[10px]">يستحق بنهاية الشهر</span>
                               </div>
                             </div>
                           );

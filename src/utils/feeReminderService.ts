@@ -143,16 +143,10 @@ export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
       const feeAmount = gradeFeesMap[student.grade_level] || 250;
       const sub = calculateStudentSubscription(student, payments, feeAmount);
 
-      // Student is due if:
-      // 1. Current cycle is overdue
-      // 2. Or current cycle has remaining unpaid balance and is either overdue or within 3 days of ending
-      // 3. Or overall status is overdue / due with debt
-      const hasDebt = sub.currentCycle.remainingAmount > 0;
-      const isDue = hasDebt && (
-        sub.currentCycle.isOverdue ||
-        sub.currentCycle.daysRemainingInPeriod <= 3 ||
-        sub.overallStatus === 'overdue'
-      );
+      // Student is due if and only if:
+      // 1. The month has ENDED and payment was not completed (isOverdue)
+      // 2. Or totalRemainingDebt > 0 from ended months
+      const isDue = (sub.totalRemainingDebt > 0) || sub.currentCycle.isOverdue || sub.overallStatus === 'overdue';
 
       if (isDue) {
         unpaidStudents.push(student);

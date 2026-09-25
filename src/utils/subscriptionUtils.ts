@@ -7,20 +7,23 @@ import { Student, FeePayment } from '../types';
 
 export interface StudentCycle {
   cycleNumber: number; // 1, 2, 3...
-  label: string; // مثلاً: "الشهر الأول"
-  periodLabel: string; // مثلاً: "من 19 سبتمبر إلى 18 أكتوبر 2026"
+  label: string; // مثلاً: "الشهر الأول (سبتمبر 2026)"
+  monthName: string; // مثلاً: "سبتمبر 2026"
+  periodLabel: string; // مثلاً: "من 15 سبتمبر إلى 30 سبتمبر 2026"
   startDate: Date;
   endDate: Date;
   startDateStr: string; // YYYY-MM-DD
   endDateStr: string; // YYYY-MM-DD
-  feeRequired: number; // قيمة الاشتراك المطلوب لهذا الشهر
+  feeRequired: number; // قيمة الاشتراك المطلوب لهذا الشهر (شهر كامل أو نصف شهر)
   amountPaid: number; // المسدد لهذا الشهر
   remainingAmount: number; // المتبقي لهذا الشهر
-  status: 'paid' | 'partial' | 'unpaid' | 'future';
+  status: 'paid' | 'partial' | 'ongoing' | 'unpaid' | 'future';
   statusText: string;
   isCurrent: boolean;
+  isHalfMonth?: boolean; // هل تم احتساب نصف شهر للتسجيل بعد يوم 7؟
   daysRemainingInPeriod: number; // الأيام المتبقية حتى نهاية هذا الشهر
   isOverdue: boolean; // هل انتهت فترة هذا الشهر دون سداد كامل؟
+  hasEnded: boolean; // هل انتهى الشهر؟
 }
 
 export interface StudentSubscriptionOverview {
@@ -29,15 +32,20 @@ export interface StudentSubscriptionOverview {
   startDateFormatted: string;
   daysSinceRegistration: number;
   registrationText: string; // مثلاً: "مسجل منذ يومين" أو "مسجل اليوم"
-  monthlyFee: number;
+  registrationDay: number; // يوم التسجيل في الشهر (1 - 31)
+  isRegisteredAfterDay7: boolean; // هل تم تسجيل الطالب بعد يوم 7 في الشهر؟
+  firstMonthFee: number; // قيمة اشتراك الشهر الأول (نصف شهر أو شهر كامل)
+  monthlyFee: number; // قيمة الاشتراك الكامل للشهر
   totalPaid: number;
   totalRequired: number;
-  totalRemainingDebt: number; // إجمالي المبالغ المتبقية غير المسددة
+  totalRemainingDebt: number; // إجمالي المبالغ المتأخرة المستحقة بعد انتهاء فترات الشهور
+  currentCycleRemaining: number; // المتبقي من اشتراك الشهر الجاري
+  totalBalance: number; // إجمالي المطلوب سداده (المتأخر + الجاري)
   
   currentCycle: StudentCycle; // الشهر الجاري
   cycles: StudentCycle[]; // قائمة بكل شهور الطالب من تاريخ التسجيل
   
-  overallStatus: 'paid' | 'partial' | 'due' | 'overdue' | 'future';
+  overallStatus: 'paid' | 'partial' | 'ongoing' | 'due' | 'overdue' | 'future';
   statusLabel: string;
   statusBadgeClass: string;
   
@@ -137,6 +145,11 @@ export function isStudentEnrolledInCalendarMonth(student: Student, monthString: 
 
 /**
  * Core function to calculate full subscription history, current cycle, and remaining debt.
+ * Rules:
+ * 1. If enrolled on or before day 7 of the month: First month is FULL MONTH (monthlyFee).
+ * 2. If enrolled after day 7 of the month: First month is HALF MONTH (monthlyFee / 2).
+ * 3. Fees are due AFTER the end of the month, NOT upon registration.
+ * 4. Subsequent months are regular full months (monthlyFee).
  */
 export function calculateStudentSubscription(
   student: Student,
@@ -145,7 +158,12 @@ export function calculateStudentSubscription(
   nowDate: Date = new Date()
 ): StudentSubscriptionOverview {
   const startDate = getStudentStartDate(student);
-  const now = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+  const now = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 12, 0, 0);
+  
+  // Registration day rule
+  const registrationDay = startDate.getDate();
+  const isRegisteredAfterDay7 = registrationDay > 7;
+  const firstMonthFee = isRegisteredAfterDay7 ? Math.round(monthlyFee / 2) : monthlyFee;
   
   // Filter student's tuition payments
   const studentPayments = allPayments.filter(
@@ -171,42 +189,52 @@ export function calculateStudentSubscription(
     registrationText = `سجل منذ ${daysSinceRegistration} يوماً`;
   }
 
-  // How many cycles have elapsed based on calendar time?
-  // If registered today or 5 days ago: 1 cycle currently ongoing.
-  // We generate cycles: Cycle 1, Cycle 2, up to the current active cycle + at least 1 next cycle
-  let cycleCountBasedOnTime = 1;
-  while (true) {
-    const cycleEnd = addCalendarMonths(startDate, cycleCountBasedOnTime);
-    if (now >= cycleEnd) {
-      cycleCountBasedOnTime++;
-    } else {
-      break;
-    }
-  }
+  const startYear = startDate.getFullYear();
+  const startMonth = startDate.getMonth();
+  const nowYear = now.getFullYear();
+  const nowMonth = now.getMonth();
 
-  // Also account for how many cycles have been paid for
-  const cyclesPaidCount = Math.floor(totalPaid / (monthlyFee > 0 ? monthlyFee : 1));
-  const totalCyclesToGenerate = Math.max(cycleCountBasedOnTime, cyclesPaidCount + 1, 1);
-  
+  // Elapsed calendar months from registration month to current month
+  const elapsedCalendarMonths = (nowYear - startYear) * 12 + (nowMonth - startMonth);
+  const totalCyclesToGenerate = Math.max(elapsedCalendarMonths + 2, 2);
+
+  // Smart payment matching: pool total paid into sequential cycles
   let remainingPaidPool = totalPaid;
   const cycles: StudentCycle[] = [];
   let totalRequiredAcrossElapsed = 0;
 
   for (let i = 0; i < totalCyclesToGenerate; i++) {
     const cycleNumber = i + 1;
-    const cycleStart = addCalendarMonths(startDate, i);
-    const cycleEnd = addCalendarMonths(startDate, i + 1);
+    const isFirstMonth = i === 0;
+    const isHalfMonth = isFirstMonth && isRegisteredAfterDay7;
+    const feeRequired = isHalfMonth ? firstMonthFee : monthlyFee;
+
+    // Calendar month bounds
+    let cycleStart: Date;
+    let cycleEnd: Date;
+
+    if (isFirstMonth) {
+      cycleStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0);
+      // End of that calendar month (e.g. 30 September 23:59:59)
+      cycleEnd = new Date(startYear, startMonth + 1, 0, 23, 59, 59, 999);
+    } else {
+      cycleStart = new Date(startYear, startMonth + i, 1, 0, 0, 0);
+      cycleEnd = new Date(startYear, startMonth + i + 1, 0, 23, 59, 59, 999);
+    }
+
+    const cycleMonthDate = new Date(startYear, startMonth + i, 1);
+    const monthName = `${ARABIC_MONTH_NAMES[cycleMonthDate.getMonth()]} ${cycleMonthDate.getFullYear()}`;
     
-    // Subtract 1 day for inclusive end display (e.g. 19 Sep to 18 Oct)
-    const displayEnd = new Date(cycleEnd);
-    displayEnd.setDate(displayEnd.getDate() - 1);
-    
-    const label = getCycleArabicName(i);
+    // Inclusive display end date
+    const displayEnd = new Date(cycleEnd.getFullYear(), cycleEnd.getMonth(), cycleEnd.getDate());
     const periodLabel = `من ${formatShortDateArabic(cycleStart)} إلى ${formatShortDateArabic(displayEnd)}`;
     
-    const feeRequired = monthlyFee;
-    
-    // Distribute total paid into this cycle
+    let label = `${getCycleArabicName(i)} (${monthName})`;
+    if (isHalfMonth) {
+      label += ' [نصف شهر]';
+    }
+
+    // Allocate payment
     let amountPaidForThisCycle = 0;
     if (remainingPaidPool >= feeRequired) {
       amountPaidForThisCycle = feeRequired;
@@ -217,41 +245,59 @@ export function calculateStudentSubscription(
     } else {
       amountPaidForThisCycle = 0;
     }
-    
+
     const remainingAmount = Math.max(0, feeRequired - amountPaidForThisCycle);
-    
-    // Determine status
-    let status: StudentCycle['status'] = 'unpaid';
-    let statusText = 'غير مسدد';
-    
+
+    // Has the month ended? (due after end of month)
+    const hasEnded = now.getTime() > cycleEnd.getTime();
+    const isCurrent = (now.getTime() >= cycleStart.getTime() && now.getTime() <= cycleEnd.getTime()) || (isFirstMonth && now.getTime() < cycleStart.getTime());
+    const msUntilEnd = cycleEnd.getTime() - now.getTime();
+    const daysRemainingInPeriod = Math.max(0, Math.ceil(msUntilEnd / (1000 * 60 * 60 * 24)));
+
+    // Status determination
+    let status: StudentCycle['status'] = 'ongoing';
+    let statusText = '';
+    let isOverdue = false;
+
     if (amountPaidForThisCycle >= feeRequired) {
       status = 'paid';
       statusText = 'مسدد بالكامل ✓';
+      isOverdue = false;
     } else if (amountPaidForThisCycle > 0) {
       status = 'partial';
-      statusText = `سداد جزئي (متبقي ${remainingAmount} ج.م)`;
+      isOverdue = hasEnded;
+      statusText = hasEnded
+        ? `سداد جزئي متأخر (متبقي ${remainingAmount} ج.م)`
+        : `سداد جزئي جاري (متبقي ${remainingAmount} ج.م)`;
     } else {
-      if (cycleStart > now) {
+      // 0 paid
+      if (cycleStart.getTime() > now.getTime()) {
         status = 'future';
         statusText = 'شهر قادم';
-      } else {
+        isOverdue = false;
+      } else if (hasEnded) {
+        // Month has finished and not paid -> becomes DUE / OVERDUE!
         status = 'unpaid';
-        statusText = `غير مسدد (مطلوب ${feeRequired} ج.م)`;
+        statusText = `مستحق السداد (انتهى الشهر - مطلوب ${feeRequired} ج.م)`;
+        isOverdue = true;
+      } else {
+        // Month is ongoing -> NOT due yet, active period!
+        status = 'ongoing';
+        statusText = isHalfMonth
+          ? `نصف شهر جاري (يستحق بنهاية الشهر - ${feeRequired} ج.م)`
+          : `شهر كامل جاري (يستحق بنهاية الشهر - ${feeRequired} ج.م)`;
+        isOverdue = false;
       }
     }
 
-    const isCurrent = (now >= cycleStart && now < cycleEnd) || (i === 0 && now < cycleStart);
-    const msUntilEnd = cycleEnd.getTime() - now.getTime();
-    const daysRemainingInPeriod = Math.ceil(msUntilEnd / (1000 * 60 * 60 * 24));
-    const isOverdue = (now >= cycleEnd) && (remainingAmount > 0);
-
-    if (now >= cycleStart) {
+    if (hasEnded || isCurrent) {
       totalRequiredAcrossElapsed += feeRequired;
     }
 
     cycles.push({
       cycleNumber,
       label,
+      monthName,
       periodLabel,
       startDate: cycleStart,
       endDate: cycleEnd,
@@ -263,60 +309,57 @@ export function calculateStudentSubscription(
       status,
       statusText,
       isCurrent,
+      isHalfMonth,
       daysRemainingInPeriod,
-      isOverdue
+      isOverdue,
+      hasEnded
     });
   }
 
   // Find the current active cycle
   let currentCycle = cycles.find(c => c.isCurrent);
   if (!currentCycle) {
-    // If none marked isCurrent, use the latest one or first unpaid
-    currentCycle = cycles.find(c => c.status !== 'paid') || cycles[cycles.length - 1];
+    currentCycle = cycles.find(c => !c.hasEnded) || cycles[0];
   }
 
-  // Total remaining debt is the sum of remaining amounts of all elapsed / current cycles
+  // Overdue debt: ONLY months that have ENDED and remain unpaid!
   const totalRemainingDebt = cycles
-    .filter(c => c.startDate <= now || c.isCurrent)
+    .filter(c => c.hasEnded)
     .reduce((sum, c) => sum + c.remainingAmount, 0);
 
+  const currentCycleRemaining = currentCycle.hasEnded ? 0 : currentCycle.remainingAmount;
+  const totalBalance = totalRemainingDebt + currentCycleRemaining;
+
   // Overall status
-  let overallStatus: StudentSubscriptionOverview['overallStatus'] = 'due';
+  let overallStatus: StudentSubscriptionOverview['overallStatus'] = 'ongoing';
   let statusLabel = '';
   let statusBadgeClass = '';
 
-  if (totalRemainingDebt === 0 && totalPaid > 0) {
+  if (totalRemainingDebt > 0) {
+    overallStatus = 'overdue';
+    statusLabel = `متأخر ومستحق (مطلوب ${totalRemainingDebt} ج.م)`;
+    statusBadgeClass = 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800';
+  } else if (currentCycle.status === 'paid' && totalPaid > 0) {
     overallStatus = 'paid';
     statusLabel = 'مسدد بالكامل ✓';
     statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700';
-  } else if (currentCycle.status === 'partial' || (totalPaid > 0 && totalRemainingDebt > 0)) {
+  } else if (currentCycle.status === 'partial') {
     overallStatus = 'partial';
-    statusLabel = `سداد جزئي (متبقي ${totalRemainingDebt} ج.م)`;
+    statusLabel = `سداد جزئي (متبقي ${currentCycleRemaining} ج.م)`;
     statusBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700';
-  } else if (cycles.some(c => c.isOverdue)) {
-    overallStatus = 'overdue';
-    statusLabel = `متأخر (مطلوب ${totalRemainingDebt} ج.م)`;
-    statusBadgeClass = 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800';
   } else {
-    // In first cycle, not paid yet, but not overdue
-    if (daysSinceRegistration <= 7) {
-      overallStatus = 'due';
-      statusLabel = `طالب مسجل حديثاً (مطلوب ${monthlyFee} ج.م)`;
-      statusBadgeClass = 'bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800';
+    // In ongoing active month without overdue debt
+    overallStatus = 'ongoing';
+    if (currentCycle.isHalfMonth) {
+      statusLabel = `طالب جديد (نصف شهر: ${currentCycle.feeRequired} ج.م) • يستحق بعد انتهاء الشهر`;
     } else {
-      overallStatus = 'due';
-      statusLabel = `مستحق السداد (${monthlyFee} ج.م)`;
-      statusBadgeClass = 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700';
+      statusLabel = `طالب جديد (شهر كامل: ${currentCycle.feeRequired} ج.م) • يستحق بعد انتهاء الشهر`;
     }
+    statusBadgeClass = 'bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800';
   }
 
-  // Next due date: when the last fully paid cycle ends
-  let nextDueDate: Date;
-  if (cyclesPaidCount > 0) {
-    nextDueDate = addCalendarMonths(startDate, cyclesPaidCount);
-  } else {
-    nextDueDate = currentCycle.endDate;
-  }
+  // Next due date: end of current cycle or first unpaid cycle
+  const nextDueDate = currentCycle.endDate;
   const nextDueDateFormatted = formatShortDateArabic(nextDueDate);
 
   return {
@@ -325,10 +368,15 @@ export function calculateStudentSubscription(
     startDateFormatted: formatShortDateArabic(startDate),
     daysSinceRegistration,
     registrationText,
+    registrationDay,
+    isRegisteredAfterDay7,
+    firstMonthFee,
     monthlyFee,
     totalPaid,
     totalRequired: totalRequiredAcrossElapsed,
     totalRemainingDebt,
+    currentCycleRemaining,
+    totalBalance,
     currentCycle,
     cycles,
     overallStatus,

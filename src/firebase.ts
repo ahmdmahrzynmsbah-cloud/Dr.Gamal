@@ -1,13 +1,21 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeFirestore, memoryLocalCache, getFirestore } from 'firebase/firestore';
+import { initializeFirestore, memoryLocalCache, getFirestore, setLogLevel } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
+
+// Silence verbose internal SDK offline/retry warnings
+try {
+  setLogLevel('silent');
+} catch {
+  // Ignore
+}
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 let firestoreInstance;
 try {
   firestoreInstance = initializeFirestore(app, {
-    localCache: memoryLocalCache()
+    localCache: memoryLocalCache(),
+    experimentalAutoDetectLongPolling: true
   }, firebaseConfig.firestoreDatabaseId || undefined);
 } catch {
   try {

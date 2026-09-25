@@ -14,6 +14,7 @@ import {
   formatEgyptianPhoneForWhatsApp
 } from '../utils/feeReminderService';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
+import { syncToFirebase } from '../utils/firebaseSync';
 import { appendSystemSignature } from '../utils/phoneUtils';
 import {
   calculateStudentSubscription,
@@ -48,9 +49,10 @@ import {
   Bot,
   Copy,
   ExternalLink,
-  BellRing
-  
-  , X
+  BellRing,
+  Pencil,
+  Clock,
+  X
 } from 'lucide-react';
 
 
@@ -211,6 +213,15 @@ export default function FeesTracker() {
     term: 'first_term' as FeePayment['term'],
     month: 'يوليو 2026'
   });
+
+  // Edit payment modal states
+  const [editingPayment, setEditingPayment] = useState<FeePayment | null>(null);
+
+  // Batch transfer fees between months modal states
+  const [showBatchTransferModal, setShowBatchTransferModal] = useState<boolean>(false);
+  const [transferFromMonth, setTransferFromMonth] = useState<string>('أغسطس 2026');
+  const [transferToMonth, setTransferToMonth] = useState<string>('يوليو 2026');
+  const [transferDateAdjustment, setTransferDateAdjustment] = useState<boolean>(true);
 
   // Monthly group fees rate config
   const [gradeFees, setGradeFees] = useState<Record<string, number>>(() => {
@@ -460,6 +471,69 @@ export default function FeesTracker() {
     loadData();
   };
 
+  // Edit payment handler
+  const handleUpdatePayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPayment) return;
+
+    samsDb.updateFeePayment(editingPayment);
+    setSuccessInfo(`تم تحديث وحفظ بيانات الإيصال رقم #${editingPayment.receipt_number} بنجاح! ✨`);
+    setEditingPayment(null);
+    loadData();
+    playSuccessBeep();
+  };
+
+  // Batch transfer fees between months
+  const handleBatchTransfer = () => {
+    if (!transferFromMonth || !transferToMonth) return;
+    if (transferFromMonth === transferToMonth) {
+      setErrorInfo('يرجى اختيار شهرين مختلفين للتحويل بينهما.');
+      return;
+    }
+
+    const allFees = samsDb.getFees();
+    let count = 0;
+    const updated = allFees.map(f => {
+      let changed = false;
+      let newDate = f.payment_date;
+      let newMonth = f.month;
+
+      if (f.month === transferFromMonth) {
+        newMonth = transferToMonth;
+        changed = true;
+      }
+
+      if (transferDateAdjustment) {
+        if (transferFromMonth.includes('أغسطس') && transferToMonth.includes('يوليو') && newDate.startsWith('2026-08-')) {
+          newDate = newDate.replace('2026-08-', '2026-07-');
+          changed = true;
+        } else if (transferFromMonth.includes('يوليو') && transferToMonth.includes('أغسطس') && newDate.startsWith('2026-07-')) {
+          newDate = newDate.replace('2026-07-', '2026-08-');
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        count++;
+        return { ...f, payment_date: newDate, month: newMonth };
+      }
+      return f;
+    });
+
+    if (count > 0) {
+      localStorage.setItem('sams_v2_fees', JSON.stringify(updated));
+      localStorage.setItem('sams_v2_fees_ts', Date.now().toString());
+      syncToFirebase('sams_v2_fees', updated);
+      addAuditLog('UPDATE', 'fees', 'batch-month-transfer', `تم نقل وتصحيح ${count} دفعة مالية من (${transferFromMonth}) إلى (${transferToMonth}).`);
+      setSuccessInfo(`تم بنجاح نقل وتعديل ${count} معاملة سداد من ${transferFromMonth} إلى ${transferToMonth}! 🎉`);
+      loadData();
+      playSuccessBeep();
+    } else {
+      setErrorInfo(`لم يتم العثور على دفعات مسجلة لشهر (${transferFromMonth}) لنقلها.`);
+    }
+    setShowBatchTransferModal(false);
+  };
+
   // Active monthly fee for selected grade
   const activeGradeMonthlyFee = gradeFees[selectedGrade] || 250;
 
@@ -503,10 +577,10 @@ export default function FeesTracker() {
         return sub.currentCycle.status === 'partial' || (sub.totalRemainingDebt > 0 && sub.totalPaid > 0);
       }
       if (subFilter === 'due') {
-        return sub.currentCycle.status === 'unpaid' || sub.currentCycle.isOverdue || sub.overallStatus === 'overdue';
+        return sub.cycles.some(c => c.isOverdue) || sub.overallStatus === 'overdue' || sub.totalRemainingDebt > 0;
       }
       if (subFilter === 'new') {
-        return sub.daysSinceRegistration <= 7;
+        return (sub.daysSinceRegistration <= 14) || sub.currentCycle.isHalfMonth || sub.overallStatus === 'ongoing';
       }
       return true;
     });
@@ -530,14 +604,14 @@ export default function FeesTracker() {
   const dueOrOverdueStudentsCount = useMemo(() => {
     return classStudents.filter(s => {
       const sub = studentSubMap.get(s.id);
-      return sub?.currentCycle.status === 'unpaid' || sub?.currentCycle.isOverdue || sub?.overallStatus === 'overdue';
+      return sub && (sub.cycles.some(c => c.isOverdue) || sub.overallStatus === 'overdue' || sub.totalRemainingDebt > 0);
     }).length;
   }, [classStudents, studentSubMap]);
 
   const newStudentsCount = useMemo(() => {
     return classStudents.filter(s => {
       const sub = studentSubMap.get(s.id);
-      return (sub?.daysSinceRegistration || 0) <= 7;
+      return sub && ((sub.daysSinceRegistration <= 14) || sub.currentCycle.isHalfMonth || sub.overallStatus === 'ongoing');
     }).length;
   }, [classStudents, studentSubMap]);
 
@@ -858,17 +932,28 @@ export default function FeesTracker() {
               <span className="text-[10px] text-slate-400 font-bold pl-1">ج.م</span>
             </div>
           ) : (
-            <button
-              onClick={() => {
-                setShowGeneralPayForm(!showGeneralPayForm);
-                setErrorInfo('');
-                setSuccessInfo('');
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>تسجيل سداد اشتراك الشهر</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowBatchTransferModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                title="نقل وترحيل دفعات الطلاب المسجلة من شهر لآخر دفعة واحدة"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <span>نقل دفعات بين الشهور</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowGeneralPayForm(!showGeneralPayForm);
+                  setErrorInfo('');
+                  setSuccessInfo('');
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>تسجيل سداد اشتراك الشهر</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1323,7 +1408,7 @@ export default function FeesTracker() {
                     : 'bg-sky-50 text-[#0D5C8C] hover:bg-sky-100 dark:bg-sky-950/50 dark:text-sky-300'
                 }`}
               >
-                <span>مسجلين حديثاً (خلال أسبوع)</span>
+                <span>مسجلين حديثاً (الشهر الأول)</span>
                 <span className="text-[10px] px-1.5 py-0.2 bg-white/20 rounded-full font-mono">{newStudentsCount}</span>
               </button>
             </div>
@@ -1335,10 +1420,10 @@ export default function FeesTracker() {
                 {filteredClassStudents.length > 0 ? filteredClassStudents.map(student => {
                   const sub = studentSubMap.get(student.id);
                   const activeCycle = sub?.currentCycle;
-                  const activeFee = sub?.monthlyFee || activeGradeMonthlyFee;
                   const isPaid = activeCycle?.status === 'paid';
                   const isPartial = activeCycle?.status === 'partial';
                   const remaining = activeCycle?.remainingAmount || 0;
+                  const isOverdue = !!activeCycle?.isOverdue;
                   const studentPayments = payments.filter(p => p.student_id === student.id && p.category === 'tuition');
                   const lastPayment = studentPayments[studentPayments.length - 1];
 
@@ -1351,7 +1436,7 @@ export default function FeesTracker() {
                           <div className="flex flex-wrap items-center gap-2 mt-0.5">
                             <span className="text-[10px] font-mono font-extrabold text-[#0D5C8C] dark:text-sky-400">#{student.registration_id}</span>
                             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                              تاريخ التسجيل: {sub?.startDateFormatted || student.enrollment_date} ({sub?.registrationText})
+                              تاريخ التسجيل: {sub?.startDateFormatted || student.created_at} ({sub?.registrationText})
                             </span>
                           </div>
                         </div>
@@ -1364,9 +1449,13 @@ export default function FeesTracker() {
                             <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs">
                               <AlertCircle className="w-3 h-3" /> متبقي: {remaining} ج.م
                             </span>
-                          ) : (
+                          ) : isOverdue ? (
                             <span className="inline-flex items-center gap-1 bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs">
-                              <X className="w-3 h-3" /> مستحق ({activeFee} ج.م)
+                              <X className="w-3 h-3" /> مستحق متأخر ({activeCycle?.feeRequired} ج.م)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs">
+                              <Clock className="w-3 h-3" /> {activeCycle?.isHalfMonth ? 'نصف شهر' : 'شهر كامل'} ({activeCycle?.feeRequired} ج.م)
                             </span>
                           )}
                         </div>
@@ -1383,8 +1472,10 @@ export default function FeesTracker() {
                         </div>
                         <div className="flex items-center justify-between text-[10px] font-medium text-slate-600 dark:text-slate-300">
                           <span>المدفوع: <strong className="text-emerald-600 font-bold">{activeCycle?.amountPaid || 0} ج.م</strong></span>
-                          <span>المتبقي: <strong className={remaining > 0 ? "text-rose-600 font-bold" : "text-emerald-600 font-bold"}>{remaining} ج.م</strong></span>
-                          <span>التجديد القادم: <strong className="text-slate-700 dark:text-slate-200">{sub?.nextDueDateFormatted}</strong></span>
+                          <span>المطلوب: <strong className={isOverdue ? "text-rose-600 font-bold" : "text-sky-700 dark:text-sky-300 font-bold"}>
+                            {remaining} ج.م {activeCycle?.isHalfMonth ? '(نصف شهر)' : ''}
+                          </strong></span>
+                          <span>الاستحقاق: <strong className="text-slate-700 dark:text-slate-200">{sub?.nextDueDateFormatted}</strong></span>
                         </div>
                       </div>
 
@@ -1402,7 +1493,9 @@ export default function FeesTracker() {
                                     ? 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300'
                                     : cycle.status === 'partial'
                                     ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/90 dark:text-amber-300'
-                                    : 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300'
+                                    : cycle.isOverdue
+                                    ? 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300'
+                                    : 'bg-sky-50 text-sky-950 border-sky-300 dark:bg-sky-950/90 dark:text-sky-300'
                                 }`}
                               >
                                 <span>{cycle.label}</span>
@@ -1410,8 +1503,10 @@ export default function FeesTracker() {
                                   <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
                                 ) : cycle.status === 'partial' ? (
                                   <span className="text-[9px] font-mono">(-{cycle.remainingAmount})</span>
-                                ) : (
+                                ) : cycle.isOverdue ? (
                                   <X className="w-3 h-3 text-rose-700 dark:text-rose-400 stroke-[3]" />
+                                ) : (
+                                  <Clock className="w-3 h-3 text-sky-700 dark:text-sky-400" />
                                 )}
                               </button>
                             ))}
@@ -1518,7 +1613,7 @@ export default function FeesTracker() {
                             <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px]">{student.name}</span>
                             <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
                               <span className="text-slate-600 dark:text-slate-300 font-medium">
-                                تسجيل: {sub?.startDateFormatted || student.enrollment_date}
+                                تسجيل: {sub?.startDateFormatted || student.created_at}
                               </span>
                               <span className="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[9px] font-bold">
                                 {sub?.registrationText}
@@ -1553,6 +1648,7 @@ export default function FeesTracker() {
                               const isCurrent = cycle.isCurrent;
                               const isCyclePaid = cycle.status === 'paid';
                               const isCyclePartial = cycle.status === 'partial';
+                              const isCycleOverdue = cycle.isOverdue;
 
                               return (
                                 <button
@@ -1564,7 +1660,9 @@ export default function FeesTracker() {
                                       ? 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-600'
                                       : isCyclePartial
                                       ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-700'
-                                      : 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800'
+                                      : isCycleOverdue
+                                      ? 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800'
+                                      : 'bg-sky-50 text-sky-950 border-sky-300 dark:bg-sky-950/90 dark:text-sky-300 dark:border-sky-700'
                                   } ${isCurrent ? 'ring-2 ring-[#0D5C8C]/50 font-extrabold' : ''}`}
                                   title={`${cycle.label} (${cycle.periodLabel}): ${cycle.statusText} - انقر للتحصيل أو المعاينة`}
                                 >
@@ -1573,8 +1671,10 @@ export default function FeesTracker() {
                                     <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
                                   ) : isCyclePartial ? (
                                     <span className="text-[9px] font-mono text-amber-800 dark:text-amber-300">(-{cycle.remainingAmount})</span>
-                                  ) : (
+                                  ) : isCycleOverdue ? (
                                     <X className="w-3 h-3 text-rose-700 dark:text-rose-400 stroke-[3]" />
+                                  ) : (
+                                    <Clock className="w-3 h-3 text-sky-700 dark:text-sky-400" />
                                   )}
                                 </button>
                               );
@@ -1598,16 +1698,26 @@ export default function FeesTracker() {
                                 <AlertCircle className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                                 <span>متبقي: {remaining} ج.م</span>
                               </span>
-                              <span className="text-[10px] text-slate-400 font-sans">تم سداد {activeCycle.amountPaid} من أصل {activeCycle.target_amount} ج.م</span>
+                              <span className="text-[10px] text-slate-400 font-sans">تم سداد {activeCycle.amountPaid} من أصل {activeCycle.feeRequired} ج.م</span>
                             </div>
-                          ) : (
+                          ) : activeCycle.isOverdue ? (
                             <div className="inline-flex flex-col items-center gap-0.5">
                               <span className="inline-flex items-center gap-1 px-3 py-1 bg-rose-100 text-rose-950 border border-rose-400 dark:bg-rose-950/90 dark:text-rose-200 dark:border-rose-700 rounded-full font-black text-xs shadow-2xs">
                                 <X className="w-3.5 h-3.5 text-rose-700 dark:text-rose-400" />
-                                <span>مستحق: {activeFee} ج.م</span>
+                                <span>مستحق متأخر: {activeCycle.feeRequired} ج.م</span>
                               </span>
                               <span className="text-[10px] text-rose-500 font-sans">
-                                {sub && sub.daysSinceRegistration <= 7 ? 'طالب مسجل حديثاً' : 'تأخر عن موعد الدورة'}
+                                انتهت دورة الشهر ولم يتم السداد
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex flex-col items-center gap-0.5">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-sky-100 text-sky-950 border border-sky-300 dark:bg-sky-950/90 dark:text-sky-200 dark:border-sky-700 rounded-full font-black text-xs shadow-2xs">
+                                <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
+                                <span>{activeCycle.isHalfMonth ? `نصف شهر: ${activeCycle.feeRequired} ج.م` : `شهر كامل: ${activeCycle.feeRequired} ج.م`}</span>
+                              </span>
+                              <span className="text-[10px] text-sky-600 dark:text-sky-300 font-bold">
+                                يستحق بنهاية الشهر ({formatShortDateArabic(activeCycle.endDate)})
                               </span>
                             </div>
                           )}
@@ -1765,6 +1875,14 @@ export default function FeesTracker() {
                       </button>
                       <button
                         type="button"
+                        onClick={() => setEditingPayment(item)}
+                        className="p-1.5 text-slate-500 hover:text-[#0D5C8C] hover:bg-sky-50 dark:hover:bg-sky-900/40 rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
+                        title="تعديل بيانات الدفعة"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setPaymentToDelete(item)}
                         className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-lg transition-colors"
                         title="حذف السجل"
@@ -1852,6 +1970,14 @@ export default function FeesTracker() {
                           </button>
                           <button
                             type="button"
+                            onClick={() => setEditingPayment(item)}
+                            className="p-1 text-slate-400 hover:text-[#0D5C8C] dark:hover:text-sky-400 rounded cursor-pointer"
+                            title="تعديل بيانات الدفعة والشهر والتاريخ"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => setPaymentToDelete(item)}
                             className="p-1 text-slate-300 hover:text-red-500 rounded cursor-pointer"
                             title="حذف السجل"
@@ -1916,6 +2042,17 @@ export default function FeesTracker() {
                       : selectedMonth}
                   </span>
                 </div>
+                {quickPayTargetCycle?.isHalfMonth && (
+                  <div className="text-[11px] font-bold text-sky-800 dark:text-sky-200 bg-sky-100/70 dark:bg-sky-950/80 p-2 rounded-lg border border-sky-300 dark:border-sky-800 flex items-center gap-1.5">
+                    <span>💡 تم احتساب نصف شهر ({quickPayTargetCycle.feeRequired} ج.م) نظراً لتسجيل الطالب بعد يوم 7 في الشهر.</span>
+                  </div>
+                )}
+                {quickPayTargetCycle && !quickPayTargetCycle.hasEnded && (
+                  <div className="text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-sky-400 shrink-0" />
+                    <span>هذا الاشتراك للشهر الجاري ويصبح مستحقاً رسمياً بعد انتهاء الشهر ({formatShortDateArabic(quickPayTargetCycle.endDate)}).</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -2097,6 +2234,244 @@ export default function FeesTracker() {
           </div>
         </div>
       )}
+
+      {/* Edit Payment Modal */}
+      <AnimatePresence>
+        {editingPayment && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-lg w-full p-4 sm:p-6 text-right space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 bg-sky-50 dark:bg-sky-900/40 rounded-full flex items-center justify-center text-[#0D5C8C] dark:text-sky-300">
+                    <Pencil className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-950 dark:text-slate-100 text-sm">تعديل بيانات إيصال السداد</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">#{editingPayment.receipt_number}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingPayment(null)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdatePayment} className="space-y-4">
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 text-xs">
+                  <span className="text-slate-400 block mb-0.5">الطالب:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {students.find(s => s.id === editingPayment.student_id)?.name || editingPayment.student_id}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      الشهر المحسوب له الاشتراك:
+                    </label>
+                    <select
+                      value={editingPayment.month || 'يوليو 2026'}
+                      onChange={(e) => setEditingPayment({ ...editingPayment, month: e.target.value })}
+                      className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                    >
+                      {MONTHS_LIST.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      تاريخ السداد الفعلي:
+                    </label>
+                    <input
+                      type="date"
+                      value={editingPayment.payment_date}
+                      onChange={(e) => setEditingPayment({ ...editingPayment, payment_date: e.target.value })}
+                      className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      المبلغ المحصل (ج.م):
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editingPayment.amount}
+                      onChange={(e) => setEditingPayment({ ...editingPayment, amount: Number(e.target.value) })}
+                      className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                      طريقة السداد:
+                    </label>
+                    <select
+                      value={editingPayment.payment_method}
+                      onChange={(e) => setEditingPayment({ ...editingPayment, payment_method: e.target.value as any })}
+                      className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                    >
+                      <option value="cash">نقدي (كاش)</option>
+                      <option value="card">فيزا POS</option>
+                      <option value="transfer">تحويل بنكي / فودافون كاش</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                    ملاحظات الدفعة:
+                  </label>
+                  <input
+                    type="text"
+                    value={editingPayment.notes || ''}
+                    onChange={(e) => setEditingPayment({ ...editingPayment, notes: e.target.value })}
+                    placeholder="أي ملاحظات إضافية..."
+                    className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPayment(null)}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>حفظ التعديلات</span>
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Batch Transfer Fees Modal */}
+      <AnimatePresence>
+        {showBatchTransferModal && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl max-w-md w-full p-4 sm:p-6 text-right space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/40 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
+                    <ArrowLeftRight className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-950 dark:text-slate-100 text-sm">نقل وترحيل دفعات الطلاب بين الشهور</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">تصحيح ونقل الدفعات المسجلة بالخطأ دفعة واحدة</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBatchTransferModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3.5">
+                <div className="bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 p-3 rounded-xl text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                  يمكنك نقل جميع الدفعات التي سُجلت لشهر معين وتحويلها إلى شهر آخر تلقائياً مع خيار تصحيح تاريخ السداد الفعلي.
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                    الشهر الحالي المراد نقله (من شهر):
+                  </label>
+                  <select
+                    value={transferFromMonth}
+                    onChange={(e) => setTransferFromMonth(e.target.value)}
+                    className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                  >
+                    {MONTHS_LIST.map(m => {
+                      const count = payments.filter(p => p.month === m).length;
+                      return (
+                        <option key={m} value={m}>
+                          {m} ({count} دفعة مسجلة)
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                    الشهر الجديد المستهدف (إلى شهر):
+                  </label>
+                  <select
+                    value={transferToMonth}
+                    onChange={(e) => setTransferToMonth(e.target.value)}
+                    className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                  >
+                    {MONTHS_LIST.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="transferDateAdjustment"
+                    checked={transferDateAdjustment}
+                    onChange={(e) => setTransferDateAdjustment(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#0D5C8C] focus:ring-0 cursor-pointer"
+                  />
+                  <label htmlFor="transferDateAdjustment" className="text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer">
+                    تعديل تواريخ السداد أيضاً تلقائياً (مثال: من 2026-08 إلى 2026-07)
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setShowBatchTransferModal(false)}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBatchTransfer}
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>تنفيذ النقل والتصحيح الآن</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Custom Payment Deletion Modal */}
       <AnimatePresence>

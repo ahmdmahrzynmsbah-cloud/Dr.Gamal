@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { samsDb } from '../utils/db';
+import { calculateStudentSubscription } from '../utils/subscriptionUtils';
+import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { Users, UserCheck, BookOpen, CreditCard, Activity, AlertTriangle, TrendingUp, Calendar, ArrowUpRight } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
@@ -15,10 +17,16 @@ interface DashboardProps {
 
 export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [, setDbVersion] = useState(0);
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useSamsDbSync(() => {
+    setDbVersion(v => v + 1);
+  });
 
   
   const students = samsDb.getVisibleStudents();
@@ -39,15 +47,16 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
   // Revenue calc
   const totalRevenue = fees.reduce((sum, f) => sum + f.amount, 0);
   
-  // Calculate pending revenue dynamically:
-  // If there are no payments recorded in the system yet, the pending and target fees are 0.
-  // Once a center registers transactions, we assume active students with no payment have a standard subscription of 350 L.E.
+  // Calculate pending revenue dynamically using exact subscription rules:
+  // - Students who just registered and whose first month has not ended yet owe 0 remaining overdue debt.
+  // - Only students whose month(s) have ENDED without full payment count in pending revenue (المتبقي المستحق).
   const activeStudentsList = students.filter(s => s.status === 'active');
-  const unpaidStudents = activeStudentsList.filter(s => !fees.some(f => f.student_id === s.id));
-  let gradeFees = samsDb.getGradeMonthlyFees();
+  const gradeFees = samsDb.getGradeMonthlyFees();
   
-  const pendingRevenue = fees.length === 0 ? 0 : unpaidStudents.reduce((sum, s) => {
-    return sum + (gradeFees[s.grade_level] || 250);
+  const pendingRevenue = activeStudentsList.reduce((sum, s) => {
+    const fee = gradeFees[s.grade_level] || 250;
+    const sub = calculateStudentSubscription(s, fees, fee);
+    return sum + (sub.totalRemainingDebt || 0);
   }, 0);
   const targetRevenue = totalRevenue + pendingRevenue;
 
@@ -172,28 +181,28 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
 
         {/* Financial Collection Rate Card - Colored alert state */}
         <div className={`p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer ${
-          fees.length === 0
+          fees.length === 0 && pendingRevenue === 0
             ? 'bg-slate-50 dark:bg-slate-900/50 border border-slate-400 border-r-4 text-slate-700 dark:text-slate-200'
             : pendingRevenue > 0
             ? 'bg-[#FEF2F2] dark:bg-rose-950/50 border border-[#C0152A] dark:border-rose-500 border-r-4 text-[#C0152A] dark:text-rose-200'
             : 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-600 dark:border-emerald-400 border-r-4 text-emerald-800 dark:text-emerald-200'
         }`} onClick={() => onNavigateToTab('fees')} id="stat_revenue_card">
           <div className="space-y-1 sm:space-y-2 min-w-0">
-            <p className={`text-[11px] sm:text-xs font-extrabold font-sans truncate ${fees.length === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات والرسوم</p>
+            <p className={`text-[11px] sm:text-xs font-extrabold font-sans truncate ${fees.length === 0 && pendingRevenue === 0 ? 'text-slate-500 dark:text-slate-400' : pendingRevenue > 0 ? 'text-[#C0152A] dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'}`}>المتحصلات والرسوم</p>
             <div className="flex items-baseline gap-1 flex-wrap">
               <span className="text-lg sm:text-2xl font-black">{totalRevenue.toLocaleString()}</span>
               <span className="text-xs sm:text-sm font-bold">ج.م</span>
             </div>
             <p className="text-[9px] sm:text-[10px] font-bold flex items-center gap-1 truncate">
-              {fees.length === 0 ? (
-                <span className="text-slate-400">لا توجد رسوم</span>
+              {pendingRevenue > 0 ? (
+                <span className="text-rose-600 dark:text-rose-400 font-extrabold">متبقي مستحق: {pendingRevenue.toLocaleString()} ج.م</span>
               ) : (
-                <span>متبقي: {pendingRevenue.toLocaleString()} ج.م</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">لا توجد مديونيات متأخرة ✓</span>
               )}
             </p>
           </div>
           <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 self-end sm:self-center ${
-            fees.length === 0
+            fees.length === 0 && pendingRevenue === 0
               ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
               : pendingRevenue > 0
               ? 'bg-red-100/60 dark:bg-rose-900/60 text-[#C0152A] dark:text-rose-200'
@@ -295,7 +304,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
               <span className="font-bold text-[#0D5C8C]">{totalRevenue.toLocaleString()} ج.م</span>
             </div>
             <div className="flex items-center justify-between text-xs p-1.5 rounded bg-red-50 dark:bg-red-900/40 border-r-4 border-[#E8192C]">
-              <span className="text-slate-600 dark:text-slate-300">رسوم جارية ومستحقة</span>
+              <span className="text-slate-600 dark:text-slate-300">رسوم مستحقة متأخرة</span>
               <span className="font-bold text-[#C0152A]">{pendingRevenue.toLocaleString()} ج.م</span>
             </div>
           </div>

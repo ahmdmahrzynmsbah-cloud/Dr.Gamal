@@ -645,6 +645,39 @@ export const samsDb = {
     return true;
   },
 
+  updateFeePayment(payment: FeePayment): boolean {
+    const list = this.getFees();
+    const idx = list.findIndex(f => f.id === payment.id);
+    if (idx === -1) return false;
+    list[idx] = { ...payment };
+    saveToStorage(KEYS.FEES, list);
+
+    const students = this.getStudents();
+    const studentObj = students.find(s => s.id === payment.student_id);
+    const studentName = studentObj ? studentObj.name : `كود:${payment.student_id}`;
+    const studentTitle = getStudentTitle(studentObj || studentName);
+    addAuditLog('UPDATE', 'fees', payment.id, `تعديل دفعة مالية بقيمة ${payment.amount} ج.م لـ${studentTitle} (${studentName}) - الشهر: ${payment.month || 'ـ'}، تاريخ السداد: ${payment.payment_date}`);
+    return true;
+  },
+
+  transferFeesMonth(fromMonth: string, toMonth: string): number {
+    const list = this.getFees();
+    let count = 0;
+    const updated = list.map(item => {
+      if (item.month === fromMonth) {
+        count++;
+        return { ...item, month: toMonth };
+      }
+      return item;
+    });
+
+    if (count > 0) {
+      saveToStorage(KEYS.FEES, updated);
+      addAuditLog('UPDATE', 'fees', 'batch-month-transfer', `ترحيل ونقل دفعات من (${fromMonth}) إلى (${toMonth}) لعدد ${count} معاملة.`);
+    }
+    return count;
+  },
+
   // NOTIFICATIONS
   getNotifications(): SystemNotification[] {
     return loadFromStorage<SystemNotification[]>(KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);

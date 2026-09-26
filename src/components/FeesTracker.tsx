@@ -672,15 +672,15 @@ export default function FeesTracker() {
         </div>
 
         {/* Printable Area */}
-        <div className="print-area max-w-5xl mx-auto p-4 bg-white text-black border border-slate-200" dir="rtl">
-          <div className="text-center mb-6 border-b-2 border-slate-800 pb-4">
+        <div className="print-area print-avoid-break max-w-5xl mx-auto p-4 bg-white text-black border border-slate-200" dir="rtl">
+          <div className="text-center mb-6 border-b-2 border-slate-800 pb-4 print-avoid-break">
             <h1 className="text-xl sm:text-2xl font-black text-slate-900">كشف سداد ومتبقيات الاشتراكات الشهرية</h1>
             <p className="text-sm font-bold text-slate-600 mt-1">
               احتساب ذكي من تاريخ تسجيل كل طالب • تقرير شهر {selectedMonth}
             </p>
           </div>
           
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-2 print-avoid-break">
             <div className="text-xl font-black text-slate-800">
               {typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa' ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_center_name') || 'الدكتور في اللغة العربية')}
             </div>
@@ -691,7 +691,7 @@ export default function FeesTracker() {
 
           <table className="w-full text-right border-collapse text-xs" dir="rtl">
             <thead>
-              <tr className="bg-slate-100 border-b-2 border-slate-800">
+              <tr className="bg-slate-100 border-b-2 border-slate-800 print-avoid-break">
                 <th className="py-2.5 px-3 font-bold text-slate-900 border border-slate-300">م</th>
                 <th className="py-2.5 px-3 font-bold text-slate-900 border border-slate-300">اسم الطالب</th>
                 <th className="py-2.5 px-3 font-bold text-slate-900 border border-slate-300">كود الطالب</th>
@@ -712,7 +712,7 @@ export default function FeesTracker() {
                   const isPartial = cycle.status === 'partial';
 
                   return (
-                    <tr key={student.id}>
+                    <tr key={student.id} className="print-row print-avoid-break">
                       <td className="py-2 px-3 font-bold text-slate-900 border border-slate-300">{idx + 1}</td>
                       <td className="py-2 px-3 font-bold text-slate-900 border border-slate-300">{student.name}</td>
                       <td className="py-2 px-3 text-slate-700 font-mono border border-slate-300">{student.registration_id}</td>
@@ -755,7 +755,7 @@ export default function FeesTracker() {
             </tbody>
           </table>
 
-          <div className="mt-8 flex justify-between border-t border-slate-300 pt-4" dir="rtl">
+          <div className="mt-8 flex justify-between border-t border-slate-300 pt-4 print-avoid-break" dir="rtl">
             <div className="text-xs font-bold text-slate-700">إجمالي المحصل: {totalCollectedSum} ج.م</div>
             <div className="text-xs font-bold text-rose-700">إجمالي المتبقيات المعلقة: {totalRemainingDebtSum} ج.م</div>
             <div className="text-xs font-bold text-slate-700">توقيع السكرتارية: ........................</div>

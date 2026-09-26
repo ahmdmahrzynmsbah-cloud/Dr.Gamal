@@ -431,7 +431,9 @@ html.dark body {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Print Rules for Professional PDF & Document Export */
+/* =========================================================
+   COMPREHENSIVE PRINT & PDF RULES (Zero-Cut, Page-Break Protection)
+   ========================================================= */
 @media print {
   html, body, #root, #sams_root_wrapper, main {
     height: auto !important;
@@ -442,8 +444,8 @@ html.dark body {
   }
 
   body {
-    background-color: white !important;
-    color: black !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -453,11 +455,14 @@ html.dark body {
     margin: 8mm 8mm 8mm 8mm;
   }
 
+  /* Hide interactive & non-printable elements */
   .no-print,
   .print\:hidden,
   div.backdrop-blur-sm,
   div.backdrop-blur-xs,
-  button:not(.print-keep) {
+  button:not(.print-keep),
+  input[type="search"],
+  .no-scrollbar::-webkit-scrollbar {
     display: none !important;
   }
   
@@ -467,7 +472,9 @@ html.dark body {
     box-sizing: border-box !important;
   }
 
-  /* Prevent page breaks inside cards, tables, sections, and grids */
+  /* =========================================================
+     BREAK-INSIDE AVOID: Core protection against truncated data
+     ========================================================= */
   .break-inside-avoid,
   .page-break-inside-avoid,
   .print-avoid-break,
@@ -476,29 +483,33 @@ html.dark body {
   .print-card,
   .print-grid,
   .print-box,
+  .print-area,
+  .receipt-box,
+  .student-card,
+  .financial-card,
+  .fee-summary-box,
   section,
-  figure {
+  figure,
+  article {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     -webkit-column-break-inside: avoid !important;
   }
 
-  /* Keep headings attached to the following content */
-  h1, h2, h3, h4, h5, h6 {
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  /* Tables clean pagination */
+  /* Table and rows zero-split protection */
   table {
-    page-break-inside: auto;
+    page-break-inside: auto !important;
     border-collapse: collapse !important;
     width: 100% !important;
   }
   
-  tr, .print-row {
+  tr,
+  tbody tr,
+  .print-row,
+  .table-row {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
   }
   
   thead {
@@ -509,9 +520,27 @@ html.dark body {
     display: table-footer-group !important;
   }
 
-  /* Ensure card backgrounds and borders print with high fidelity */
-  .border, .border-2, .border-slate-200, .border-slate-300 {
+  /* Protect grid cards inside report containers from horizontal splitting */
+  .print-area .grid > div,
+  #printable-group-roster .grid > div,
+  .print-section .grid > div {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Keep headings attached to subsequent content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* High fidelity print borders & backgrounds */
+  .border, .border-2, .border-slate-200, .border-slate-300, .border-slate-400 {
     border-color: #cbd5e1 !important;
+  }
+
+  .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
+    box-shadow: none !important;
   }
 }
 

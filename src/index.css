@@ -444,31 +444,74 @@ html.dark body {
   body {
     background-color: white !important;
     color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 8mm 8mm 8mm 8mm;
   }
 
   .no-print,
   .print\:hidden,
   div.backdrop-blur-sm,
-  div.backdrop-blur-xs {
+  div.backdrop-blur-xs,
+  button:not(.print-keep) {
     display: none !important;
   }
   
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    box-sizing: border-box !important;
   }
 
+  /* Prevent page breaks inside cards, tables, sections, and grids */
   .break-inside-avoid,
   .page-break-inside-avoid,
-  .print-card-avoid {
+  .print-avoid-break,
+  .print-card-avoid,
+  .print-section,
+  .print-card,
+  .print-grid,
+  .print-box,
+  section,
+  figure {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     -webkit-column-break-inside: avoid !important;
+  }
+
+  /* Keep headings attached to the following content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Tables clean pagination */
+  table {
+    page-break-inside: auto;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  
+  tr, .print-row {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  thead {
+    display: table-header-group !important;
+  }
+  
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  /* Ensure card backgrounds and borders print with high fidelity */
+  .border, .border-2, .border-slate-200, .border-slate-300 {
+    border-color: #cbd5e1 !important;
   }
 }
 

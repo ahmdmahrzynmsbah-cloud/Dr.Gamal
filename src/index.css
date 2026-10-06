@@ -533,31 +533,62 @@ html.dark body {
     page-break-inside: avoid !important;
   }
 
+  /* Discrete Full-Page Reports (Zero-Cut Architecture) */
+  .report-page {
+    width: 100% !important;
+    min-height: 275mm !important;
+    box-sizing: border-box !important;
+    padding: 2mm 0 !important;
+    margin: 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .report-page-1 {
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  .report-page-2 {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
   /* Mobile phone print normalization - forces crisp multi-column layout regardless of phone viewport */
   #printable-group-roster {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
-    padding: 6mm 4mm !important;
+    padding: 4mm 2mm !important;
   }
 
   #printable-group-roster .md\:grid-cols-3 {
     display: grid !important;
-    grid-template-columns: 300px 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: 270px 1fr !important;
+    gap: 8px !important;
   }
 
   #printable-group-roster .md\:grid-cols-2 {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
+    gap: 8px !important;
   }
 
   #printable-group-roster .print\:grid-cols-6,
   #printable-group-roster .lg\:grid-cols-6 {
     display: grid !important;
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    gap: 6px !important;
+    gap: 5px !important;
+  }
+
+  #printable-group-roster .print\:grid-cols-4,
+  #printable-group-roster .lg\:grid-cols-4 {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
   }
 
   #printable-group-roster .md\:hidden {

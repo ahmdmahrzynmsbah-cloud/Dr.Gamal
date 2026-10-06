@@ -98,10 +98,6 @@ export async function generateStudentReportPdf(
   const rawStudentName = (student.name || 'طالب').trim();
   const cleanStudentName = rawStudentName.replace(/[/\\?%*:|"<>]/g, ' ').replace(/\s+/g, ' ');
   const filename = `تقرير الطالب ${cleanStudentName}.pdf`;
-
-  // Capture element snapshot
-  const { imgData, width, height } = await captureElementToPng(element, isDark);
-
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -125,41 +121,72 @@ export async function generateStudentReportPdf(
   const bgG = isDark ? 23 : 255;
   const bgB = isDark ? 42 : 255;
 
-  const printWidth = pageWidth;
-  const rawPrintHeight = (height * printWidth) / width;
+  // Check if document has defined page containers (.report-page)
+  const pageElements = Array.from(element.querySelectorAll<HTMLElement>('.report-page'));
 
-  // Render to PDF
-  if (rawPrintHeight <= pageHeight) {
-    pdf.setFillColor(bgR, bgG, bgB);
-    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-    pdf.addImage(imgData, 'PNG', 0, 0, printWidth, rawPrintHeight);
-  } else if (rawPrintHeight <= pageHeight * 1.2) {
-    // Proportional single page fit
-    const scale = pageHeight / rawPrintHeight;
-    const scaledWidth = printWidth * scale;
-    const scaledHeight = pageHeight;
-    const xOffset = (pageWidth - scaledWidth) / 2;
+  if (pageElements.length > 0) {
+    // Multi-page structured report: Render each discrete page individually without slicing
+    for (let i = 0; i < pageElements.length; i++) {
+      const pageEl = pageElements[i];
+      const { imgData, width, height } = await captureElementToPng(pageEl, isDark);
 
-    pdf.setFillColor(bgR, bgG, bgB);
-    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-    pdf.addImage(imgData, 'PNG', xOffset, 0, scaledWidth, scaledHeight);
+      if (i > 0) {
+        pdf.addPage();
+      }
+
+      pdf.setFillColor(bgR, bgG, bgB);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+      const renderWidth = pageWidth;
+      const renderHeight = (height * renderWidth) / width;
+
+      if (renderHeight > pageHeight) {
+        // Proportional scale to fit within pageHeight with margin
+        const scale = pageHeight / renderHeight;
+        const scaledWidth = renderWidth * scale;
+        const scaledHeight = pageHeight;
+        const xOffset = (pageWidth - scaledWidth) / 2;
+        pdf.addImage(imgData, 'PNG', xOffset, 0, scaledWidth, scaledHeight);
+      } else {
+        pdf.addImage(imgData, 'PNG', 0, 0, renderWidth, renderHeight);
+      }
+    }
   } else {
-    // Multi-page document
-    let heightLeft = rawPrintHeight;
-    let position = 0;
+    // Single container fallback
+    const { imgData, width, height } = await captureElementToPng(element, isDark);
+    const printWidth = pageWidth;
+    const rawPrintHeight = (height * printWidth) / width;
 
-    pdf.setFillColor(bgR, bgG, bgB);
-    pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-    pdf.addImage(imgData, 'PNG', 0, position, printWidth, rawPrintHeight);
-    heightLeft -= pageHeight;
+    if (rawPrintHeight <= pageHeight) {
+      pdf.setFillColor(bgR, bgG, bgB);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      pdf.addImage(imgData, 'PNG', 0, 0, printWidth, rawPrintHeight);
+    } else if (rawPrintHeight <= pageHeight * 1.15) {
+      const scale = pageHeight / rawPrintHeight;
+      const scaledWidth = printWidth * scale;
+      const scaledHeight = pageHeight;
+      const xOffset = (pageWidth - scaledWidth) / 2;
 
-    while (heightLeft > 5) {
-      position = position - pageHeight;
-      pdf.addPage();
+      pdf.setFillColor(bgR, bgG, bgB);
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+      pdf.addImage(imgData, 'PNG', xOffset, 0, scaledWidth, scaledHeight);
+    } else {
+      let heightLeft = rawPrintHeight;
+      let position = 0;
+
       pdf.setFillColor(bgR, bgG, bgB);
       pdf.rect(0, 0, pageWidth, pageHeight, 'F');
       pdf.addImage(imgData, 'PNG', 0, position, printWidth, rawPrintHeight);
       heightLeft -= pageHeight;
+
+      while (heightLeft > 5) {
+        position = position - pageHeight;
+        pdf.addPage();
+        pdf.setFillColor(bgR, bgG, bgB);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        pdf.addImage(imgData, 'PNG', 0, position, printWidth, rawPrintHeight);
+        heightLeft -= pageHeight;
+      }
     }
   }
 

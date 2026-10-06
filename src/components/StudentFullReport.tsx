@@ -437,10 +437,10 @@ ${signature}`;
       </div>
 
       {/* Content */}
-      <div id="printable-group-roster" className="flex-1 p-4 sm:p-6 space-y-6 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <div id="printable-group-roster" className="flex-1 p-4 sm:p-5 space-y-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
           
           {/* Official Printable Header */}
-          <div className="border-b-2 border-slate-300 dark:border-slate-700 pb-3 mb-4 flex justify-between items-center print-avoid-break">
+          <div className="border-b-2 border-slate-300 dark:border-slate-700 pb-2.5 mb-3 flex justify-between items-center print-avoid-break">
             <div className="flex items-center gap-3.5">
               {printHeaderLogo && (printHeaderLogo.startsWith('data:image') || printHeaderLogo.startsWith('http') || printHeaderLogo.startsWith('/')) && !logoImgError ? (
                 <img 

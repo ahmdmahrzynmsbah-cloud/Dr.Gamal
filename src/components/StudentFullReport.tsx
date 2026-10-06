@@ -893,45 +893,45 @@ ${signature}`;
         {/* WhatsApp Send Modal */}
         <AnimatePresence>
           {showWhatsAppModal && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50 animate-fade-in print:hidden" dir="rtl">
+            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-[99999] animate-fade-in print:hidden" dir="rtl">
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-xl w-full flex flex-col max-h-[92vh] overflow-hidden text-right"
+                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full flex flex-col max-h-[85vh] overflow-hidden text-right"
               >
                 {/* Modal Header */}
-                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                      <FileText className="w-5 h-5" />
+                <div className="px-4 py-3.5 sm:px-5 sm:py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <FileText className="w-4.5 h-4.5" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <span>إرسال التقرير كـ PDF مطبوع لولي الأمر</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                          ملف A4 رسمي
+                      <h3 className="font-extrabold text-xs sm:text-sm text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                        <span>إرسال التقرير لولي الأمر</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                          PDF رسمي
                         </span>
                       </h3>
-                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {student.name} · رقم القيد: {student.registration_id}
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                        {student.name} · {student.registration_id}
                       </p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowWhatsAppModal(false)}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 font-sans">
+                <div className="p-3.5 sm:p-4 space-y-3 overflow-y-auto flex-1 font-sans text-xs">
                   {/* Success Alert */}
                   {sendSuccessMsg && (
-                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-start gap-2.5">
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-200 flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
                       <div className="leading-relaxed">
                         {sendSuccessMsg}
@@ -941,75 +941,69 @@ ${signature}`;
 
                   {/* Error Alert */}
                   {pdfError && (
-                    <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300 flex items-center gap-2">
+                    <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-[11px] font-bold text-red-700 dark:text-red-300 flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>{pdfError}</span>
                     </div>
                   )}
 
-                  {/* 1. Official PDF Document Card */}
-                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/30 dark:border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-xl bg-red-600/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
-                        <FileText className="w-6 h-6" />
+                  {/* 1. Official PDF Document Preview Card */}
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2.5 shadow-2xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-lg bg-red-600/10 border border-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-sans truncate">
-                            {pdfResult?.filename || `تقرير الطالب ${student.name}.pdf`}
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
-                            مستند PDF مطبوع
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                        <span className="font-extrabold text-xs text-slate-800 dark:text-slate-100 block truncate" dir="rtl">
+                          {pdfResult?.filename || `تقرير الطالب ${student.name}.pdf`}
+                        </span>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium mt-0.5">
                           {isGeneratingPdf ? (
                             <>
-                              <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
-                              <span>جاري إعداد وتنسيق ملف الـ PDF عالي الدقة...</span>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>جاري إعداد الـ PDF...</span>
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
-                              <span>ملف PDF رسمي ملون جاهز للإرسال والطباعة فوراً</span>
+                              <CheckCircle className="w-3 h-3" />
+                              <span>ملف ملون جاهز للإرسال</span>
                             </>
                           )}
-                        </p>
+                        </span>
                       </div>
                     </div>
 
-                    {/* Quick File Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={handleDownloadPdfOnly}
                         disabled={isGeneratingPdf}
-                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        title="تحميل ملف الـ PDF مباشرة على جهازك"
+                        className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                        title="تحميل ملف PDF"
                       >
                         {isGeneratingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5 text-[#0D5C8C]" />}
-                        <span>تحميل PDF</span>
+                        <span className="hidden sm:inline">تحميل</span>
                       </button>
                       <button
                         type="button"
                         onClick={handlePrint}
-                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                        title="معاينة وطباعة"
+                        className="p-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+                        title="طباعة"
                       >
                         <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
-                        <span>طباعة</span>
+                        <span className="hidden sm:inline">طباعة</span>
                       </button>
                     </div>
                   </div>
 
                   {/* 2. Recipient Phone */}
-                  <div className="space-y-1.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>رقم هاتف ولي الأمر (واتساب):</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-emerald-600" />
+                        <span>رقم واتساب ولي الأمر:</span>
                       </label>
-                      <div className="flex items-center gap-1.5 text-[11px]">
+                      <div className="flex items-center gap-1 text-[10px]">
                         {student.parent_phone && (
                           <button
                             type="button"
@@ -1017,13 +1011,13 @@ ${signature}`;
                               setWhatsAppPhone(student.parent_phone);
                               setPhoneError('');
                             }}
-                            className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
+                            className={`px-1.5 py-0.5 rounded cursor-pointer transition-colors ${
                               whatsAppPhone === student.parent_phone
                                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold'
-                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}
                           >
-                            ولي الأمر ({student.parent_phone})
+                            ولي الأمر
                           </button>
                         )}
                         {student.phone && student.phone !== student.parent_phone && (
@@ -1033,13 +1027,13 @@ ${signature}`;
                               setWhatsAppPhone(student.phone);
                               setPhoneError('');
                             }}
-                            className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
+                            className={`px-1.5 py-0.5 rounded cursor-pointer transition-colors ${
                               whatsAppPhone === student.phone
                                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold'
-                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}
                           >
-                            الطالب ({student.phone})
+                            الطالب
                           </button>
                         )}
                       </div>
@@ -1052,66 +1046,47 @@ ${signature}`;
                         setWhatsAppPhone(e.target.value);
                         setPhoneError('');
                       }}
-                      placeholder="مثال: 01012345678"
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-mono text-center tracking-wider"
+                      placeholder="01012345678"
+                      className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-mono text-center tracking-wider"
                     />
                     {phoneError && (
-                      <p className="text-[11px] font-bold text-red-600 dark:text-red-400 mt-1">
+                      <p className="text-[10px] font-bold text-red-600 dark:text-red-400">
                         {phoneError}
                       </p>
                     )}
                   </div>
 
-                  {/* 3. Helpful Guidance Note */}
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                    <p className="font-bold text-slate-800 dark:text-slate-200 mb-0.5">
-                      طريقة إرسال ملف الـ PDF عبر واتساب:
-                    </p>
-                    <p>
-                      عند الضغط على <strong className="text-emerald-600">إرسال التقرير كـ PDF عبر واتساب</strong>، يتم تجهيز ملف الـ PDF المطبوع ومشاركته مباشرة في واتساب (على الهواتف)، أو تنزيل ملف الـ PDF على جهازك وفتح محادثة ولي الأمر تلقائياً لتسليمه كمستند رسمي فوراً.
-                    </p>
-                  </div>
-
-                  {/* 4. Collapsible Text Summary (Optional) */}
+                  {/* 3. Collapsible Text Summary */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setShowTextDetails(!showTextDetails)}
-                      className="w-full p-2.5 bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
                     >
-                      <span>عرض ملخص نص التقرير المرفق (اختياري)</span>
-                      {showTextDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      <span>عرض نص الرسالة المرفق (اختياري)</span>
+                      {showTextDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
                     {showTextDetails && (
-                      <div className="p-3 bg-white dark:bg-slate-800 space-y-2 border-t border-slate-100 dark:border-slate-700">
+                      <div className="p-2.5 bg-white dark:bg-slate-800 space-y-1.5 border-t border-slate-100 dark:border-slate-700">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                            معاينة النص التوضيحي المرفق مع التقرير:
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            نص التقرير:
                           </span>
                           <button
                             type="button"
                             onClick={handleCopyMessage}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer"
                           >
-                            {copiedSuccess ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-600" />
-                                <span className="text-emerald-600">تم النسخ</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>نسخ النص</span>
-                              </>
-                            )}
+                            {copiedSuccess ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            <span>{copiedSuccess ? 'تم النسخ' : 'نسخ النص'}</span>
                           </button>
                         </div>
                         <textarea
-                          rows={6}
+                          rows={4}
                           value={whatsAppText}
                           onChange={(e) => setWhatsAppText(e.target.value)}
-                          className="w-full p-2.5 text-xs leading-relaxed bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-sans resize-y"
+                          className="w-full p-2 text-[11px] leading-relaxed bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg outline-none font-sans resize-y"
                           placeholder="نص التقرير..."
                         />
                       </div>
@@ -1119,58 +1094,46 @@ ${signature}`;
                   </div>
                 </div>
 
-                {/* Modal Footer (Responsive) */}
-                <div className="p-3 sm:p-4 bg-slate-50/80 dark:bg-slate-900/70 border-t border-slate-100 dark:border-slate-700 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setShowWhatsAppModal(false)}
-                    className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer transition-colors text-center"
-                  >
-                    إغلاق
-                  </button>
-
-                  <div className="flex flex-wrap sm:flex-nowrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                {/* Modal Footer */}
+                <div className="p-3 sm:p-3.5 bg-slate-50 dark:bg-slate-900/70 border-t border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowWhatsAppModal(false)}
+                      className="px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer transition-colors text-center"
+                    >
+                      إلغاء
+                    </button>
                     <button
                       type="button"
                       onClick={handleShareNative}
                       disabled={isGeneratingPdf}
-                      className="flex-1 sm:flex-none px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                      title="مشاركة ملف الـ PDF عبر قائمة مشاركة الهاتف (واتساب، تليجرام، حفظ بالملفات)"
+                      className="px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
+                      title="مشاركة عبر التطبيقات"
                     >
-                      <Share2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                      <span>مشاركة الملف</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleDownloadPdfOnly}
-                      disabled={isGeneratingPdf}
-                      className="flex-1 sm:flex-none px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                      title="تنزيل ملف الـ PDF على جهازك"
-                    >
-                      <Download className="w-3.5 h-3.5 text-[#0D5C8C]" />
-                      <span>تحميل PDF</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleSendPdfToWhatsApp}
-                      disabled={isGeneratingPdf}
-                      className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isGeneratingPdf ? (
-                        <>
-                          <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-                          <span>جاري تجهيز الـ PDF...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4 shrink-0" />
-                          <span>إرسال التقرير PDF لولي الأمر (واتساب)</span>
-                        </>
-                      )}
+                      <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>مشاركة</span>
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendPdfToWhatsApp}
+                    disabled={isGeneratingPdf}
+                    className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isGeneratingPdf ? (
+                      <>
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                        <span>جاري التجهيز...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 shrink-0" />
+                        <span>إرسال التقرير PDF لولي الأمر (واتساب)</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </motion.div>
             </div>

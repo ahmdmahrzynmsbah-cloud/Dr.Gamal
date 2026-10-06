@@ -47,7 +47,7 @@ interface NotificationsCenterProps {
   initialSubTab?: 'inbox' | 'parents' | 'broadcast' | 'logs';
 }
 
-export default function NotificationsCenter({ onNavigateToTab, initialSubTab = 'inbox' }: NotificationsCenterProps) {
+function NotificationsCenterComponent({ onNavigateToTab, initialSubTab = 'inbox' }: NotificationsCenterProps) {
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [adminNotis, setAdminNotis] = useState<AdminNotification[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -241,6 +241,12 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
     setSuccessInfo('تم تحديد جميع الإشعارات كمقروءة بنجاح.');
   };
 
+  const handleCleanDeduplicate = () => {
+    const res = samsDb.cleanDeduplicateNotifications();
+    loadData();
+    setSuccessInfo(`تم فحص وتصفية الصندوق بنجاح (تم تصفية ${res.removedAdmin + res.removedSys} إشعار مكرر)`);
+  };
+
   const requestDeleteSingleNoti = (id: string) => {
     setDeleteConfirmState({
       isOpen: true,
@@ -330,7 +336,7 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             to: phone, 
-            message: ` 🏛️ رسالة رسمية لولي الأمر من ${platformName} \n\n${message}`,
+            message: ` رسالة رسمية لولي الأمر من ${platformName} \n\n${message}`,
             callmebotApiKey: cKey,
             ultramsgInstanceId: uId,
             ultramsgToken: uToken
@@ -700,6 +706,16 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
               <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0 justify-end">
                 <button
                   type="button"
+                  onClick={handleCleanDeduplicate}
+                  className="flex-1 sm:flex-initial px-3 py-2 text-xs font-bold text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/40 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="تصفية التكرار وتسريع الصندوق"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>تصفية التكرار</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={requestClearReadNotis}
                   className="flex-1 sm:flex-initial px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   title="حذف المقروء فقط"
@@ -734,10 +750,10 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
                 </span>
                 {[
                   { id: 'all', label: 'الكل' },
-                  { id: 'absence', label: '🚨 تنبيهات الغياب' },
-                  { id: 'payment_reminder', label: '💰 تذكيرات الرسوم' },
-                  { id: 'sms', label: '💬 رسائل الآباء' },
-                  { id: 'system', label: '⚙️ النظام' },
+                  { id: 'absence', label: 'تنبيهات الغياب' },
+                  { id: 'payment_reminder', label: 'تذكيرات الرسوم' },
+                  { id: 'sms', label: 'رسائل الآباء' },
+                  { id: 'system', label: 'النظام' },
                 ].map(cat => (
                   <button
                     key={cat.id}
@@ -1101,28 +1117,28 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
                       onClick={() => selectSmsTemplate('absence')}
                       className="p-2 text-right bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 text-rose-700 dark:text-rose-300 text-xs font-bold rounded-xl border border-rose-100 dark:border-rose-900/30 transition-colors"
                     >
-                      🚨 إخطار غياب عن الحصة
+                      إخطار غياب عن الحصة
                     </button>
                     <button
                       type="button"
                       onClick={() => selectSmsTemplate('homework')}
                       className="p-2 text-right bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 text-amber-700 dark:text-amber-300 text-xs font-bold rounded-xl border border-amber-100 dark:border-amber-900/30 transition-colors"
                     >
-                      📝 تقصير في تسليم الواجب
+                      تقصير في تسليم الواجب
                     </button>
                     <button
                       type="button"
                       onClick={() => selectSmsTemplate('exam')}
                       className="p-2 text-right bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 text-[#0D5C8C] dark:text-sky-300 text-xs font-bold rounded-xl border border-sky-100 dark:border-sky-900/30 transition-colors"
                     >
-                      🏆 نتيجة امتحان وتقييم
+                      نتيجة امتحان وتقييم
                     </button>
                     <button
                       type="button"
                       onClick={() => selectSmsTemplate('behavior')}
                       className="p-2 text-right bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 text-purple-700 dark:text-purple-300 text-xs font-bold rounded-xl border border-purple-100 dark:border-purple-900/30 transition-colors"
                     >
-                      ⚠️ ملاحظة سلوك وانضباط
+                      ملاحظة سلوك وانضباط
                     </button>
                   </div>
                 </div>
@@ -1421,3 +1437,5 @@ export default function NotificationsCenter({ onNavigateToTab, initialSubTab = '
     </div>
   );
 }
+
+export default React.memo(NotificationsCenterComponent);

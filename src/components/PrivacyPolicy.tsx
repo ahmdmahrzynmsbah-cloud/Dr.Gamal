@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export default function PrivacyPolicy() {
+function PrivacyPolicyComponent() {
   const [activeSection, setActiveSection] = useState<number | null>(null);
 
   const policySections = [
@@ -415,3 +415,5 @@ export default function PrivacyPolicy() {
     </div>
   );
 }
+
+export default React.memo(PrivacyPolicyComponent);

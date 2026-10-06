@@ -8,7 +8,7 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
 import { getStudentTitle, getStudentGender, getStudentTitleFor, getStudentTitleIndef, isFemaleName } from '../utils/genderUtils';
 
-export default function StudentsList() {
+function StudentsListComponent() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   
@@ -68,7 +68,7 @@ export default function StudentsList() {
         total: 0,
         present: 0,
         absent: 0,
-        statusLabel: 'لا توجد سجلات 📂',
+        statusLabel: 'لا توجد سجلات',
         statusColor: 'text-slate-500 dark:text-slate-400',
         bgClass: 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300',
         description: 'لم يتم تسجيل أي حضور أو غياب لهذا الطالب بعد في النظام.'
@@ -88,22 +88,22 @@ export default function StudentsList() {
     let description = `نسبة حضور الطالب للشهر الحالي سجلت ${percentage}% مع عدم رصد أي إنذار غياب مسبق.`;
 
     if (percentage >= 90) {
-      statusLabel = 'ممتاز ✨';
+      statusLabel = 'ممتاز';
       statusColor = 'text-emerald-700';
       bgClass = 'bg-emerald-50 border-emerald-100 text-emerald-800';
       description = `نسبة حضور الطالب ممتازة حيث بلغت ${percentage}% (حضر ${present} من أصل ${total} حصص).`;
     } else if (percentage >= 75) {
-      statusLabel = 'مستقر 👍';
+      statusLabel = 'مستقر';
       statusColor = 'text-[#0D5C8C]';
       bgClass = 'bg-sky-50 border-sky-100 text-[#0D5C8C]';
       description = `نسبة حضور الطالب مستقرة عند ${percentage}% (حضر ${present} من أصل ${total} حصص).`;
     } else if (percentage >= 50) {
-      statusLabel = 'إنذار غياب ⚠️';
+      statusLabel = 'إنذار غياب';
       statusColor = 'text-amber-700';
       bgClass = 'bg-amber-50 border-amber-100 text-amber-800';
       description = `انتباه: تراجعت نسبة حضور الطالب إلى ${percentage}% بسبب غيابه المتكرر (${absent} حصص غياب).`;
     } else {
-      statusLabel = 'حرج خطير 🚨';
+      statusLabel = 'حرج خطير';
       statusColor = 'text-rose-700';
       bgClass = 'bg-rose-50 border-rose-100 text-rose-800';
       description = `خطر: نسبة الحضور حرجة جداً وتساوي ${percentage}% (تغيب الطالب في ${absent} حصص من أصل ${total}).`;
@@ -592,7 +592,7 @@ export default function StudentsList() {
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-colors cursor-pointer shadow-sm shadow-red-200 dark:shadow-none"
                   >
                     <Trash2 className="w-4 h-4" />
-                    تأكيد الحذف النهائي 🗑️
+                    تأكيد الحذف النهائي
                   </button>
                 </div>
               </motion.div>
@@ -741,7 +741,7 @@ export default function StudentsList() {
                     ? `تعديل بيانات ${formData.gender === 'female' || isFemaleName(formData.name) ? 'الطالبة' : 'الطالب'}` 
                     : `تسجيل قيد ${formData.gender === 'female' || isFemaleName(formData.name) ? 'طالبة جديدة' : 'طالب جديد'}`}
                 </h3>
-                <button type="button" onClick={() => { setShowAddForm(false); setErrorMessage(''); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer">✕</button>
+                <button type="button" onClick={() => { setShowAddForm(false); setErrorMessage(''); }} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer"></button>
               </div>
 
               {errorMessage && (
@@ -773,7 +773,7 @@ export default function StudentsList() {
                           : 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-blue-50'
                       }`}
                     >
-                      <span>👦</span>
+                      <span>طالب</span>
                       <span>طالب (ذكر)</span>
                     </button>
                     <button
@@ -785,7 +785,7 @@ export default function StudentsList() {
                           : 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-pink-50'
                       }`}
                     >
-                      <span>👧</span>
+                      <span>طالبة</span>
                       <span>طالبة (أنثى)</span>
                     </button>
                   </div>
@@ -850,7 +850,7 @@ export default function StudentsList() {
                   </select>
                   {classes.filter(c => (c.education_type || 'عام') === (formData.education_type || 'عام')).length === 0 && (
                     <p className="text-[11px] text-amber-600 dark:text-amber-400 font-sans mt-1">
-                      ⚠️ لا توجد مجموعات معرفة لـ "{formData.education_type}". يرجى إضافة مجموعة أزهر/عام أولاً.
+                      تنبيه: لا توجد مجموعات معرفة لـ "{formData.education_type}". يرجى إضافة مجموعة أزهر/عام أولاً.
                     </p>
                   )}
                 </div>
@@ -1384,7 +1384,7 @@ export default function StudentsList() {
                   onClick={confirmDelete}
                   className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-black transition-colors cursor-pointer"
                 >
-                  تأكيد الأرشفة 📦
+                  تأكيد الأرشفة
                 </button>
               </div>
             </motion.div>
@@ -1399,3 +1399,5 @@ export default function StudentsList() {
     </>
   );
 }
+
+export default React.memo(StudentsListComponent);

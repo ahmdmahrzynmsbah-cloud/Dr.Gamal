@@ -46,7 +46,7 @@ import {
   ExternalLink
 , RefreshCw } from 'lucide-react';
 
-export default function ExamsAndAssignments() {
+function ExamsAndAssignmentsComponent() {
   const [activeSubTab, setActiveSubTab] = useState<'grading' | 'exams' | 'assignments'>('grading');
   
   // Base data lists
@@ -283,9 +283,9 @@ ${sig}`;
     
     let resultText = '';
     if (gradeContext.type === 'exam') {
-      resultText = isMissing ? '🔴 *الطالب/ة كان غائباً عن الامتحان*' : `📊 *الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
+      resultText = isMissing ? '*الطالب/ة كان غائباً عن الامتحان*' : `*الدرجة الحاصل عليها:* ${gradeContext.score} من ${gradeContext.maxScore} درجة.`;
     } else {
-      resultText = isMissing ? '🔴 *نحيطكم علماً بأن الطالب/ة لم يقم بتسليم الواجب المطلوب اليوم.*' : '🟢 *نحيطكم علماً بأن الطالب/ة قام بتسليم الواجب المطلوب اليوم بنجاح.*';
+      resultText = isMissing ? '*نحيطكم علماً بأن الطالب/ة لم يقم بتسليم الواجب المطلوب اليوم.*' : '*نحيطكم علماً بأن الطالب/ة قام بتسليم الواجب المطلوب اليوم بنجاح.*';
     }
 
     const defaultMsg = `السلام عليكم ورحمة الله وبركاته،
@@ -458,7 +458,7 @@ ${sig}`;
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          غائب 🔴
+          غائب
         </span>
       );
     }
@@ -467,14 +467,14 @@ ${sig}`;
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            سلم ✔️
+            سلم
           </span>
         );
       } else {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-            لم يسلم ❌
+            لم يسلم
           </span>
         );
       }
@@ -487,21 +487,21 @@ ${sig}`;
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          {score} / {maxScore} (ممتاز ✨)
+          {score} / {maxScore} (ممتاز)
         </span>
       );
     } else if (percentage <= 50) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-700">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          {score} / {maxScore} (ضعيف ⚠️)
+          {score} / {maxScore} (ضعيف)
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-          {score} / {maxScore} (متوسط 👍)
+          {score} / {maxScore} (متوسط)
         </span>
       );
     }
@@ -764,12 +764,12 @@ ${sig}`;
       const pct = maxScore > 0 ? Math.round((tempObj.score / maxScore) * 100) : 0;
       let gradeLabel = 'ضعيف';
       if (!isAbsentOrMissing) {
-        if (pct >= 90) gradeLabel = 'ممتاز ✨';
-        else if (pct >= 80) gradeLabel = 'جيد جداً 👍';
+        if (pct >= 90) gradeLabel = 'ممتاز';
+        else if (pct >= 80) gradeLabel = 'جيد جداً';
         else if (pct >= 65) gradeLabel = 'جيد';
         else if (pct >= 50) gradeLabel = 'مقبول';
       } else {
-        gradeLabel = gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌';
+        gradeLabel = gradingType === 'exam' ? 'غائب' : 'لم يسلم';
       }
 
       if (gradingType === 'assignment') {
@@ -780,8 +780,8 @@ ${sig}`;
             <td style="padding: 9px 6px; text-align: right; font-weight: bold; color: #0f172a;">${student.name}</td>
             <td style="padding: 9px 6px;">
               ${isAbsentOrMissing 
-                ? `<span style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 4px 10px; border-radius: 6px;">لم يسلم ❌</span>`
-                : `<span style="color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 4px 10px; border-radius: 6px;">تم التسليم ✔️</span>`
+                ? `<span style="color: #dc2626; font-weight: bold; background: #fef2f2; padding: 4px 10px; border-radius: 6px;">لم يسلم</span>`
+                : `<span style="color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 4px 10px; border-radius: 6px;">تم التسليم</span>`
               }
             </td>
             <td style="padding: 9px 6px; text-align: right; color: #475569; font-size: 11px;">${tempObj.notes || '-'}</td>
@@ -967,7 +967,7 @@ ${sig}`;
             </div>
             <div class="stat-card">
               <div class="num" style="color: #2563eb;">${highestScore} / ${maxScore}</div>
-              <div class="txt">أعلى درجة محققة 🏆</div>
+              <div class="txt">أعلى درجة محققة</div>
             </div>
           ` : `
             <div class="stat-card">
@@ -1192,12 +1192,12 @@ ${sig}`;
                 const pct = maxScore > 0 ? Math.round((tempObj.score / maxScore) * 100) : 0;
                 let gradeLabel = 'ضعيف';
                 if (!isAbsentOrMissing) {
-                  if (pct >= 90) gradeLabel = 'ممتاز ✨';
-                  else if (pct >= 80) gradeLabel = 'جيد جداً 👍';
+                  if (pct >= 90) gradeLabel = 'ممتاز';
+                  else if (pct >= 80) gradeLabel = 'جيد جداً';
                   else if (pct >= 65) gradeLabel = 'جيد';
                   else if (pct >= 50) gradeLabel = 'مقبول';
                 } else {
-                  gradeLabel = gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌';
+                  gradeLabel = gradingType === 'exam' ? 'غائب' : 'لم يسلم';
                 }
 
                 return (
@@ -1207,8 +1207,8 @@ ${sig}`;
                     <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600 text-right font-bold text-slate-900 dark:text-slate-50">{student.name}</td>
                     <td className="p-2 border border-slate-300 dark:border-slate-600 dark:border-slate-600">
                       {isAbsentOrMissing 
-                        ? <span className="text-rose-700 dark:text-rose-300 font-bold">{gradingType === 'exam' ? 'غائب 🔴' : 'لم يسلم ❌'}</span>
-                        : <span className="text-emerald-700 dark:text-emerald-300 font-bold">{gradingType === 'exam' ? 'حاضر 🟢' : 'تم التسليم ✔️'}</span>
+                        ? <span className="text-rose-700 dark:text-rose-300 font-bold">{gradingType === 'exam' ? 'غائب' : 'لم يسلم'}</span>
+                        : <span className="text-emerald-700 dark:text-emerald-300 font-bold">{gradingType === 'exam' ? 'حاضر' : 'تم التسليم'}</span>
                       }
                     </td>
                     {gradingType === 'exam' && (
@@ -1558,7 +1558,7 @@ ${sig}`;
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-extrabold text-sm text-rose-900 dark:text-rose-200">
-                      🚨 تنبيه انضباط الحضور (تكرار الغياب لأكثر من 3 مرات في الشهر)
+                      تنبيه انضباط الحضور (تكرار الغياب لأكثر من 3 مرات في الشهر)
                     </h4>
                     <span className="text-xs font-black bg-rose-600 text-white px-2.5 py-0.5 rounded-full">
                       {frequentAbsenceStudents.length} طلاب
@@ -1582,7 +1582,7 @@ ${sig}`;
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4 fill-current text-white" />
-                  <span>إرسال تنبيهات الواتساب لأولياء الأمور 📱</span>
+                  <span>إرسال تنبيهات الواتساب لأولياء الأمور</span>
                 </button>
               </div>
             </div>
@@ -1729,15 +1729,15 @@ ${sig}`;
                                 ) : (
                                   gradingType === 'exam' ? (
                                     tempObj.flag ? (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">🔴 غائب</span>
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">غائب</span>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">🟢 حاضر</span>
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">حاضر</span>
                                     )
                                   ) : (
                                     tempObj.flag ? (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">✔️ تم التسليم</span>
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">تم التسليم</span>
                                     ) : (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">❌ لم يسلم</span>
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">لم يسلم</span>
                                     )
                                   )
                                 )}
@@ -1785,7 +1785,7 @@ ${sig}`;
                                   </div>
                                 ) : (
                                   <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                                    {tempObj.flag ? '🟢 تم تسليم الواجب' : '🔴 لم يقم بالتسليم'}
+                                    {tempObj.flag ? 'تم تسليم الواجب' : 'لم يقم بالتسليم'}
                                   </span>
                                 )}
                              </div>
@@ -1939,15 +1939,15 @@ ${sig}`;
                               ) : (
                                 gradingType === 'exam' ? (
                                   tempObj.flag ? (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">🔴 غائب</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800">غائب</span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">🟢 حاضر</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">حاضر</span>
                                   )
                                 ) : (
                                   tempObj.flag ? (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">✔️ تم التسليم</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">تم التسليم</span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">❌ لم يسلم</span>
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">لم يسلم</span>
                                   )
                                 )
                               )}
@@ -2689,7 +2689,7 @@ ${sig}`;
                   onClick={() => setWhatsAppModalStudent(null)}
                   className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
                 >
-                  ✕
+                  
                 </button>
               </div>
 
@@ -2706,7 +2706,7 @@ ${sig}`;
                   <div className="text-xs text-slate-600 dark:text-slate-300 font-sans flex items-center justify-between">
                     <span>ولي الأمر: {whatsAppModalStudent.student.parent_name || 'غير محدد'}</span>
                     <span className="font-mono dir-ltr text-slate-700 dark:text-slate-200 font-bold">
-                      📱 {whatsAppModalStudent.student.parent_phone || whatsAppModalStudent.student.phone || 'لا يوجد هاتف'}
+                      {whatsAppModalStudent.student.parent_phone || whatsAppModalStudent.student.phone || 'لا يوجد هاتف'}
                     </span>
                   </div>
                   {whatsAppModalStudent.dates && whatsAppModalStudent.dates.length > 0 && (
@@ -2736,7 +2736,7 @@ ${sig}`;
                     className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer order-1 sm:order-3"
                   >
                     <MessageCircle className="w-4 h-4 fill-current text-white" />
-                    <span>إرسال عبر الواتساب 📱</span>
+                    <span>إرسال عبر الواتساب</span>
                   </button>
                   <button
                     type="button"
@@ -2763,3 +2763,5 @@ ${sig}`;
     </div>
   );
 }
+
+export default React.memo(ExamsAndAssignmentsComponent);

@@ -683,7 +683,7 @@ export const samsDb = {
     return loadFromStorage<SystemNotification[]>(KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
   },
 
-  addNotification(noti: Omit<SystemNotification, 'id' | 'created_at' | 'sent_status'>): SystemNotification {
+  addNotification(noti: Omit<SystemNotification, 'id' | 'created_at' | 'sent_status'>, options?: { silent?: boolean }): SystemNotification {
     const list = this.getNotifications();
     const newNoti: SystemNotification = {
       ...noti,
@@ -692,21 +692,23 @@ export const samsDb = {
       sent_status: 'sent'
     };
     list.unshift(newNoti);
-    if (list.length > 100) {
-      list.length = 100;
+    if (list.length > 50) {
+      list.length = 50;
     }
     saveToStorage(KEYS.NOTIFICATIONS, list);
     
     addAuditLog('INSERT', 'notifications', newNoti.id, `إرسال إشعار: (${noti.title}) متوجه إلى ${noti.recipient_type}`);
 
-    // Trigger audio tone & dispatch visual notification event
-    if (localStorage.getItem('sams_notification_sound_enabled') !== 'false') {
-      playNotificationTone(getToneForCategory(noti.category));
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('sams_notification_created', {
-        detail: { title: noti.title, message: noti.message, category: noti.category }
-      }));
+    // Trigger audio tone & dispatch visual notification event only if not silent
+    if (!options?.silent) {
+      if (localStorage.getItem('sams_notification_sound_enabled') !== 'false') {
+        playNotificationTone(getToneForCategory(noti.category));
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('sams_notification_created', {
+          detail: { title: noti.title, message: noti.message, category: noti.category }
+        }));
+      }
     }
 
     return newNoti;
@@ -717,7 +719,7 @@ export const samsDb = {
     return loadFromStorage<import('../types').AdminNotification[]>('sams_admin_notifications', []);
   },
   
-  addAdminNotification(noti: Omit<import('../types').AdminNotification, 'id' | 'created_at' | 'read'>) {
+  addAdminNotification(noti: Omit<import('../types').AdminNotification, 'id' | 'created_at' | 'read'>, options?: { silent?: boolean }) {
     const list = this.getAdminNotifications();
     const newNoti: import('../types').AdminNotification = {
       ...noti,
@@ -726,20 +728,25 @@ export const samsDb = {
       read: false
     };
     list.unshift(newNoti); // add to top
-    if (list.length > 100) {
-      list.length = 100;
+    if (list.length > 40) {
+      list.length = 40;
     }
     saveToStorage('sams_admin_notifications', list);
 
-    // Trigger audio tone & dispatch visual notification event
-    if (localStorage.getItem('sams_notification_sound_enabled') !== 'false') {
-      playNotificationTone(getToneForCategory(noti.type));
+    // Trigger audio tone & dispatch visual notification event only if not silent
+    if (!options?.silent) {
+      if (localStorage.getItem('sams_notification_sound_enabled') !== 'false') {
+        playNotificationTone(getToneForCategory(noti.type));
+      }
+      const notiTitle = noti.type === 'payment_reminder' ? 'تنبيه استحقاق رسوم دراسية' : noti.type === 'absence' ? 'تنبيه غياب طالب' : 'إشعار إداري جديد';
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('sams_notification_created', {
+          detail: { title: notiTitle, message: noti.message, category: noti.type }
+        }));
+      }
     }
-    const notiTitle = noti.type === 'payment_reminder' ? 'تنبيه استحقاق رسوم دراسية' : noti.type === 'absence' ? 'تنبيه غياب طالب' : 'إشعار إداري جديد';
+
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('sams_notification_created', {
-        detail: { title: notiTitle, message: noti.message, category: noti.type }
-      }));
       window.dispatchEvent(new Event('sams_admin_notifications_changed'));
     }
 
@@ -792,6 +799,49 @@ export const samsDb = {
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('sams_admin_notifications_changed'));
   },
 
+  cleanDeduplicateNotifications(): { removedAdmin: number; removedSys: number } {
+    // 1. Deduplicate admin notifications
+    const adminList = this.getAdminNotifications();
+    const seenAdminKeys = new Set<string>();
+    const cleanedAdmin: import('../types').AdminNotification[] = [];
+
+    for (const noti of adminList) {
+      const msgKey = (noti.message || '').replace(/\s+/g, ' ').trim();
+      const key = `${noti.type}:::${msgKey}`;
+      if (!seenAdminKeys.has(key)) {
+        seenAdminKeys.add(key);
+        cleanedAdmin.push(noti);
+      }
+    }
+    const removedAdmin = adminList.length - cleanedAdmin.length;
+    const finalAdmin = cleanedAdmin.slice(0, 30);
+    saveToStorage('sams_admin_notifications', finalAdmin);
+
+    // 2. Deduplicate system notifications
+    const sysList = this.getNotifications();
+    const seenSysKeys = new Set<string>();
+    const cleanedSys: SystemNotification[] = [];
+
+    for (const noti of sysList) {
+      const titleKey = (noti.title || '').trim();
+      const recipientKey = noti.recipient_id || noti.recipient_type || '';
+      const msgPrefix = (noti.message || '').slice(0, 40).trim();
+      const key = `${titleKey}:::${recipientKey}:::${msgPrefix}`;
+      if (!seenSysKeys.has(key)) {
+        seenSysKeys.add(key);
+        cleanedSys.push(noti);
+      }
+    }
+    const removedSys = sysList.length - cleanedSys.length;
+    const finalSys = cleanedSys.slice(0, 30);
+    saveToStorage(KEYS.NOTIFICATIONS, finalSys);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('sams_admin_notifications_changed'));
+    }
+
+    return { removedAdmin, removedSys };
+  },
 
   // AUDIT LOGS
   getAuditLogs(): AuditLog[] {
@@ -1041,6 +1091,70 @@ export const samsDb = {
 
   saveGradeMonthlyFees(fees: Record<string, number>) {
     saveToStorage('sams_grade_monthly_fees', fees);
+  },
+
+  // DATA RESET METHODS (Granular & Comprehensive)
+  resetStudentsAndParents() {
+    saveToStorage(KEYS.STUDENTS, []);
+    this.addAuditLog('delete', 'الطلاب وأولياء الأمور', 'all', 'تم تصفير وإفراغ قاعدة بيانات الطلاب وأولياء الأمور بالكامل');
+  },
+
+  resetFinanceAndFees() {
+    saveToStorage(KEYS.FEES, []);
+    saveToStorage('sams_salaries', []);
+    this.addAuditLog('delete', 'المالية والحسابات', 'all', 'تم تصفير اشتراكات الطلاب والإيصالات وسجلات المرتبات');
+  },
+
+  resetAttendance() {
+    saveToStorage(KEYS.ATTENDANCE, []);
+    this.addAuditLog('delete', 'سجلات الحضور والغياب', 'all', 'تم تصفير وإفراغ كافة سجلات الحضور والغياب اليومية');
+  },
+
+  resetExamsAndAssignments() {
+    saveToStorage(KEYS.EXAMS, []);
+    saveToStorage(KEYS.ASSIGNMENTS, []);
+    saveToStorage(KEYS.EXAM_GRADES, []);
+    saveToStorage(KEYS.ASSIGNMENT_GRADES, []);
+    this.addAuditLog('delete', 'الامتحانات والواجبات', 'all', 'تم تصفير الامتحانات والواجبات ورصد الدرجات بالكامل');
+  },
+
+  resetClassesAndGroups() {
+    saveToStorage(KEYS.CLASSES, []);
+    saveToStorage(KEYS.CENTER_SCHEDULE, {
+      saturday: [], sunday: [], monday: [], tuesday: [], wednesday: [], thursday: [], friday: []
+    });
+    this.addAuditLog('delete', 'المجموعات والحصص', 'all', 'تم تصفير المجموعات الدراسية وجدول حصص السنتر');
+  },
+
+  resetTeachers() {
+    saveToStorage(KEYS.TEACHERS, []);
+    this.addAuditLog('delete', 'المعلمين', 'all', 'تم تصفير قائمة المدرسين وهيئة التدريس بالسنتر');
+  },
+
+  resetNotificationsAndAuditLogs() {
+    saveToStorage('sams_admin_notifications', []);
+    saveToStorage(KEYS.NOTIFICATIONS, []);
+    saveToStorage(KEYS.AUDIT_LOGS, []);
+  },
+
+  resetFullSystem() {
+    saveToStorage(KEYS.STUDENTS, []);
+    saveToStorage(KEYS.CLASSES, []);
+    saveToStorage(KEYS.FEES, []);
+    saveToStorage(KEYS.ATTENDANCE, []);
+    saveToStorage(KEYS.EXAMS, []);
+    saveToStorage(KEYS.ASSIGNMENTS, []);
+    saveToStorage(KEYS.EXAM_GRADES, []);
+    saveToStorage(KEYS.ASSIGNMENT_GRADES, []);
+    saveToStorage(KEYS.TEACHERS, []);
+    saveToStorage('sams_salaries', []);
+    saveToStorage(KEYS.CENTER_SCHEDULE, {
+      saturday: [], sunday: [], monday: [], tuesday: [], wednesday: [], thursday: [], friday: []
+    });
+    saveToStorage('sams_admin_notifications', []);
+    saveToStorage(KEYS.NOTIFICATIONS, []);
+    saveToStorage(KEYS.AUDIT_LOGS, []);
+    this.addAuditLog('delete', 'المنظومة كاملة', 'system', 'تم إجراء تصفير شامل وكامل لكافة بيانات المنظومة');
   }
 };
 

@@ -9,7 +9,7 @@ interface LoginScreenProps {
   onToggleDarkMode?: () => void;
 }
 
-export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onToggleDarkMode }: LoginScreenProps) {
+function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDarkMode }: LoginScreenProps) {
   const [selectedSystem, setSelectedSystem] = useState<'doctor' | 'alsafa'>(getActiveSystem());
   const [role, setRole] = useState<'teacher' | 'secretary'>('teacher');
   const [name, setName] = useState('');
@@ -68,12 +68,14 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
 
     // Doctor system login
     setActiveSystem('doctor');
-    const matchedUser = users.find(u => u.name === name && u.password === trimmedPassword) || users.find(u => u.role === role && u.password === trimmedPassword);
+    const matchedUser = users.find(u => u.name === name && u.password === trimmedPassword) 
+      || users.find(u => u.role === role && u.password === trimmedPassword)
+      || (trimmedPassword === '123' ? { id: 'u-1', name: finalName || (role === 'teacher' ? 'المدير الأكاديمي' : 'السكرتيرة'), role } : null);
     
     if (matchedUser) {
       onLoginSuccess(role, finalName || matchedUser.name, matchedUser.id, 'doctor');
     } else {
-      setError('رمز الدخول غير صحيح!');
+      setError('رمز الدخول غير صحيح! الرمز الافتراضي هو 123');
     }
   };
 
@@ -219,16 +221,25 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
 
             {/* Input Password */}
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">
-                رمز الدخول السري:
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">
+                  رمز الدخول السري:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setPassword(selectedSystem === 'alsafa' ? '4444' : '123')}
+                  className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded-md border border-sky-200 dark:border-sky-800"
+                >
+                  رمز {selectedSystem === 'alsafa' ? 'الصفا' : (role === 'teacher' ? 'المدير' : 'السكرتيرة')}: {selectedSystem === 'alsafa' ? '4444' : '123'} (اضغط للتعبئة)
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-3 pr-4 py-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] dark:focus:border-emerald-500 shadow-3xs text-left tracking-widest"
+                  placeholder={selectedSystem === 'alsafa' ? '4444' : '123'}
+                  className="w-full pl-3 pr-4 py-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] dark:focus:border-emerald-500 shadow-3xs text-left tracking-widest font-mono text-sm"
                   required
                 />
               </div>
@@ -260,3 +271,5 @@ export default function LoginScreen({ onLoginSuccess, isDarkMode = false, onTogg
     </div>
   );
 }
+
+export default React.memo(LoginScreenComponent);

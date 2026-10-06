@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export default function InstallPWAButton() {
+function InstallPWAButtonComponent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
@@ -62,3 +62,5 @@ export default function InstallPWAButton() {
     </AnimatePresence>
   );
 }
+
+export default React.memo(InstallPWAButtonComponent);

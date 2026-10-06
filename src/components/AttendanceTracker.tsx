@@ -88,7 +88,7 @@ const getMonthlyScheduleDates = (dateStr: string, classScheduleDays: string | un
   return dates;
 };
 
-export default function AttendanceTracker() {
+function AttendanceTrackerComponent() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -852,7 +852,7 @@ export default function AttendanceTracker() {
                       const studentAtt = attendance.find(a => a.student_id === student.id && a.date === md.dateStr);
                       let mark = '';
                       if (studentAtt) {
-                        if (studentAtt.status === 'present') mark = '✓';
+                        if (studentAtt.status === 'present') mark = '';
                         else if (studentAtt.status === 'absent') mark = 'غ';
                         else if (studentAtt.status === 'excused') mark = 'إ';
                       }
@@ -885,3 +885,5 @@ export default function AttendanceTracker() {
     </div>
   );
 }
+
+export default React.memo(AttendanceTrackerComponent);

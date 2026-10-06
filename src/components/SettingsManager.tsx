@@ -5,9 +5,17 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Image, MessageSquare, Key, Save, RefreshCw, LogOut, HelpCircle, CheckCircle2, Moon, Sun, Palette, Volume2, VolumeX, Bell, Play, Sparkles, Download, Upload, ShieldCheck, HardDrive } from 'lucide-react';
+import { 
+  Settings, Image, MessageSquare, Key, Save, RefreshCw, LogOut, HelpCircle, 
+  CheckCircle2, Moon, Sun, Palette, Volume2, VolumeX, Bell, Play, Sparkles, 
+  Download, Upload, ShieldCheck, HardDrive, Trash2, AlertTriangle, Users, 
+  GraduationCap, CreditCard, CalendarCheck2, Award, BookOpen, Layers, 
+  UserCheck, Activity, AlertOctagon, Check, X, ShieldAlert, RotateCcw,
+  Eye, EyeOff
+} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { playNotificationTone, NotificationTone, TONE_OPTIONS } from '../utils/audioAlerts';
+import { samsDb } from '../utils/db';
 
 interface SettingsManagerProps {
   onSettingsSaved: () => void;
@@ -18,7 +26,7 @@ interface SettingsManagerProps {
   onToggleDarkMode?: () => void;
 }
 
-export default function SettingsManager({ onSettingsSaved, onLogout, userRole, userName, isDarkMode = false, onToggleDarkMode }: SettingsManagerProps) {
+function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userName, isDarkMode = false, onToggleDarkMode }: SettingsManagerProps) {
   // State variables for customization
   const [appName, setAppName] = useState(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
   const [appLogo, setAppLogo] = useState(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
@@ -62,9 +70,288 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
   const [visualAlertsEnabled, setVisualAlertsEnabled] = useState<boolean>(
     localStorage.getItem('sams_visual_alerts_enabled') !== 'false'
   );
+  const [startupAutoNotis, setStartupAutoNotis] = useState<boolean>(
+    localStorage.getItem('sams_startup_auto_notis_enabled') === 'true'
+  );
+
+  const handleCleanNotifications = () => {
+    const res = samsDb.cleanDeduplicateNotifications();
+    try {
+      localStorage.removeItem('sams_sent_reminders_map');
+    } catch (e) {}
+    setNotification({
+      type: 'success',
+      message: `تم تنظيف وتصفية الإشعارات المتراكمة بنجاح (تم تصفية ${res.removedAdmin + res.removedSys} إشعار متكرر)، وأصبح النظام سريعاً وخفيفاً!`
+    });
+    setTimeout(() => setNotification(null), 4000);
+  };
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  interface ResetTargetConfig {
+    id: string;
+    title: string;
+    category: string;
+    description: string;
+    warningNote: string;
+    badge: string;
+    icon: React.ReactNode;
+    colorClasses: {
+      bg: string;
+      border: string;
+      text: string;
+      badgeBg: string;
+      badgeText: string;
+      btnBg: string;
+      btnHover: string;
+    };
+    isFullSystem?: boolean;
+    onExecute: () => void;
+  }
+
+  const [activeResetModal, setActiveResetModal] = useState<ResetTargetConfig | null>(null);
+  const [resetConfirmationCode, setResetConfirmationCode] = useState('');
+  const [resetErrorText, setResetErrorText] = useState('');
+  const [isResetExecuting, setIsResetExecuting] = useState(false);
+  const [showResetPass, setShowResetPass] = useState(false);
+
+  const resetTargets: ResetTargetConfig[] = [
+    {
+      id: 'students',
+      title: 'تصفير الطلاب وأولياء الأمور',
+      category: 'شؤون الطلاب',
+      badge: 'الطلاب والملفات',
+      description: 'مسح وإفراغ كافة سجلات الطلاب وأولياء الأمور وأرقام التواصل وأرقام القيد من المنظومة.',
+      warningNote: 'سيتم حذف جميع بطاقات الطلاب والملفات الشخصية نهائياً من قاعدة البيانات.',
+      icon: <Users className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+      colorClasses: {
+        bg: 'bg-rose-50/50 dark:bg-rose-950/20',
+        border: 'border-rose-200/80 dark:border-rose-800/40',
+        text: 'text-rose-700 dark:text-rose-300',
+        badgeBg: 'bg-rose-100 dark:bg-rose-900/50',
+        badgeText: 'text-rose-800 dark:text-rose-200',
+        btnBg: 'bg-rose-600',
+        btnHover: 'hover:bg-rose-700',
+      },
+      onExecute: () => {
+        samsDb.resetStudentsAndParents();
+      }
+    },
+    {
+      id: 'finance',
+      title: 'تصفير الحسابات والاشتراكات',
+      category: 'المالية والخزينة',
+      badge: 'الرسوم والإيصالات',
+      description: 'تصفير كافة اشتراكات الشهور وإيصالات السداد وحسابات مرتبات السكرتارية والمصروفات.',
+      warningNote: 'سيتم مسح سجلات الدفع والتحصيل والإيصالات السابقة بالكامل وتصفير مبالغ الإيرادات.',
+      icon: <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
+      colorClasses: {
+        bg: 'bg-amber-50/50 dark:bg-amber-950/20',
+        border: 'border-amber-200/80 dark:border-amber-800/40',
+        text: 'text-amber-700 dark:text-amber-300',
+        badgeBg: 'bg-amber-100 dark:bg-amber-900/50',
+        badgeText: 'text-amber-800 dark:text-amber-200',
+        btnBg: 'bg-amber-600',
+        btnHover: 'hover:bg-amber-700',
+      },
+      onExecute: () => {
+        samsDb.resetFinanceAndFees();
+      }
+    },
+    {
+      id: 'attendance',
+      title: 'تصفير الحضور والغياب',
+      category: 'الانضباط والانتظام',
+      badge: 'سجلات الحضور اليومية',
+      description: 'مسح وتصفير جميع كشوفات الحضور والغياب والاستئذان لجميع المجموعات والتواريخ.',
+      warningNote: 'سيتم تصفير دفاتر الحضور التراكمية وسجلات الحصص السابقة.',
+      icon: <CalendarCheck2 className="w-5 h-5 text-sky-600 dark:text-sky-400" />,
+      colorClasses: {
+        bg: 'bg-sky-50/50 dark:bg-sky-950/20',
+        border: 'border-sky-200/80 dark:border-sky-800/40',
+        text: 'text-sky-700 dark:text-sky-300',
+        badgeBg: 'bg-sky-100 dark:bg-sky-900/50',
+        badgeText: 'text-sky-800 dark:text-sky-200',
+        btnBg: 'bg-sky-600',
+        btnHover: 'hover:bg-sky-700',
+      },
+      onExecute: () => {
+        samsDb.resetAttendance();
+      }
+    },
+    {
+      id: 'exams',
+      title: 'تصفير الامتحانات والواجبات',
+      category: 'التقييم الأكاديمي',
+      badge: 'الاختبارات والدرجات',
+      description: 'تصفير كافة الامتحانات والواجبات المنزلية ونتائج ورصد درجات الطلاب بالكامل.',
+      warningNote: 'سيتم مسح كشوفات الدرجات الشهرية والاختبارات التراكمية لجميع الصفوف.',
+      icon: <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
+      colorClasses: {
+        bg: 'bg-purple-50/50 dark:bg-purple-950/20',
+        border: 'border-purple-200/80 dark:border-purple-800/40',
+        text: 'text-purple-700 dark:text-purple-300',
+        badgeBg: 'bg-purple-100 dark:bg-purple-900/50',
+        badgeText: 'text-purple-800 dark:text-purple-200',
+        btnBg: 'bg-purple-600',
+        btnHover: 'hover:bg-purple-700',
+      },
+      onExecute: () => {
+        samsDb.resetExamsAndAssignments();
+      }
+    },
+    {
+      id: 'classes',
+      title: 'تصفير المجموعات والحصص',
+      category: 'الجداول والقاعات',
+      badge: 'المجموعات الدراسية',
+      description: 'تصفير جميع المجموعات الدراسية وجدول الحصص الأسبوعي للسنتر بالكامل.',
+      warningNote: 'سيتم مسح المجموعات والمواعيد المقررة لجميع الصفوف الدراسية.',
+      icon: <Layers className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      colorClasses: {
+        bg: 'bg-teal-50/50 dark:bg-teal-950/20',
+        border: 'border-teal-200/80 dark:border-teal-800/40',
+        text: 'text-teal-700 dark:text-teal-300',
+        badgeBg: 'bg-teal-100 dark:bg-teal-900/50',
+        badgeText: 'text-teal-800 dark:text-teal-200',
+        btnBg: 'bg-teal-600',
+        btnHover: 'hover:bg-teal-700',
+      },
+      onExecute: () => {
+        samsDb.resetClassesAndGroups();
+      }
+    },
+    {
+      id: 'teachers',
+      title: 'تصفير قائمة المعلمين',
+      category: 'هيئة التدريس',
+      badge: 'المعلمون والمشرفون',
+      description: 'تصفير وحذف قائمة المدرسين والمشرفين الأكاديميين المسجلين في السنتر.',
+      warningNote: 'سيتم حذف ملفات المعلمين وتخصصاتهم المسجلة في السنتر.',
+      icon: <UserCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+      colorClasses: {
+        bg: 'bg-indigo-50/50 dark:bg-indigo-950/20',
+        border: 'border-indigo-200/80 dark:border-indigo-800/40',
+        text: 'text-indigo-700 dark:text-indigo-300',
+        badgeBg: 'bg-indigo-100 dark:bg-indigo-900/50',
+        badgeText: 'text-indigo-800 dark:text-indigo-200',
+        btnBg: 'bg-indigo-600',
+        btnHover: 'hover:bg-indigo-700',
+      },
+      onExecute: () => {
+        samsDb.resetTeachers();
+      }
+    },
+    {
+      id: 'notifications',
+      title: 'تصفير الإشعارات وسجل العمليات',
+      category: 'الأمان والتتبع',
+      badge: 'التنبيهات والمراجعة',
+      description: 'مسح كافة الإشعارات الإدارية والتنبيهات وسجل تدقيق العمليات الحية (Audit Logs).',
+      warningNote: 'سيتم تفريغ صندوق الإشعارات ومسح سجل الحركات السابقة في السنتر.',
+      icon: <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />,
+      colorClasses: {
+        bg: 'bg-slate-50 dark:bg-slate-900/40',
+        border: 'border-slate-200 dark:border-slate-700',
+        text: 'text-slate-700 dark:text-slate-300',
+        badgeBg: 'bg-slate-100 dark:bg-slate-800',
+        badgeText: 'text-slate-800 dark:text-slate-200',
+        btnBg: 'bg-slate-700',
+        btnHover: 'hover:bg-slate-800',
+      },
+      onExecute: () => {
+        samsDb.resetNotificationsAndAuditLogs();
+      }
+    },
+    {
+      id: 'full_system',
+      title: 'التصفير الشامل والكامل للنظام (ضبط المصنع)',
+      category: 'إعادة تهيئة كلية',
+      badge: 'تصفير شامل',
+      description: 'تصفير جذري وشامل لكافة قواعد بيانات النظام (الطلاب، الحسابات، الحضور، الامتحانات، المجموعات، والمعلمين) للبدء من الصفر تماماً.',
+      warningNote: 'تحذير صارم: هذا الإجراء سيمسح جميع بيانات السنتر بلا استثناء ويعيد المنظومة نظيفة كالمصنع!',
+      icon: <AlertOctagon className="w-6 h-6 text-red-600 dark:text-red-400" />,
+      isFullSystem: true,
+      colorClasses: {
+        bg: 'bg-red-500/10 dark:bg-red-950/30',
+        border: 'border-red-500/30 dark:border-red-500/40',
+        text: 'text-red-700 dark:text-red-400',
+        badgeBg: 'bg-red-500/20',
+        badgeText: 'text-red-700 dark:text-red-300',
+        btnBg: 'bg-red-600',
+        btnHover: 'hover:bg-red-700',
+      },
+      onExecute: () => {
+        samsDb.resetFullSystem();
+      }
+    }
+  ];
+
+  const handleExecuteReset = () => {
+    if (!activeResetModal) return;
+    
+    const code = resetConfirmationCode.trim();
+    if (!code) {
+      setResetErrorText('يرجى كتابة رمز الدخول السري للسيستم الخاص بك.');
+      return;
+    }
+
+    const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+    const storageKey = isAlsafa ? 'sams_alsafa_system_users' : 'sams_system_users';
+    let systemUsers: any[] = [];
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) systemUsers = JSON.parse(raw);
+    } catch (e) {}
+
+    const validPasscodes = new Set<string>();
+    if (Array.isArray(systemUsers) && systemUsers.length > 0) {
+      systemUsers.forEach(u => {
+        if (u.password && String(u.password).trim()) {
+          validPasscodes.add(String(u.password).trim());
+        }
+      });
+    }
+
+    // Default system passcodes for active system
+    if (isAlsafa) {
+      validPasscodes.add('4444');
+    } else {
+      validPasscodes.add('123');
+    }
+
+    if (!validPasscodes.has(code)) {
+      setResetErrorText('رمز السيستم السري غير صحيح! يرجى إدخال رمز الدخول الخاص بحسابك.');
+      return;
+    }
+
+    setIsResetExecuting(true);
+    setResetErrorText('');
+
+    try {
+      activeResetModal.onExecute();
+      
+      // Notify parent to refresh state and tabs
+      onSettingsSaved();
+
+      setNotification({
+        type: 'success',
+        message: `تم بنجاح ${activeResetModal.title} وتحديث كافة واجهات المنظومة فوراً!`
+      });
+
+      setActiveResetModal(null);
+      setResetConfirmationCode('');
+      setShowResetPass(false);
+    } catch (err: any) {
+      setNotification({
+        type: 'error',
+        message: `حدث خطأ أثناء التصفير: ${err?.message || 'يرجى المحاولة مجدداً'}`
+      });
+    } finally {
+      setIsResetExecuting(false);
+    }
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,6 +400,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
       localStorage.setItem('sams_tone_admin', toneAdmin);
       localStorage.setItem('sams_notification_sound_enabled', soundEnabled ? 'true' : 'false');
       localStorage.setItem('sams_visual_alerts_enabled', visualAlertsEnabled ? 'true' : 'false');
+      localStorage.setItem('sams_startup_auto_notis_enabled', startupAutoNotis ? 'true' : 'false');
 
       setNotification({
         type: 'success',
@@ -376,41 +664,87 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
           <div className="p-4 sm:p-5 space-y-5 text-right">
             
             {/* Toggles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-3.5 bg-slate-50/80 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between gap-3">
                 <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
                     التنبيه الصوتي التلقائي
                   </h4>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400">تشغيل نغمة عند إضافة أو وصول إشعار جديد بالسيستم</p>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={soundEnabled}
-                  onChange={(e) => {
-                    setSoundEnabled(e.target.checked);
-                    if (e.target.checked) playNotificationTone(notificationTone as NotificationTone);
-                  }}
-                  className="w-4 h-4 accent-[#0D5C8C] cursor-pointer shrink-0"
-                />
+                <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-400">{soundEnabled ? 'مفعل' : 'معطل'}</span>
+                  <input
+                    type="checkbox"
+                    checked={soundEnabled}
+                    onChange={(e) => {
+                      setSoundEnabled(e.target.checked);
+                      if (e.target.checked) playNotificationTone(notificationTone as NotificationTone);
+                    }}
+                    className="w-4 h-4 accent-[#0D5C8C] cursor-pointer shrink-0"
+                  />
+                </div>
               </div>
 
-              <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="p-3.5 bg-slate-50/80 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between gap-3">
                 <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                     <Bell className="w-4 h-4 text-amber-500" />
-                    التنبيه المرئي البارز (Pop-up Alert)
+                    التنبيه المرئي البارز (Pop-up)
                   </h4>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400">عرض بنر منبثق أعلى الشاشة عند رصد إشعارات جديدة</p>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={visualAlertsEnabled}
-                  onChange={(e) => setVisualAlertsEnabled(e.target.checked)}
-                  className="w-4 h-4 accent-[#0D5C8C] cursor-pointer shrink-0"
-                />
+                <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-400">{visualAlertsEnabled ? 'مفعل' : 'معطل'}</span>
+                  <input
+                    type="checkbox"
+                    checked={visualAlertsEnabled}
+                    onChange={(e) => setVisualAlertsEnabled(e.target.checked)}
+                    className="w-4 h-4 accent-[#0D5C8C] cursor-pointer shrink-0"
+                  />
+                </div>
               </div>
+
+              <div className="p-3.5 bg-slate-50/80 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between gap-3">
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-sky-500" />
+                    فحص الاشتراكات عند بدء السيستم
+                  </h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">إلغاؤه يمنع بطء أو تدفق إشعارات الرسوم عند فتح النظام</p>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-200/40 dark:border-slate-800">
+                  <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{startupAutoNotis ? 'مفعل (ملخص يومي)' : 'معطل (سرعة قصوى)'}</span>
+                  <input
+                    type="checkbox"
+                    checked={startupAutoNotis}
+                    onChange={(e) => setStartupAutoNotis(e.target.checked)}
+                    className="w-4 h-4 accent-[#0D5C8C] cursor-pointer shrink-0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Notification Clean & Deduplication Banner */}
+            <div className="p-3.5 bg-amber-500/10 dark:bg-amber-950/30 rounded-xl border border-amber-200/60 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                  <RotateCcw className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  تنظيف وتصفية الإشعارات المتراكمة وتسريع المنظومة
+                </h4>
+                <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                  إذا واجهت أي بطء بسبب تراكم الإشعارات السابقة، انقر لتنظيف التكرار فوراً دون حذف بيانات الطلاب.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCleanNotifications}
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shrink-0 transition-colors shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                تنظيف وتصفية الإشعارات الآن
+              </button>
             </div>
 
             {/* Category-Specific Sound Dropdowns with Trial Listen Button */}
@@ -419,7 +753,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100">
                   تخصيص نغمة التنبيه لكل نوع من الإشعارات (انقر زر الاستماع لتجربة الصوت):
                 </label>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">اختر النغمة ثم اضغط تجربة 🔊</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">اختر النغمة ثم اضغط تجربة</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -861,15 +1195,150 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
           </div>
         </div>
 
+        {/* ========================================================= */}
+        {/* مركز تصفير وإدارة بيانات المنظومة (System Reset & Cleanup) */}
+        {/* ========================================================= */}
+        <div id="system-reset-section" className="bg-white dark:bg-slate-800 rounded-2xl border border-red-200/80 dark:border-red-900/40 shadow-xs overflow-hidden">
+          <div className="p-4 sm:p-6 bg-gradient-to-r from-red-500/10 via-rose-500/5 to-transparent border-b border-red-150 dark:border-red-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-md shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                    مركز تصفير وإدارة بيانات المنظومة
+                  </h2>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                    عمليات مستقلة وآمنة
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  أزرار متخصصة لتصفير كل قطاع من بيانات السنتر بشكل منظم ومستقل دون المساس بباقي الأقسام
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportBackup}
+              className="self-start sm:self-auto px-3.5 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>تحميل نسخة احتياطية أولاً</span>
+            </button>
+          </div>
+
+          <div className="p-4 sm:p-6 space-y-4">
+            {/* Grid of Modular Reset Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {resetTargets.filter(t => !t.isFullSystem).map((target) => (
+                <div 
+                  key={target.id}
+                  className={`p-4 rounded-xl border ${target.colorClasses.bg} ${target.colorClasses.border} flex flex-col justify-between gap-3.5 transition-all hover:shadow-sm`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-xs">
+                        {target.icon}
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${target.colorClasses.badgeBg} ${target.colorClasses.badgeText}`}>
+                        {target.badge}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">
+                        {target.title}
+                      </h3>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
+                        {target.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveResetModal(target);
+                      setResetConfirmationCode('');
+                      setResetErrorText('');
+                    }}
+                    className={`w-full py-2.5 px-3 ${target.colorClasses.btnBg} ${target.colorClasses.btnHover} text-white text-xs font-bold rounded-xl shadow-xs transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-1.5`}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>تصفير {target.category}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Special Highlight Card: Full System Reset */}
+            {resetTargets.find(t => t.isFullSystem) && (() => {
+              const fullTarget = resetTargets.find(t => t.isFullSystem)!;
+              return (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-500/15 via-rose-500/10 to-amber-500/10 border-2 border-red-500/30 dark:border-red-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg shrink-0 ring-4 ring-red-500/20">
+                      <AlertOctagon className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm sm:text-base font-extrabold text-red-900 dark:text-red-200">
+                          {fullTarget.title}
+                        </h3>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-600 text-white shadow-xs">
+                          إجراء حاسم ومحمي
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-800/80 dark:text-red-300/80 leading-relaxed mt-1">
+                        {fullTarget.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveResetModal(fullTarget);
+                      setResetConfirmationCode('');
+                      setResetErrorText('');
+                    }}
+                    className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0 flex items-center justify-center gap-2 border border-red-500/40"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>تصفير السيستم بالكامل</span>
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
         {/* Action Controls */}
         <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center justify-between gap-4 p-4 bg-slate-50/50 border border-gray-100 dark:border-gray-700 rounded-2xl">
-          <button
-            type="button"
-            onClick={() => setShowResetConfirm(true)}
-            className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-transform active:scale-95 cursor-pointer"
-          >
-            استعادة افتراضيات المصنع
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowResetConfirm(true)}
+              className="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-gray-200 dark:border-gray-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+              <span>استعادة افتراضيات الهوية والرسائل</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('system-reset-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-4 py-2.5 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 rounded-xl text-xs font-bold transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>أزرار تصفير وحذف البيانات</span>
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -881,7 +1350,7 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
         </div>
       </form>
 
-      {/* Reset Defaults Modal */}
+      {/* Reset Defaults Modal (Templates) */}
       <AnimatePresence>
         {showResetConfirm && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
@@ -896,17 +1365,17 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
                   <RefreshCw className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-950 text-sm">استعادة القيم الافتراضية للنظام</h3>
+                  <h3 className="font-bold text-slate-950 dark:text-slate-100 text-sm">استعادة القيم الافتراضية للنظام</h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans font-medium">سيتم مسح قوالب الرسائل المخصصة</p>
                 </div>
               </div>
 
               <div className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-sans space-y-1.5 py-2 bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                <p>هل أنت متأكد من رغبتك في استعادة القيم الافتراضية للنظام؟</p>
+                <p>هل أنت متأكد من رغبتك في استعادة القيم الافتراضية لقوالب الرسائل؟</p>
                 <p className="text-[10px] text-slate-400">تحذير: سيتم إرجاع اسم التطبيق وقوالب الرسائل إلى صيغتها الأولية.</p>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-50">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
@@ -926,6 +1395,136 @@ export default function SettingsManager({ onSettingsSaved, onLogout, userRole, u
           </div>
         )}
       </AnimatePresence>
+
+      {/* Dynamic Modular Reset Confirmation Modal */}
+      <AnimatePresence>
+        {activeResetModal && (
+          <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 overflow-y-auto animate-fade-in" dir="rtl">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl border border-gray-150 dark:border-gray-700 shadow-2xl max-w-lg w-full max-h-[92vh] flex flex-col text-right overflow-hidden my-auto"
+            >
+              {/* Scrollable Modal Content */}
+              <div className="p-4 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-4 flex-1">
+                {/* Modal Header */}
+                <div className="flex items-start gap-3 sm:gap-3.5">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
+                    activeResetModal.isFullSystem ? 'bg-red-600 text-white' : 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300'
+                  }`}>
+                    {activeResetModal.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm sm:text-base leading-tight">
+                        {activeResetModal.title}
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 shrink-0">
+                        {activeResetModal.badge || activeResetModal.category}
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      {activeResetModal.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Warning Banner */}
+                <div className="p-3 sm:p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-800 dark:text-red-200 space-y-1.5 font-sans">
+                  <div className="flex items-center gap-1.5 font-bold text-red-700 dark:text-red-300 text-xs">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>تنبيه هام لا يمكن التراجع عنه:</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    {activeResetModal.warningNote}
+                  </p>
+                  <div className="pt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[10px] text-red-600 dark:text-red-400 border-t border-red-200/50 dark:border-red-900/40">
+                    <span>يوصى بتحميل نسخة احتياطية أولاً لحفظ البيانات</span>
+                    <button
+                      type="button"
+                      onClick={handleExportBackup}
+                      className="underline font-bold hover:text-red-800 dark:hover:text-red-300 cursor-pointer self-start sm:self-auto"
+                    >
+                      تنزيل نسخة احتياطية الآن
+                    </button>
+                  </div>
+                </div>
+
+                {/* System Passcode Confirmation Input */}
+                <div className="space-y-1.5 bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                    لإتمام {activeResetModal.isFullSystem ? 'التصفير الشامل' : 'العملية'}، أدخل <span className="text-red-600 font-extrabold font-mono">رمز السيستم السري</span> الخاص بك:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showResetPass ? 'text' : 'password'}
+                      value={resetConfirmationCode}
+                      onChange={(e) => {
+                        setResetConfirmationCode(e.target.value);
+                        setResetErrorText('');
+                      }}
+                      placeholder="أدخل رمز الدخول السري للسيستم..."
+                      className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-red-500 font-mono text-center font-bold tracking-widest"
+                      autoFocus
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPass(!showResetPass)}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
+                      title={showResetPass ? 'إخفاء الرمز' : 'إظهار الرمز'}
+                    >
+                      {showResetPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {resetErrorText ? (
+                    <p className="text-[11px] font-bold text-red-600 animate-pulse mt-1">
+                      {resetErrorText}
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                      اكتب رمز المرور الخاص بحسابك أو المدير لتأكيد العملية بأمان
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons (Fully Responsive on Mobile) */}
+              <div className="p-3 sm:p-4 bg-slate-50/80 dark:bg-slate-900/70 border-t border-slate-100 dark:border-slate-700 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-2.5">
+                <button
+                  type="button"
+                  disabled={isResetExecuting}
+                  onClick={() => {
+                    setActiveResetModal(null);
+                    setResetConfirmationCode('');
+                    setResetErrorText('');
+                    setShowResetPass(false);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-xl text-xs font-bold cursor-pointer transition-colors text-center"
+                >
+                  إلغاء التراجع
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isResetExecuting}
+                  onClick={handleExecuteReset}
+                  className={`w-full sm:w-auto px-5 py-2.5 sm:py-2 ${activeResetModal.colorClasses.btnBg} ${activeResetModal.colorClasses.btnHover} text-white rounded-xl text-xs sm:text-sm font-black shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50`}
+                >
+                  <Trash2 className="w-4 h-4 shrink-0" />
+                  <span>
+                    {isResetExecuting ? 'جاري التصفير...' : `تأكيد تصفير ${activeResetModal.category}`}
+                  </span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+export default React.memo(SettingsManagerComponent);

@@ -28,7 +28,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 
-export default function SystemAuditLogs() {
+function SystemAuditLogsComponent() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'insert' | 'update' | 'delete'>('all');
@@ -400,7 +400,7 @@ export default function SystemAuditLogs() {
             })
           ) : (
             <div className="text-center py-16 space-y-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-              <div className="text-4xl text-slate-300">🔍</div>
+              
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد سجلات معاملات مطابقة لخيارات البحث أو التصفية الحالية</p>
               <p className="text-[10px] text-slate-400 max-w-sm mx-auto">
                 قم بمراجعة كلمات البحث، أو اختر فلاتر أخرى مثل "الكل" لعرض المعاملات الحية المسجلة.
@@ -414,3 +414,5 @@ export default function SystemAuditLogs() {
     </div>
   );
 }
+
+export default React.memo(SystemAuditLogsComponent);

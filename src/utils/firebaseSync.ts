@@ -1,4 +1,4 @@
-import { doc, setDoc, onSnapshot, getDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const COLLECTION_NAME = 'sams_system_store';
@@ -42,7 +42,7 @@ export function syncToFirebase(key: string, data: any) {
     } finally {
       setTimeout(() => { isLocalUpdate = false; }, 300);
     }
-  }, 600); // 600ms debounce prevents flooding Firestore write stream during batch operations
+  }, 600);
 }
 
 // Keys to listen and sync across devices
@@ -89,13 +89,25 @@ const ALL_SYNC_KEYS = [
 ];
 
 let isInitialized = false;
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+function notifyDbSync(key: string) {
+  if (typeof window === 'undefined') return;
+  if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(() => {
+    syncDebounceTimer = null;
+    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+  }, 100);
+}
+
+let hasNotifiedConnected = false;
 
 export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'syncing' | 'error') => void) {
   if (isInitialized) return;
   isInitialized = true;
 
   if (onSyncStatusChange) onSyncStatusChange('syncing');
-  
+
   // Register beforeunload to save any pending writes immediately
   if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', () => {
@@ -103,59 +115,57 @@ export function initFirebaseSync(onSyncStatusChange?: (status: 'connected' | 'sy
     });
   }
 
-  // Stagger listener initialization smoothly
-  ALL_SYNC_KEYS.forEach((key, index) => {
-    setTimeout(() => {
-      try {
-        const docRef = doc(db, COLLECTION_NAME, key);
+  // Asynchronously attach listeners without blocking the main thread or freezing UI
+  setTimeout(() => {
+    ALL_SYNC_KEYS.forEach((key, index) => {
+      setTimeout(() => {
+        try {
+          const docRef = doc(db, COLLECTION_NAME, key);
 
-        // Real-time listener: fires immediately with existing data or non-existence
-        onSnapshot(docRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            if (data && data.payload) {
-              const currentLocal = localStorage.getItem(key);
-              const remoteTs = data.updatedAt || 0;
-              const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10);
+          onSnapshot(docRef, (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              if (data && data.payload) {
+                const currentLocal = localStorage.getItem(key);
+                const remoteTs = data.updatedAt || 0;
+                const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10);
 
-              if (currentLocal !== data.payload) {
-                if (localTs > remoteTs) {
-                  try {
-                    syncToFirebase(key, JSON.parse(currentLocal));
-                  } catch (e) {}
-                } else {
-                  localStorage.setItem(key, data.payload);
-                  localStorage.setItem(`${key}_ts`, remoteTs.toString());
-                  if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('sams_db_sync', { detail: { key, remote: true } }));
+                if (currentLocal !== data.payload) {
+                  if (localTs > remoteTs) {
+                    try {
+                      syncToFirebase(key, JSON.parse(currentLocal));
+                    } catch (e) {}
+                  } else {
+                    localStorage.setItem(key, data.payload);
+                    localStorage.setItem(`${key}_ts`, remoteTs.toString());
+                    notifyDbSync(key);
                   }
                 }
               }
+            } else {
+              const localVal = localStorage.getItem(key);
+              if (localVal) {
+                try {
+                  syncToFirebase(key, JSON.parse(localVal));
+                } catch (e) {}
+              }
             }
-          } else {
-            // Document does not exist in remote yet, push local if present
-            const localVal = localStorage.getItem(key);
-            if (localVal) {
-              try {
-                syncToFirebase(key, JSON.parse(localVal));
-              } catch (e) {}
+            if (onSyncStatusChange && !hasNotifiedConnected) {
+              hasNotifiedConnected = true;
+              onSyncStatusChange('connected');
             }
-          }
-          if (onSyncStatusChange) onSyncStatusChange('connected');
-        }, (error) => {
-          // Graceful handling when offline or connection is momentarily unavailable
-          if (error?.code === 'unavailable') {
-            if (onSyncStatusChange) onSyncStatusChange('connected');
-          } else {
-            console.warn(`[Firebase Sync Listener] ${key}:`, error?.message || error);
-            if (onSyncStatusChange) onSyncStatusChange('connected');
-          }
-        });
-      } catch (err) {
-        // Safe catch for environment issues
-      }
-    }, index * 60);
-  });
+          }, () => {
+            if (onSyncStatusChange && !hasNotifiedConnected) {
+              hasNotifiedConnected = true;
+              onSyncStatusChange('connected');
+            }
+          });
+        } catch {
+          // Safe catch
+        }
+      }, index * 10);
+    });
+  }, 100);
 }
 
 // Synchronous push for beforeunload to ensure no data loss on refresh
@@ -164,7 +174,6 @@ function forcePushLocalToCloudSync() {
     const payloadToSync = pendingPayloads[key];
     if (payloadToSync !== undefined) {
       const localTs = parseInt(localStorage.getItem(`${key}_ts`) || '0', 10) || Date.now();
-      // Use standard sync since we can't await in beforeunload, but firestore JS SDK might process it.
       const docRef = doc(db, COLLECTION_NAME, key);
       setDoc(docRef, {
         payload: JSON.stringify(payloadToSync),

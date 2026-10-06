@@ -54,7 +54,7 @@ import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { normalizePhoneDigits, validateEgyptianPhone } from '../utils/phoneUtils';
 import { getStudentTitle, getStudentGender, isFemaleName } from '../utils/genderUtils';
 
-export default function ClassesManager() {
+function ClassesManagerComponent() {
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -924,7 +924,7 @@ export default function ClassesManager() {
                 }`}
               >
                 <Sliders className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>تخصيص الشعار والترويسة 🎨</span>
+                <span>تخصيص الشعار والترويسة</span>
                 {showHeaderSettings ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
               <button
@@ -999,7 +999,7 @@ export default function ClassesManager() {
                               }}
                               className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
                             >
-                              🎓 أكاديمي
+                              أكاديمي
                             </button>
                             <button
                               type="button"
@@ -1010,7 +1010,7 @@ export default function ClassesManager() {
                               }}
                               className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
                             >
-                              📚 كتب وتفوق
+                              كتب وتفوق
                             </button>
                             <button
                               type="button"
@@ -1021,7 +1021,7 @@ export default function ClassesManager() {
                               }}
                               className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-900/40 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700"
                             >
-                              🖋️ قلم وقراءة
+                              قلم وقراءة
                             </button>
                           </div>
                         </div>
@@ -1398,9 +1398,9 @@ export default function ClassesManager() {
             <div className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 flex items-center justify-between">
               <span>{warningAbsenceCount}</span>
               {warningAbsenceCount > 0 ? (
-                <span className="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-black animate-pulse">تنبيه ⚠️</span>
+                <span className="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-black animate-pulse">تنبيه</span>
               ) : (
-                <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold">لا يوجد ✨</span>
+                <span className="text-xs bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold">لا يوجد</span>
               )}
             </div>
           </div>
@@ -1442,7 +1442,7 @@ export default function ClassesManager() {
             >
               <option value="all">جميع معدلات الحضور</option>
               <option value="excellent">انضباط ممتاز (≥90%)</option>
-              <option value="warning">إنذار غياب متكرر (≥3 غيابات) ⚠️</option>
+              <option value="warning">إنذار غياب متكرر (≥3 غيابات)</option>
             </select>
           </div>
         </div>
@@ -1720,7 +1720,7 @@ export default function ClassesManager() {
                               {feeStats.monthlyStatus?.map(m => (
                                 <span
                                   key={m.month}
-                                  title={m.isPaid ? `${m.month}: تم السداد (${m.amount} ج.م) ✓` : `${m.month}: غير مدفوع ✗`}
+                                  title={m.isPaid ? `${m.month}: تم السداد (${m.amount} ج.م)` : `${m.month}: غير مدفوع`}
                                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black border transition-all ${
                                     m.isPaid
                                       ? 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-700 shadow-2xs'
@@ -1863,7 +1863,7 @@ export default function ClassesManager() {
                     onClick={() => setShowAddStudentModal(false)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
                   >
-                    ✕
+                    
                   </button>
                 </div>
 
@@ -1950,7 +1950,7 @@ export default function ClassesManager() {
                             : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                         }`}
                       >
-                        <span>👦 طالب (ذكر)</span>
+                        <span>طالب (ذكر)</span>
                       </button>
                       <button
                         type="button"
@@ -1961,7 +1961,7 @@ export default function ClassesManager() {
                             : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                         }`}
                       >
-                        <span>👧 طالبة (أنثى)</span>
+                        <span>طالبة (أنثى)</span>
                       </button>
                     </div>
                   </div>
@@ -2064,7 +2064,7 @@ export default function ClassesManager() {
                     onClick={() => setEditingStudent(null)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
                   >
-                    ✕
+                    
                   </button>
                 </div>
 
@@ -2135,7 +2135,7 @@ export default function ClassesManager() {
                             : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                         }`}
                       >
-                        <span>👦 طالب (ذكر)</span>
+                        <span>طالب (ذكر)</span>
                       </button>
                       <button
                         type="button"
@@ -2146,7 +2146,7 @@ export default function ClassesManager() {
                             : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                         }`}
                       >
-                        <span>👧 طالبة (أنثى)</span>
+                        <span>طالبة (أنثى)</span>
                       </button>
                     </div>
                   </div>
@@ -2264,7 +2264,7 @@ export default function ClassesManager() {
                     onClick={() => setTransferStudent(null)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
                   >
-                    ✕
+                    
                   </button>
                 </div>
 
@@ -2342,7 +2342,7 @@ export default function ClassesManager() {
                     onClick={() => setShowGroupWhatsAppModal(false)}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold cursor-pointer"
                   >
-                    ✕
+                    
                   </button>
                 </div>
 
@@ -2386,7 +2386,7 @@ export default function ClassesManager() {
                       className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                     >
                       <MessageCircle className="w-4 h-4 fill-current" />
-                      <span>فتح محادثات الواتساب 📱</span>
+                      <span>فتح محادثات الواتساب</span>
                     </button>
                   </div>
                 </div>
@@ -3107,3 +3107,5 @@ export default function ClassesManager() {
     </div>
   );
 }
+
+export default React.memo(ClassesManagerComponent);

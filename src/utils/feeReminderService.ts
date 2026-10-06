@@ -61,23 +61,23 @@ export function generateWhatsAppReminderText(
     financialDetails = `نود إحاطة سيادتكم علماً بالموقف المالي لاشتراك الطالب/ة عن فترة (*${options.periodLabel || monthName}*):
 • إجمالي قيمة الاشتراك المقررة: *${amount} ج.م*
 • المبلغ المسدد سابقاً: *${options.amountPaid} ج.م*
-• المبلغ المتبقي المستحق سداده: *${options.remainingAmount} ج.م* ⚠️`;
+• المبلغ المتبقي المستحق سداده: *${options.remainingAmount} undefined`;
   } else {
     financialDetails = `نود تذكير سيادتكم بموعد استحقاق قسط الاشتراك الدراسي عن فترة (*${options?.periodLabel || monthName}*) الخاص بـ (*${gradeLevel}*) وقيمته: *${amount} ج.م*.`;
   }
 
   const nextDueText = options?.nextDueDate ? `\n• موعد التجديد القادم: *${options.nextDueDate}*` : '';
 
-  return `السلام عليكم ورحمة الله وبركاته 🌸
+  return `السلام عليكم ورحمة الله وبركاته
 السيد ولي أمر الطالب/ة: *${studentName}* (${parentName || 'المحترم'})
 
-تحية طيبة وبعد من إدارة *${customCenterTitle}* 🏛️
+تحية طيبة وبعد من إدارة *${customCenterTitle}*
 
 ${financialDetails}${nextDueText}
 
 يرجى التكرم بالمبادرة بالسداد عبر مقر السنتر أو وسائل الدفع المعتمدة لضمان استمرار انتظام الطالب في المجموعات وتلقي الكتب والمذكرات الدراسية.
 
-شاكرين لكم حسن تعاونكم ودعمكم الدائم! 🌺
+شاكرين لكم حسن تعاونكم ودعمكم الدائم!
 
 ${signature}`;
 }
@@ -102,18 +102,38 @@ export function getWhatsAppReminderUrl(
 /**
  * BACKGROUND SERVICE:
  * Automatically checks all active students against due tuition payments.
- * Generates system notifications and admin alerts for upcoming/unpaid installments.
+ * Optimized with daily throttling, persistent deduplication, and consolidated alerts to prevent UI lag.
  */
-export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
+export function checkFeeDueDatesBackgroundService(
+  targetMonth?: string,
+  options?: { force?: boolean; isStartup?: boolean }
+): {
   checkedCount: number;
   unpaidCount: number;
   newNotisCount: number;
   unpaidStudents: Student[];
 } {
   try {
+    // 1. Startup Guard: If running on app startup, check user preference
+    if (options?.isStartup) {
+      const startupEnabled = localStorage.getItem('sams_startup_auto_notis_enabled');
+      // If user disabled startup automated checks, return immediately
+      if (startupEnabled === 'false') {
+        return { checkedCount: 0, unpaidCount: 0, newNotisCount: 0, unpaidStudents: [] };
+      }
+    }
+
+    // 2. Throttle: If not forced, only run at most ONCE per calendar day
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastCheckDate = localStorage.getItem('sams_last_fee_check_date');
+    if (!options?.force && lastCheckDate === todayStr) {
+      return { checkedCount: 0, unpaidCount: 0, newNotisCount: 0, unpaidStudents: [] };
+    }
+
     const students = samsDb.getStudents().filter(s => s.status === 'active' && !s.deleted_at);
     const payments = samsDb.getFees();
     const existingNotifications = samsDb.getNotifications();
+    const existingAdminNotis = samsDb.getAdminNotifications();
 
     // Determine target month (default to current active month e.g., 'يوليو 2026' or saved active month)
     const activeMonth = targetMonth || localStorage.getItem('sams_active_fee_month') || 'يوليو 2026';
@@ -136,8 +156,18 @@ export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
       }
     }
 
+    // Load persistent sent-reminders map to avoid repetitive cycles even if notifications array is trimmed
+    let sentRemindersMap: Record<string, string> = {};
+    try {
+      const raw = localStorage.getItem('sams_sent_reminders_map');
+      if (raw) sentRemindersMap = JSON.parse(raw);
+    } catch (e) {
+      sentRemindersMap = {};
+    }
+
     const unpaidStudents: Student[] = [];
     let newNotisCount = 0;
+    let remindersUpdated = false;
 
     for (const student of students) {
       const feeAmount = gradeFeesMap[student.grade_level] || 250;
@@ -151,49 +181,75 @@ export function checkFeeDueDatesBackgroundService(targetMonth?: string): {
       if (isDue) {
         unpaidStudents.push(student);
 
-        // Check if an automated reminder notification already exists for this student & cycle
         const cycleIdentifier = sub.currentCycle.periodLabel || sub.currentCycle.label;
-        const alreadyNotified = existingNotifications.some(
+        const reminderKey = `fee-remind-${student.id}-${cycleIdentifier}`;
+
+        // Check both persistent log and in-memory notifications
+        const alreadyInPersistentLog = Boolean(sentRemindersMap[reminderKey]);
+        const alreadyNotified = alreadyInPersistentLog || existingNotifications.some(
           n => n.recipient_id === student.id &&
                n.title.includes('استحقاق قسط') &&
                (n.message.includes(cycleIdentifier) || n.message.includes(activeMonth))
         );
 
-        if (!alreadyNotified) {
+        // If running as automated startup check, do NOT spam 50 individual notifications!
+        // We will create 1 consolidated admin alert below.
+        // Only if force (explicit button click) and not already notified, record individual student notice silently:
+        if (options?.force && !alreadyNotified) {
           const remainingMsg = sub.currentCycle.remainingAmount < feeAmount && sub.currentCycle.amountPaid > 0
             ? `(متبقي بعد سداد جزئي: ${sub.currentCycle.remainingAmount} ج.م من أصل ${feeAmount} ج.م)`
             : `(المبلغ المطلوب: ${sub.currentCycle.remainingAmount} ج.م)`;
 
-          // 1. Create System Notification for parent/student
           samsDb.addNotification({
-            title: `⚠️ تنبيه استحقاق اشتراك: ${student.name}`,
+            title: `تنبيه استحقاق اشتراك: ${student.name}`,
             message: `تنبيه آلي من النظام: استحقاق اشتراك ${sub.currentCycle.label} ${remainingMsg} عن الفترة (${sub.currentCycle.periodLabel}) للطالب (${student.name}). تاريخ الاستحقاق: ${sub.nextDueDateFormatted}. يرجى التكرم بالسداد لإدارة السنتر.`,
             category: 'alert',
             recipient_type: 'specific',
             recipient_id: student.id
-          });
+          }, { silent: true });
 
-          // 2. Create Admin Notification for dashboard bell
-          samsDb.addAdminNotification({
-            type: 'payment_reminder',
-            message: `تنبيه أقساط: اشتراك ${sub.currentCycle.label} للطالب (${student.name}) ${remainingMsg} لم يستكمل سداده.`,
-            metadata: { student_id: student.id, month: sub.currentCycle.label, parent_phone: student.parent_phone }
-          });
-
+          sentRemindersMap[reminderKey] = todayStr;
+          remindersUpdated = true;
           newNotisCount++;
         }
       }
     }
 
-    // Save last check timestamp
+    // Consolidated Admin Alert:
+    // If there are unpaid students, create AT MOST 1 aggregated admin notification per day/month
+    if (unpaidStudents.length > 0) {
+      const summaryReminderKey = `summary-due-${activeMonth}-${todayStr}`;
+      const summaryAlreadyExists = existingAdminNotis.some(
+        n => n.metadata?.summaryKey === summaryReminderKey ||
+             (n.type === 'payment_reminder' && n.message.includes(summaryReminderKey))
+      );
+
+      if (!summaryAlreadyExists) {
+        samsDb.addAdminNotification({
+          type: 'payment_reminder',
+          message: `ملخص اشتراكات شهر (${activeMonth}): تم رصد ${unpaidStudents.length} طالب/ة مستحق عليهم سداد أو استكمال الاشتراك. يمكن مراجعتهم من قسم الرسوم.`,
+          metadata: { summaryKey: summaryReminderKey, count: unpaidStudents.length, month: activeMonth }
+        }, { silent: true });
+        newNotisCount++;
+      }
+    }
+
+    // Record check timestamp & date
+    localStorage.setItem('sams_last_fee_check_date', todayStr);
     localStorage.setItem('sams_last_fee_check_timestamp', new Date().toISOString());
+
+    if (remindersUpdated) {
+      try {
+        localStorage.setItem('sams_sent_reminders_map', JSON.stringify(sentRemindersMap));
+      } catch (e) {}
+    }
 
     if (newNotisCount > 0) {
       addAuditLog(
         'INSERT',
         'notifications',
         'bg-service',
-        `خدمة الخلفية: تم فحص أقساط الطلاب لشهر (${activeMonth}). تم رصد ${unpaidStudents.length} طالب غير مسدد، وإنشاء ${newNotisCount} إشعار استحقاق جديد تلقائياً.`
+        `فحص آلي لأقساط الطلاب لشهر (${activeMonth}): تم رصد ${unpaidStudents.length} طالب غير مسدد، وتوليد إشعار إداري ملخص بنجاح.`
       );
     }
 

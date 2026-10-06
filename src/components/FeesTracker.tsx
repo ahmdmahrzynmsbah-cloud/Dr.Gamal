@@ -119,7 +119,7 @@ const playCashRegisterSound = () => {
   }
 };
 
-export default function FeesTracker() {
+function FeesTrackerComponent() {
   const [activeTab, setActiveTab] = useState<'subscriptions' | 'all_receipts'>('subscriptions');
   const [payments, setPayments] = useState<FeePayment[]>([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -188,7 +188,7 @@ export default function FeesTracker() {
   } | null>(null);
 
   const runBackgroundCheck = () => {
-    const res = checkFeeDueDatesBackgroundService(selectedMonth);
+    const res = checkFeeDueDatesBackgroundService(selectedMonth, { force: true });
     const nowStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setBgServiceStats({
       lastRun: nowStr,
@@ -196,9 +196,9 @@ export default function FeesTracker() {
       newNotisCount: res.newNotisCount
     });
     if (res.newNotisCount > 0) {
-      setSuccessInfo(`تم تشغيل خدمة الخلفية: رصد ${res.unpaidCount} طالب غير مسدد، وتم إنشاء ${res.newNotisCount} إشعار استحقاق جديد تلقائياً 🔔`);
+      setSuccessInfo(`تم تشغيل خدمة الخلفية: رصد ${res.unpaidCount} طالب غير مسدد، وتم إنشاء ${res.newNotisCount} إشعار استحقاق جديد تلقائياً`);
     } else {
-      setSuccessInfo(`فحص الخلفية التلقائي لشهر (${selectedMonth}): جميع التنبيهات محدّثة ولا يوجد إشعارات مكررة. ✨`);
+      setSuccessInfo(`فحص الخلفية التلقائي لشهر (${selectedMonth}): جميع التنبيهات محدّثة ولا يوجد إشعارات مكررة.`);
     }
     playSuccessBeep();
   };
@@ -350,9 +350,9 @@ export default function FeesTracker() {
     
     const remainingText = sub.currentCycle.remainingAmount > 0
       ? `\nالمبلغ المتبقي لاستكمال الاشتراك: *${sub.currentCycle.remainingAmount} ج.م*.`
-      : `\nتم اكتمال سداد اشتراك هذا الشهر بالكامل ✓ وسيبدأ احتساب الشهر الجديد عند حلول موعده (${sub.nextDueDateFormatted}).`;
+      : `\nتم اكتمال سداد اشتراك هذا الشهر بالكامل وسيبدأ احتساب الشهر الجديد عند حلول موعده (${sub.nextDueDateFormatted}).`;
 
-    const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته 🌸\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nتحية طيبة وبعد من إدارة *${centerTitle}* 🏛️\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل دفعة اشتراك بقيمة *${payment.amount} ج.م* عن فترة (*${payment.period_start ? `${payment.period_start} إلى ${payment.period_end}` : sub.currentCycle.periodLabel}*). رقم الإيصال: *${payment.receipt_number}*.${remainingText}\n\nشاكرين لكم حسن التعاون والالتزام! 🌺`);
+    const confirmMsg = appendSystemSignature(`السلام عليكم ورحمة الله وبركاته\nالسيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})\n\nتحية طيبة وبعد من إدارة *${centerTitle}*\nنحيطكم علماً بأنه تم بحمد الله استلام وتسجيل دفعة اشتراك بقيمة *${payment.amount} ج.م* عن فترة (*${payment.period_start ? `${payment.period_start} إلى ${payment.period_end}` : sub.currentCycle.periodLabel}*). رقم الإيصال: *${payment.receipt_number}*.${remainingText}\n\nشاكرين لكم حسن التعاون والالتزام! `);
     setWhatsAppMessage(confirmMsg);
     setShowWhatsAppModal(true);
   };
@@ -401,8 +401,8 @@ export default function FeesTracker() {
         title: `تأكيد استلام اشتراك: ${quickPayStudent.name}`,
         message: `تم بحمد الله استلام دفعة بقيمة ${amount} ج.م لاشتراك الطالب ${quickPayStudent.name} عن فترة (${targetCycle.periodLabel}). ${
           isFullSettlement 
-            ? 'تم اكتمال سداد هذا الشهر بنجاح، وسيبدأ احتساب الشهر الجديد عند حلول موعده! ✓' 
-            : `المبلغ المتبقي المستحق: ${remainingAfter} ج.م ⚠️`
+            ? 'تم اكتمال سداد هذا الشهر بنجاح، وسيبدأ احتساب الشهر الجديد عند حلول موعده! ' 
+            : `المبلغ المتبقي المستحق: ${remainingAfter} ج.م`
         } إيصال سداد رقم: ${newPayment.receipt_number}. شكراً لكم.`,
         category: 'sms',
         recipient_type: 'specific',
@@ -412,7 +412,7 @@ export default function FeesTracker() {
 
     playCashRegisterSound();
     if (isFullSettlement) {
-      setSuccessInfo(`تم اكتمال سداد ${targetCycle.label} للطالب ${quickPayStudent.name} بنجاح! وتم ترحيل الشهر الجديد تلقائياً ✨. رقم الإيصال: ${newPayment.receipt_number}`);
+      setSuccessInfo(`تم اكتمال سداد ${targetCycle.label} للطالب ${quickPayStudent.name} بنجاح! وتم ترحيل الشهر الجديد تلقائياً. رقم الإيصال: ${newPayment.receipt_number}`);
     } else {
       setSuccessInfo(`تم تسجيل دفعة بقيمة ${amount} ج.م للطالب ${quickPayStudent.name} بنجاح (المتبقي: ${remainingAfter} ج.م). رقم الإيصال: ${newPayment.receipt_number}`);
     }
@@ -477,7 +477,7 @@ export default function FeesTracker() {
     if (!editingPayment) return;
 
     samsDb.updateFeePayment(editingPayment);
-    setSuccessInfo(`تم تحديث وحفظ بيانات الإيصال رقم #${editingPayment.receipt_number} بنجاح! ✨`);
+    setSuccessInfo(`تم تحديث وحفظ بيانات الإيصال رقم #${editingPayment.receipt_number} بنجاح!`);
     setEditingPayment(null);
     loadData();
     playSuccessBeep();
@@ -525,7 +525,7 @@ export default function FeesTracker() {
       localStorage.setItem('sams_v2_fees_ts', Date.now().toString());
       syncToFirebase('sams_v2_fees', updated);
       addAuditLog('UPDATE', 'fees', 'batch-month-transfer', `تم نقل وتصحيح ${count} دفعة مالية من (${transferFromMonth}) إلى (${transferToMonth}).`);
-      setSuccessInfo(`تم بنجاح نقل وتعديل ${count} معاملة سداد من ${transferFromMonth} إلى ${transferToMonth}! 🎉`);
+      setSuccessInfo(`تم بنجاح نقل وتعديل ${count} معاملة سداد من ${transferFromMonth} إلى ${transferToMonth}! `);
       loadData();
       playSuccessBeep();
     } else {
@@ -735,11 +735,11 @@ export default function FeesTracker() {
                       </td>
                       <td className="py-2 px-3 border border-slate-300 text-center">
                         {isPaid ? (
-                          <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-900 font-black rounded-md text-[10px]">مسدد بالكامل ✓</span>
+                          <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-900 font-black rounded-md text-[10px]">مسدد بالكامل</span>
                         ) : isPartial ? (
-                          <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-900 font-black rounded-md text-[10px]">سداد جزئي ⚠️</span>
+                          <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-900 font-black rounded-md text-[10px]">سداد جزئي</span>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 bg-rose-100 text-rose-900 font-black rounded-md text-[10px]">مستحق / لم يسدد ✗</span>
+                          <span className="inline-block px-2 py-0.5 bg-rose-100 text-rose-900 font-black rounded-md text-[10px]">مستحق / لم يسدد</span>
                         )}
                       </td>
                     </tr>
@@ -969,7 +969,7 @@ export default function FeesTracker() {
                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
             }`}
           >
-            منصة الاشتراكات الشهرية 🗓️
+            منصة الاشتراكات الشهرية
           </button>
           <button
             onClick={() => {
@@ -982,7 +982,7 @@ export default function FeesTracker() {
                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:text-slate-200'
             }`}
           >
-            دفتر الإيصالات والمدفوعات التاريخي 📑
+            دفتر الإيصالات والمدفوعات التاريخي
           </button>
         </div>
       </div>
@@ -1132,7 +1132,7 @@ export default function FeesTracker() {
               className="px-3.5 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl transition-all hover:scale-102 cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>فحص الاستحقاقات والديون الآن 🔄</span>
+              <span>فحص الاستحقاقات والديون الآن</span>
             </button>
           </div>
 
@@ -1578,7 +1578,7 @@ export default function FeesTracker() {
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 w-24 whitespace-nowrap">كود وقيد الطالب</th>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">اسم الطالب وتاريخ التسجيل</th>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
-                      دورة الاشتراك الحالية (تاريخ التسجيل ➜ التجديد)
+                      دورة الاشتراك الحالية (تاريخ التسجيل  التجديد)
                     </th>
                     <th className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">
                       تطور الشهور (الدورات الشهرية)
@@ -1688,7 +1688,7 @@ export default function FeesTracker() {
                             <div className="inline-flex flex-col items-center gap-0.5">
                               <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-950 border border-emerald-400 dark:bg-emerald-950/90 dark:text-emerald-200 dark:border-emerald-500 rounded-full font-black text-xs shadow-2xs">
                                 <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 stroke-[3]" />
-                                <span>مسدد بالكامل ✓</span>
+                                <span>مسدد بالكامل</span>
                               </span>
                               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">({activeCycle.amountPaid} ج.م)</span>
                             </div>
@@ -1734,7 +1734,7 @@ export default function FeesTracker() {
                                 title={`سداد المبلغ المتبقي (${remaining} ج.م) للشهر الحالي، وترحيل الشهر الجديد تلقائياً`}
                               >
                                 <Plus className="w-3 h-3" />
-                                <span>تحصيل {remaining} ج.م 💸</span>
+                                <span>تحصيل {remaining} ج.م</span>
                               </button>
                             ) : (
                               <button
@@ -1755,7 +1755,7 @@ export default function FeesTracker() {
                               title={`إرسال تنبيه واتساب مفصل بالمتبقي وموعد التجديد لولي الأمر (${student.parent_phone || student.phone})`}
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
-                              <span>واتساب 💬</span>
+                              <span>واتساب</span>
                             </button>
 
                             {lastPayment && (
@@ -1791,7 +1791,7 @@ export default function FeesTracker() {
 
           {/* Dynamic Registration Cycle Rules Card */}
           <div className="p-4 bg-gradient-to-r from-sky-50/70 via-slate-50 to-indigo-50/40 dark:from-slate-900/60 dark:via-slate-800 dark:to-slate-900/60 border border-sky-100 dark:border-sky-900/50 rounded-2xl flex items-start gap-3 text-right">
-            <span className="text-xl">💡</span>
+            
             <div className="space-y-1">
               <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">
                 كيف يعمل نظام احتساب الاشتراكات الشهرية الجديد (حسب تاريخ التسجيل الفعلي):
@@ -2044,7 +2044,7 @@ export default function FeesTracker() {
                 </div>
                 {quickPayTargetCycle?.isHalfMonth && (
                   <div className="text-[11px] font-bold text-sky-800 dark:text-sky-200 bg-sky-100/70 dark:bg-sky-950/80 p-2 rounded-lg border border-sky-300 dark:border-sky-800 flex items-center gap-1.5">
-                    <span>💡 تم احتساب نصف شهر ({quickPayTargetCycle.feeRequired} ج.م) نظراً لتسجيل الطالب بعد يوم 7 في الشهر.</span>
+                    <span>تم احتساب نصف شهر ({quickPayTargetCycle.feeRequired} ج.م) نظراً لتسجيل الطالب بعد يوم 7 في الشهر.</span>
                   </div>
                 )}
                 {quickPayTargetCycle && !quickPayTargetCycle.hasEnded && (
@@ -2080,7 +2080,7 @@ export default function FeesTracker() {
                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                   >
-                    نقدي 💵
+                    نقدي
                   </button>
                   <button
                     type="button"
@@ -2091,7 +2091,7 @@ export default function FeesTracker() {
                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                   >
-                    فيزا POS 💳
+                    فيزا POS
                   </button>
                   <button
                     type="button"
@@ -2102,7 +2102,7 @@ export default function FeesTracker() {
                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     }`}
                   >
-                    Vodafone 📲
+                    Vodafone Cash
                   </button>
                 </div>
               </div>
@@ -2117,7 +2117,7 @@ export default function FeesTracker() {
                   className="w-4 h-4 text-[#0D5C8C] border-slate-300 dark:border-slate-600 dark:border-slate-600 rounded focus:ring-[#0D5C8C] cursor-pointer"
                 />
                 <label htmlFor="sms_notify_parent" className="text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
-                  إرسال رسالة تأكيد الدفع لولي الأمر تلقائياً (صامتاً عبر بوابة الإشعارات) ✉️
+                  إرسال رسالة تأكيد الدفع لولي الأمر تلقائياً (صامتاً عبر بوابة الإشعارات)
                 </label>
               </div>
 
@@ -2133,7 +2133,7 @@ export default function FeesTracker() {
                   type="submit"
                   className="flex-1 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
                 >
-                  تأكيد التحصيل واستلام الإيصال ✓
+                  تأكيد التحصيل واستلام الإيصال
                 </button>
               </div>
 
@@ -2155,7 +2155,7 @@ export default function FeesTracker() {
                 <p className="text-[9px] text-slate-400 font-sans font-medium">الأكاديمية التعليمية لإدارة المراكز</p>
               </div>
               <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 px-3 py-1 font-bold rounded-full">
-                مدفوع كلياً بنجاح ✓
+                مدفوع كلياً بنجاح
               </span>
             </div>
 
@@ -2552,7 +2552,7 @@ export default function FeesTracker() {
                   onClick={() => setShowWhatsAppModal(false)}
                   className="p-1 text-slate-400 hover:text-slate-600 dark:text-slate-300 dark:hover:text-slate-200 rounded-lg cursor-pointer text-sm font-bold"
                 >
-                  ✕
+                  
                 </button>
               </div>
 
@@ -2613,7 +2613,7 @@ export default function FeesTracker() {
                   className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer flex items-center gap-1.5"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  <span>{copiedToast ? 'تم النسخ بنجاح! ✓' : 'نسخ النص'}</span>
+                  <span>{copiedToast ? 'تم النسخ بنجاح!' : 'نسخ النص'}</span>
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -2649,7 +2649,7 @@ export default function FeesTracker() {
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span>فتح وتوجيه لواتساب المباشر 📱</span>
+                    <span>فتح وتوجيه لواتساب المباشر</span>
                   </button>
                 </div>
               </div>
@@ -2661,3 +2661,5 @@ export default function FeesTracker() {
     </div>
   );
 }
+
+export default React.memo(FeesTrackerComponent);

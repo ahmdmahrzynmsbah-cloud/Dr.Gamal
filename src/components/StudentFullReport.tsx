@@ -231,7 +231,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                       att.status === 'absent' ? 'bg-rose-200 text-rose-900 print:bg-rose-100 print:text-rose-900' :
                       'bg-amber-200 text-amber-900 print:bg-amber-100 print:text-amber-900'
                     }`}>
-                      {att.status === 'present' ? 'حاضر ✓' : att.status === 'absent' ? 'غائب ✗' : 'مستأذن'}
+                      {att.status === 'present' ? 'حاضر' : att.status === 'absent' ? 'غائب' : 'مستأذن'}
                     </span>
                   </div>
                 ))}
@@ -289,11 +289,11 @@ export default function StudentFullReport({ student, onClose }: Props) {
                       <div className="text-left">
                         {ag.completed ? (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                            سلم ✔️
+                            سلم
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
-                            لم يسلم ❌
+                            لم يسلم
                           </span>
                         )}
                       </div>
@@ -356,7 +356,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                         <span className={`font-black font-sans text-xs ${
                           subOverview.totalRemainingDebt > 0 ? 'text-rose-600 print:text-rose-700 font-extrabold' : 'text-slate-600 dark:text-slate-400'
                         }`}>
-                          {subOverview.totalRemainingDebt > 0 ? `${subOverview.totalRemainingDebt.toLocaleString()} ج.م` : 'لا يوجد متبقي ✓'}
+                          {subOverview.totalRemainingDebt > 0 ? `${subOverview.totalRemainingDebt.toLocaleString()} ج.م` : 'لا يوجد متبقي'}
                         </span>
                       </div>
                     </div>

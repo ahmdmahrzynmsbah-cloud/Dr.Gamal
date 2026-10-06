@@ -17,7 +17,7 @@ interface SystemRolesProps {
   onRefreshAllData: () => void;
 }
 
-export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
+function SystemRolesComponent({ onRefreshAllData }: SystemRolesProps) {
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
@@ -422,3 +422,5 @@ export default function SystemRoles({ onRefreshAllData }: SystemRolesProps) {
     </div>
   );
 }
+
+export default React.memo(SystemRolesComponent);

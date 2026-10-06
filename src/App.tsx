@@ -100,56 +100,6 @@ export default function App() {
   // Active system context
   const [activeSystem, setActiveSystemState] = useState<SystemContext>(() => getActiveSystem());
 
-  // Initial loading states
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('جاري تهيئة المنظومة...');
-
-  useEffect(() => {
-    const onSystemSwitched = (e: any) => {
-      setActiveSystemState(getActiveSystem());
-      setRefreshTrigger(prev => prev + 1);
-    };
-    window.addEventListener('sams_system_switched', onSystemSwitched);
-    return () => window.removeEventListener('sams_system_switched', onSystemSwitched);
-  }, []);
-
-  useEffect(() => {
-    // Step-by-step progress simulation with realistic texts
-    const interval = setInterval(() => {
-      setLoadingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsInitialLoading(false);
-          }, 600); // premium delay after 100% for a polished fluid exit
-          return 100;
-        }
-        
-        // Random fluid progress increment
-        const nextProgress = prev + Math.floor(Math.random() * 12) + 4;
-        const boundedProgress = Math.min(nextProgress, 100);
-        
-        const currentSys = getActiveSystem();
-        if (boundedProgress < 25) {
-          setLoadingText(currentSys === 'alsafa' ? 'تأمين بوابة سيستم الصفا للمواد الشرعية...' : 'تأمين بوابة الدكتور في اللغة العربية...');
-        } else if (boundedProgress < 50) {
-          setLoadingText(currentSys === 'alsafa' ? 'جاري تهيئة قاعدة بيانات سيستم الصفا...' : 'جاري تحميل سجلات الطلاب وقاعدة البيانات الإدارية...');
-        } else if (boundedProgress < 75) {
-          setLoadingText('تهيئة لوحة التحكم الذكية وفهرس الحصص...');
-        } else if (boundedProgress < 95) {
-          setLoadingText('مزامنة الحسابات وتوزيع الصلاحيات اليومية...');
-        } else {
-          setLoadingText(currentSys === 'alsafa' ? 'مكتمل! مرحباً بك في سيستم الصفا للمواد الشرعية...' : 'مكتمل! مرحباً بك في منبر اللغة العربية والريادة للأستاذ...');
-        }
-        
-        return boundedProgress;
-      });
-    }, 120);
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Session states
   const [currentUserRole, setCurrentUserRole] = useState<'teacher' | 'secretary' | null>(
     (localStorage.getItem('sams_logged_in_role') as any) || null
@@ -203,21 +153,33 @@ export default function App() {
   const [liveToastAlert, setLiveToastAlert] = useState<{ title: string; message: string; visible: boolean } | null>(null);
 
   useEffect(() => {
+    let toastTimer: any = null;
+    let lastToastTimestamp = 0;
+
     const handleNewNotiEvent = (e: Event) => {
+      const now = Date.now();
+      // Throttle: avoid rapid consecutive toast pops that freeze UI
+      if (now - lastToastTimestamp < 2500) {
+        return;
+      }
+      lastToastTimestamp = now;
+
       const customEvent = e as CustomEvent<{ title: string; message: string }>;
       if (localStorage.getItem('sams_visual_alerts_enabled') !== 'false') {
         const detail = customEvent.detail;
         if (detail && detail.title) {
+          if (toastTimer) clearTimeout(toastTimer);
           setLiveToastAlert({ title: detail.title, message: detail.message || '', visible: true });
-          setTimeout(() => {
+          toastTimer = setTimeout(() => {
             setLiveToastAlert(prev => prev ? { ...prev, visible: false } : null);
-          }, 5000);
+          }, 4000);
         }
       }
     };
 
     window.addEventListener('sams_notification_created', handleNewNotiEvent);
     return () => {
+      if (toastTimer) clearTimeout(toastTimer);
       window.removeEventListener('sams_notification_created', handleNewNotiEvent);
     };
   }, []);
@@ -242,65 +204,16 @@ export default function App() {
 
 
   useEffect(() => {
-    // FIX MIGRATION: Update old notifications
-    let notisData = samsDb.getAdminNotifications();
-    let updatedNotis = false;
-    notisData = notisData.map(n => {
-      if (n.message && n.message.includes('سجلت السكرتيرة (مستخدم النظام)')) {
-        n.message = n.message.replace('سجلت السكرتيرة (مستخدم النظام)', 'سجلت الإدارة (المدير الأكاديمي)');
-        updatedNotis = true;
-      }
-      return n;
-    });
-    if (updatedNotis) {
-      saveToStorage('sams_admin_notifications', notisData);
-    }
+    // 1. Initial cleanup / deduplication of bloated notifications
+    samsDb.cleanDeduplicateNotifications();
 
-    // Load initially
+    // 2. Load cleaned notifications into state
     setAdminNotis(samsDb.getAdminNotifications());
 
-    // Check payment reminders
-    const checkPaymentReminders = () => {
-      // 1. Run the fee due dates background service
-      checkFeeDueDatesBackgroundService();
-
-      const students = samsDb.getStudents().filter(s => s.status === 'active');
-      const notifications = samsDb.getAdminNotifications();
-      const today = new Date();
-      let addedNew = false;
-      
-      students.forEach(student => {
-        if (!student.created_at) return;
-        
-        let dueDate = new Date(student.created_at);
-        // Advance to next due date
-        while (dueDate <= today) {
-           dueDate.setMonth(dueDate.getMonth() + 1);
-        }
-        
-        const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-        
-        if (diffDays <= 5 && diffDays >= 0) {
-          const reminderId = `payment-${student.id}-${dueDate.toISOString().split('T')[0]}`;
-          const exists = notifications.some(n => n.metadata?.reminderId === reminderId);
-          
-          if (!exists) {
-            samsDb.addAdminNotification({
-              type: 'payment_reminder',
-              message: `تذكير: اقترب موعد سداد اشتراك الطالب/ة (${student.name}). متبقي ${diffDays} يوم (تاريخ الاستحقاق: ${dueDate.toISOString().split('T')[0]}).`,
-              metadata: { student_id: student.id, reminderId }
-            });
-            addedNew = true;
-          }
-        }
-      });
-      
-      if (addedNew) {
-        setAdminNotis(samsDb.getAdminNotifications());
-      }
-    };
-    
-    checkPaymentReminders();
+    // 3. Background fee check deferred by 4.5 seconds to ensure instant 0ms app boot
+    const bgFeeTimer = setTimeout(() => {
+      checkFeeDueDatesBackgroundService(undefined, { isStartup: true });
+    }, 4500);
     
     // Real-time notifications update
     const updateNotis = () => {
@@ -309,38 +222,43 @@ export default function App() {
     
     window.addEventListener('sams_admin_notifications_changed', updateNotis);
     
-    const handleStorage = (e) => {
-      if (e.key === 'sams_admin_notifications') {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'sams_admin_notifications' || e.key === 'sams_alsafa_admin_notifications') {
         updateNotis();
       }
     };
     window.addEventListener('storage', handleStorage);
     
-    // Fallback poll just in case
-    const interval = setInterval(updateNotis, 30000);
+    // Low-frequency fallback poll
+    const interval = setInterval(updateNotis, 60000);
     
     return () => {
+      clearTimeout(bgFeeTimer);
       clearInterval(interval);
       window.removeEventListener('sams_admin_notifications_changed', updateNotis);
       window.removeEventListener('storage', handleStorage);
     };
   }, []);
   
-  const handleMarkNotiRead = (id: string) => {
+  const handleMarkNotiRead = React.useCallback((id: string) => {
     samsDb.markAdminNotificationRead(id);
     setAdminNotis(samsDb.getAdminNotifications());
-  };
+  }, []);
   
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = React.useCallback(() => {
     samsDb.markAllAdminNotificationsRead();
     setAdminNotis(samsDb.getAdminNotifications());
-  };
+  }, []);
   
-  const displayedNotis = currentUserRole === 'secretary'
-    ? adminNotis.filter(n => !(n.message && n.message.includes('سجلت الإدارة')))
-    : adminNotis;
+  const displayedNotis = React.useMemo(() => {
+    return currentUserRole === 'secretary'
+      ? adminNotis.filter(n => !(n.message && n.message.includes('سجلت الإدارة')))
+      : adminNotis;
+  }, [currentUserRole, adminNotis]);
 
-  const unreadNotisCount = displayedNotis.filter(n => !n.read).length;
+  const unreadNotisCount = React.useMemo(() => {
+    return displayedNotis.filter(n => !n.read).length;
+  }, [displayedNotis]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -356,7 +274,6 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-  
 
   // List matching students and teachers
   const allStudents = useMemo(() => samsDb.getStudents(), [refreshTrigger]);
@@ -383,31 +300,60 @@ export default function App() {
     return { students: studentsRes, teachers: teachersRes };
   }, [searchQuery, allStudents, allTeachers]);
 
-  const forceRefresh = () => {
+  const forceRefresh = React.useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
-  };
+  }, []);
 
-  const handleSettingsSaved = () => {
+  const handleSettingsSaved = React.useCallback(() => {
     setCustomAppName(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
     setCustomAppLogo(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
     setCustomHeaderTitle(localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية');
     setCustomHeaderSubtitle(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
-    forceRefresh();
-  };
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = React.useCallback(() => {
     localStorage.removeItem('sams_logged_in_role');
     localStorage.removeItem('sams_logged_in_name');
     localStorage.removeItem('sams_logged_in_id');
     setCurrentUserRole(null);
     setCurrentUserName('');
     setCurrentUserId(null);
-  };
+  }, []);
+
+  const handleNavigateToTab = React.useCallback((tab: string) => {
+    setActiveTab(tab as TabType);
+  }, []);
+
+  const handleToggleDarkMode = React.useCallback(() => {
+    setIsDarkMode(prev => !prev);
+  }, []);
+
+  const handleLoginSuccess = React.useCallback((role: 'teacher' | 'secretary', name: string, userId?: string, system?: 'doctor' | 'alsafa') => {
+    const targetSys = system || getActiveSystem();
+    setActiveSystem(targetSys);
+    setActiveSystemState(targetSys);
+    if (userId) localStorage.setItem('sams_logged_in_id', userId);
+    setCurrentUserId(userId || null);
+    localStorage.setItem('sams_logged_in_role', role);
+    localStorage.setItem('sams_logged_in_name', name);
+    if (role === 'teacher') {
+      samsDb.setCurrentRole('principal'); // full admin
+    } else {
+      samsDb.setCurrentRole('teacher'); // restricted admin
+    }
+    setCurrentUserRole(role);
+    setCurrentUserName(name);
+    if (role === 'secretary') {
+      setActiveTab('attendance');
+    } else {
+      setActiveTab('dashboard');
+    }
+  }, []);
 
   const [openNavGroups, setOpenNavGroups] = useState<string[]>([]);
 
-  const currentRole = samsDb.getCurrentRole();
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = React.useCallback((role: string) => {
     if (activeSystem === 'alsafa') {
       return { name: 'مدير سيستم الصفا', style: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold' };
     }
@@ -421,9 +367,9 @@ export default function App() {
       parent: { name: 'ولي الأمر', style: 'bg-indigo-50 text-indigo-800 border border-indigo-200' },
       student: { name: 'طالب مقيد', style: 'bg-emerald-50 text-emerald-800 border border-emerald-200' }
     }[role] || { name: 'زائر', style: 'bg-gray-50 text-gray-700' };
-  };
+  }, [activeSystem, currentUserRole]);
 
-  const navCategories: NavCategoryItem[] = [
+  const navCategories: NavCategoryItem[] = useMemo(() => [
     {
       id: 'dashboard',
       label: 'لوحة التحكم والمؤشرات',
@@ -476,17 +422,19 @@ export default function App() {
     },
     { id: 'privacy', label: 'سياسة الخصوصية', icon: <ShieldCheck className="w-4 h-4" />, roles: ['teacher', 'secretary'] },
     { id: 'settings', label: 'إعدادات المنصة', icon: <Settings className="w-4 h-4" />, roles: ['teacher'] }
-  ];
+  ], []);
 
   // Flat list for checking permissions
-  const fullNavItems = navCategories.reduce((acc, cat) => {
-    if (cat.subItems) {
-      return [...acc, ...cat.subItems];
-    }
-    return [...acc, cat];
-  }, [] as any[]);
+  const fullNavItems = useMemo(() => {
+    return navCategories.reduce((acc, cat) => {
+      if (cat.subItems) {
+        return [...acc, ...cat.subItems];
+      }
+      return [...acc, cat];
+    }, [] as any[]);
+  }, [navCategories]);
 
-    const allowedNavItems = useMemo(() => {
+  const allowedNavItems = useMemo(() => {
     let users: any[] = [];
     try {
       users = samsDb.getSystemUsers();
@@ -499,11 +447,11 @@ export default function App() {
     return fullNavItems.filter(item => item.roles.includes(currentUserRole || 'teacher'));
   }, [currentUserId, currentUserRole, fullNavItems]);
 
-  const toggleNavGroup = (groupId: string) => {
+  const toggleNavGroup = React.useCallback((groupId: string) => {
     setOpenNavGroups(prev => 
       prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]
     );
-  };
+  }, []);
 
   // Security tab guard for Secretary role
   const currentTabAllowed = allowedNavItems.some(item => item.id === activeTab);
@@ -511,109 +459,13 @@ export default function App() {
     setActiveTab(allowedNavItems[0].id as TabType);
   }
 
-  // If initial loading screen is active, render the premium loader
-  if (isInitialLoading) {
-    return (
-      <div className={`fixed inset-0 flex flex-col items-center justify-center p-6 z-[9999] font-sans overflow-hidden select-none ${
-        activeSystem === 'alsafa'
-          ? 'bg-gradient-to-b from-emerald-950 via-teal-950 to-slate-950'
-          : 'bg-[#0B3047] bg-gradient-to-b from-[#06243A] via-[#0A3D5C] to-[#0D5C8C]'
-      }`} dir="rtl">
-        {/* Ambient glow backgrounds */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col items-center text-center max-w-md w-full animate-fade-in">
-          {/* Logo Brand Animation */}
-          <div className="relative mb-6">
-            <div className={`absolute inset-0 rounded-full blur-xl opacity-40 animate-pulse ${
-              activeSystem === 'alsafa' ? 'bg-emerald-400' : 'bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453]'
-            }`} />
-            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center shadow-2xl text-white ring-4 ring-white/10 hover:scale-105 transition-transform duration-300 ${
-              activeSystem === 'alsafa' ? 'bg-gradient-to-tr from-emerald-600 to-teal-400' : 'bg-gradient-to-tr from-[#1A7FAA] to-[#F5C453]'
-            }`}>
-              {activeSystem === 'alsafa' ? <Building2 className="w-12 h-12 text-white stroke-[1.5]" /> : <GraduationCap className="w-12 h-12 text-white stroke-[1.5]" />}
-            </div>
-            {/* Tiny stylized orbital star pins */}
-            <div className="absolute -top-1 -right-1 text-amber-300 animate-ping text-lg font-bold">
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-            <div className="absolute -bottom-1 -left-1 text-sky-300 animate-pulse text-lg font-bold">
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-          </div>
-
-          {/* Luxury Typography */}
-          <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
-            {activeSystem === 'alsafa' ? 'سيستم الصفا' : 'الدكتور'}
-          </h1>
-          <p className="text-sm font-bold text-[#FCF6BA] mt-2 px-4 py-1.5 bg-white/10 rounded-full select-none tracking-wider shadow-inner">
-            {activeSystem === 'alsafa' ? 'للمواد الشرعية' : 'في اللغة العربية'}
-          </p>
-
-          {/* Premium Loading Progress Panel */}
-          <div className="mt-12 w-full px-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold text-sky-100/90 tracking-wide font-sans">{loadingText}</span>
-              <span className="text-xs font-bold text-amber-300 font-mono tracking-wider">{loadingProgress}%</span>
-            </div>
-            
-            {/* Smooth linear progress bar */}
-            <div className="w-full h-2.5 bg-slate-950/45 rounded-full p-0.5 overflow-hidden border border-white/5 shadow-inner">
-              <div 
-                className={`h-full rounded-full transition-all duration-300 relative ${
-                  activeSystem === 'alsafa' 
-                    ? 'bg-gradient-to-l from-emerald-500 via-teal-400 to-amber-300' 
-                    : 'bg-gradient-to-l from-[#1A7FAA] via-[#F5C453] to-[#E2A62C]'
-                }`}
-                style={{ width: `${loadingProgress}%` }}
-              >
-                {/* Gloss high-end shine reflect */}
-                <span className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full" />
-              </div>
-            </div>
-          </div>
-          
-          {/* Minimal professional metadata info */}
-          <div className="mt-16 text-[9.5px] font-bold tracking-widest text-sky-200/50 uppercase flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>{activeSystem === 'alsafa' ? 'منظومة سيستم الصفا v2.5' : 'نظام الإدارة التعليمية الأكاديمي v2.5'}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // If not logged in, force LoginScreen immediately
   if (!currentUserRole) {
     return (
       <LoginScreen
         isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onLoginSuccess={(role, name, userId, system) => {
-          const targetSys = system || getActiveSystem();
-          setActiveSystem(targetSys);
-          setActiveSystemState(targetSys);
-          if (userId) localStorage.setItem('sams_logged_in_id', userId);
-          setCurrentUserId(userId || null);
-          localStorage.setItem('sams_logged_in_role', role);
-          localStorage.setItem('sams_logged_in_name', name);
-          if (role === 'teacher') {
-            samsDb.setCurrentRole('principal'); // full admin
-          } else {
-            samsDb.setCurrentRole('teacher'); // restricted admin
-          }
-          setCurrentUserRole(role);
-          setCurrentUserName(name);
-          if (role === 'secretary') {
-            setActiveTab('attendance');
-          } else {
-            setActiveTab('dashboard');
-          }
-        }}
+        onToggleDarkMode={handleToggleDarkMode}
+        onLoginSuccess={handleLoginSuccess}
       />
     );
   }
@@ -965,7 +817,7 @@ export default function App() {
             <InstallPWAButton />
 
             {/* Khaled Sakr Style Animated Theme Switcher */}
-            <ThemeToggle isDarkMode={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
+            <ThemeToggle isDarkMode={isDarkMode} onToggle={handleToggleDarkMode} />
 
             {/* Notification Bell linking directly to dedicated Notifications Center */}
             <button 
@@ -994,7 +846,7 @@ export default function App() {
         {/* Viewport scroll area containing current Tab view */}
         <main className="flex-1 p-3 sm:p-5 md:p-8 pb-24 lg:pb-8 print:p-0 overflow-y-auto print:overflow-visible no-scrollbar w-full space-y-4 sm:space-y-6 md:space-y-8">
           <div key={activeTab} className="w-full mx-auto">
-            {activeTab === 'dashboard' && <Dashboard onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
+            {activeTab === 'dashboard' && <Dashboard onNavigateToTab={handleNavigateToTab} />}
             {activeTab === 'students' && <StudentsList />}
             {activeTab === 'parents' && <ParentsList />}
             {activeTab === 'barcodes' && <StudentBarcodes />}
@@ -1003,7 +855,7 @@ export default function App() {
             {activeTab === 'attendance' && <AttendanceTracker />}
             {activeTab === 'salaries' && <SalariesManager />}
             {activeTab === 'fees' && <FeesTracker />}
-            {activeTab === 'notifications' && <NotificationsCenter onNavigateToTab={(tab) => { setActiveTab(tab as TabType); }} />}
+            {activeTab === 'notifications' && <NotificationsCenter onNavigateToTab={handleNavigateToTab} />}
             {activeTab === 'roles' && <SystemRoles onRefreshAllData={forceRefresh} />}
             {activeTab === 'audit' && <SystemAuditLogs />}
             {activeTab === 'privacy' && <PrivacyPolicy />}
@@ -1014,7 +866,7 @@ export default function App() {
                 userRole={currentUserRole}
                 userName={currentUserName}
                 isDarkMode={isDarkMode}
-                onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                onToggleDarkMode={handleToggleDarkMode}
               />
             )}
           </div>
@@ -1110,7 +962,7 @@ export default function App() {
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery('')} className="p-1 text-slate-400 hover:text-slate-600 text-xs">
-                    ✕
+                    
                   </button>
                 )}
                 <button
@@ -1179,7 +1031,7 @@ export default function App() {
             </div>
             <div className="flex-1 space-y-0.5 text-right pr-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black text-amber-300">إشعار جديد يصل الآن! 🔔</span>
+                <span className="text-xs font-black text-amber-300">إشعار جديد يصل الآن!</span>
                 <span className="text-[10px] text-slate-400">تنبيه آلي</span>
               </div>
               <h4 className="text-xs font-bold text-slate-100 leading-snug">{liveToastAlert.title}</h4>
@@ -1194,7 +1046,7 @@ export default function App() {
                 className="text-slate-400 hover:text-white p-1 rounded-lg cursor-pointer text-xs"
                 title="إغلاق الإشعار"
               >
-                ✕
+                
               </button>
             </div>
           </motion.div>

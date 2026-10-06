@@ -15,14 +15,29 @@ interface DashboardProps {
 }
 
 
-export default function Dashboard({ onNavigateToTab }: DashboardProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [, setDbVersion] = useState(0);
-
+function LiveClock() {
+  const [time, setTime] = useState(new Date());
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 font-sans">
+      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
+      <span className="whitespace-nowrap flex-shrink-0 select-none">توقيت النظام:</span>
+      <span className="font-bold whitespace-nowrap flex-shrink-0 select-none">
+        {time.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+      </span>
+      <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 select-none">
+        {time.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+      </span>
+    </div>
+  );
+}
+
+function DashboardComponent({ onNavigateToTab }: DashboardProps) {
+  const [, setDbVersion] = useState(0);
 
   useSamsDbSync(() => {
     setDbVersion(v => v + 1);
@@ -118,16 +133,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
         </div>
 
         <div className="self-start md:self-auto">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 bg-[#E8192C]/5 px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-[#C0152A] text-[11px] sm:text-xs md:text-sm font-semibold border border-[#E8192C]/10 font-sans">
-            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C0152A] shrink-0" />
-            <span className="whitespace-nowrap flex-shrink-0 select-none">توقيت النظام:</span>
-            <span className="font-bold whitespace-nowrap flex-shrink-0 select-none">
-              {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </span>
-            <span className="text-[#C0152A] font-mono tracking-wide font-extrabold bg-[#E8192C]/10 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 select-none">
-              {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-            </span>
-          </div>
+          <LiveClock />
         </div>
       </div>
 
@@ -197,7 +203,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
               {pendingRevenue > 0 ? (
                 <span className="text-rose-600 dark:text-rose-400 font-extrabold">متبقي مستحق: {pendingRevenue.toLocaleString()} ج.م</span>
               ) : (
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">لا توجد مديونيات متأخرة ✓</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">لا توجد مديونيات متأخرة</span>
               )}
             </p>
           </div>
@@ -243,7 +249,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
               </ResponsiveContainer>
             ) : (
               <div className="text-center p-4 sm:p-6 space-y-2 text-slate-400 font-sans">
-                <div className="text-2xl sm:text-3xl">📊</div>
+                
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد درجات امتحانات مرصودة حالياً في النظام</p>
                 <p className="text-[10px] text-slate-400 max-w-xs">يمكنك رصد علامات الطلاب من تبويب الامتحانات والواجبات لتظهر لك التحليلات وتوزيع المستويات تلقائياً هنا</p>
               </div>
@@ -291,7 +297,7 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
               </>
             ) : (
               <div className="text-center p-4 space-y-1.5 text-slate-400 font-sans">
-                <div className="text-2xl sm:text-3xl">💳</div>
+                
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400">لا توجد رسوم محصلة بعد</p>
                 <p className="text-[10px] text-slate-400 max-w-[180px] mx-auto">عند تسجيل سداد اشتراك أو مصروفات لأي طالب، سيظهر لك مؤشر نسب التحصيل فوراً</p>
               </div>
@@ -405,3 +411,5 @@ export default function Dashboard({ onNavigateToTab }: DashboardProps) {
     </div>
   );
 }
+
+export default React.memo(DashboardComponent);

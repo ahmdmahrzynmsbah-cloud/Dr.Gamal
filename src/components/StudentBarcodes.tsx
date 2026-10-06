@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Barcode from './Barcode';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 
-export default function StudentBarcodes() {
+function StudentBarcodesComponent() {
   const [students, setStudents] = useState<Student[]>([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printTargetStudents, setPrintTargetStudents] = useState<Student[]>([]);
@@ -505,3 +505,5 @@ export default function StudentBarcodes() {
     </div>
   );
 }
+
+export default React.memo(StudentBarcodesComponent);

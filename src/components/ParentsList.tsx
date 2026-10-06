@@ -18,7 +18,7 @@ interface ParentRecord {
   children: Student[];
 }
 
-export default function ParentsList() {
+function ParentsListComponent() {
   const [parents, setParents] = useState<ParentRecord[]>([]);
   const [classes, setClasses] = useState<ClassRoom[]>([]);
   
@@ -298,7 +298,7 @@ export default function ParentsList() {
                 }}
                 className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-slate-200 flex items-center justify-center text-sm font-bold cursor-pointer"
               >
-                ✕
+                
               </button>
             </div>
             <form onSubmit={handleUpdateParentSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:p-5">
@@ -474,7 +474,7 @@ export default function ParentsList() {
                         <span dir="ltr">{parent.parent_phone}</span>
                       </span>
                     ) : (
-                      <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/40 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-800 text-xs">⚠️ غير متوفر</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/40 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-800 text-xs">غير متوفر</span>
                     )}
                   </div>
                   
@@ -574,7 +574,7 @@ export default function ParentsList() {
                               {parent.parent_phone}
                             </span>
                           ) : (
-                            <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/40 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-800">⚠️ غير متوفر</span>
+                            <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/40 px-2 py-0.5 rounded border border-rose-100 dark:border-rose-800">غير متوفر</span>
                           )}
                         </td>
 
@@ -648,3 +648,5 @@ export default function ParentsList() {
     </motion.div>
   );
 }
+
+export default React.memo(ParentsListComponent);

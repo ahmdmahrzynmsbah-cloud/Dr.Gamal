@@ -13,7 +13,7 @@ interface ThemeToggleProps {
   className?: string;
 }
 
-export default function ThemeToggle({ isDarkMode, onToggle, className = '' }: ThemeToggleProps) {
+function ThemeToggleComponent({ isDarkMode, onToggle, className = '' }: ThemeToggleProps) {
   return (
     <div
       className={`inline-flex items-center p-1 rounded-full border transition-all duration-300 select-none ${
@@ -68,4 +68,6 @@ export default function ThemeToggle({ isDarkMode, onToggle, className = '' }: Th
     </div>
   );
 }
+
+export default React.memo(ThemeToggleComponent);
 

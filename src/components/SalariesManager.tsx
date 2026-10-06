@@ -19,7 +19,7 @@ interface SalaryPayment {
   notes: string;
 }
 
-export default function SalariesManager() {
+function SalariesManagerComponent() {
   const [secretaries, setSecretaries] = useState<UserData[]>([]);
   const [payments, setPayments] = useState<SalaryPayment[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -309,3 +309,5 @@ export default function SalariesManager() {
     </div>
   );
 }
+
+export default React.memo(SalariesManagerComponent);

@@ -261,7 +261,7 @@ export function calculateStudentSubscription(
 
     if (amountPaidForThisCycle >= feeRequired) {
       status = 'paid';
-      statusText = 'مسدد بالكامل ✓';
+      statusText = 'مسدد بالكامل';
       isOverdue = false;
     } else if (amountPaidForThisCycle > 0) {
       status = 'partial';
@@ -341,7 +341,7 @@ export function calculateStudentSubscription(
     statusBadgeClass = 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800';
   } else if (currentCycle.status === 'paid' && totalPaid > 0) {
     overallStatus = 'paid';
-    statusLabel = 'مسدد بالكامل ✓';
+    statusLabel = 'مسدد بالكامل';
     statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700';
   } else if (currentCycle.status === 'partial') {
     overallStatus = 'partial';

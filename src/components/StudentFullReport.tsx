@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Student, Attendance, ExamGrade, Exam, AssignmentGrade, Assignment, FeePayment, ClassRoom } from '../types';
 import { samsDb } from '../utils/db';
-import { X, Printer, Download, User, Calendar, BookOpen, CreditCard, CheckCircle, AlertCircle, Award, Target, Hash, Phone, Clock, Coins, Check } from 'lucide-react';
+import { X, Printer, Download, User, Calendar, BookOpen, CreditCard, CheckCircle, AlertCircle, Award, Target, Hash, Phone, Clock, Coins, Check, MessageSquare, Copy, ExternalLink, Send, FileText, Share2, FileDown, Loader2, ChevronDown, ChevronUp, CheckCircle2, GraduationCap } from 'lucide-react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { calculateStudentSubscription, isStudentEnrolledInCalendarMonth, formatShortDateArabic } from '../utils/subscriptionUtils';
+import { formatEgyptianPhoneForWhatsApp } from '../utils/feeReminderService';
+import { generateStudentReportPdf, downloadPdfBlob, GeneratedPdfResult } from '../utils/pdfGenerator';
 
 interface Props {
   student: Student;
@@ -68,10 +70,31 @@ export default function StudentFullReport({ student, onClose }: Props) {
   };
 
   const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
-  const printHeaderTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : (localStorage.getItem('sams_custom_header_title_v2') || 'الدكتور في اللغة العربية');
-  const printHeaderSubtitle = localStorage.getItem('sams_custom_header_subtitle_v2') || 'التقرير الأكاديمي الشامل وكشف المتابعة المطبوع';
+  
+  // Resolve actual system name (filter out generic legacy placeholders)
+  const savedHeader = typeof window !== 'undefined' ? localStorage.getItem('sams_custom_header_title_v2') : null;
+  const isInvalidHeader = !savedHeader || savedHeader.includes('المنصة التعليمية') || savedHeader.includes('منصة الإدارة') || savedHeader.includes('المنصة');
+  const printHeaderTitle = isAlsafa 
+    ? 'سيستم الصفا للمواد الشرعية' 
+    : (isInvalidHeader ? 'الدكتور في اللغة العربية' : savedHeader);
+
+  if (typeof window !== 'undefined' && isInvalidHeader && savedHeader) {
+    try { localStorage.setItem('sams_custom_header_title_v2', printHeaderTitle); } catch (e) {}
+  }
+
+  const savedSubtitle = typeof window !== 'undefined' ? localStorage.getItem('sams_custom_header_subtitle_v2') : null;
+  const isInvalidSubtitle = !savedSubtitle || savedSubtitle.includes('بوابة التحكم') || savedSubtitle.includes('الحصص الأكاديمية');
+  const printHeaderSubtitle = isAlsafa 
+    ? (isInvalidSubtitle ? 'المنظومة الأكاديمية للمواد الشرعية والعلوم الإسلامية' : savedSubtitle)
+    : (isInvalidSubtitle ? 'التقرير الأكاديمي الشامل وكشف المتابعة المطبوع' : savedSubtitle);
+
+  if (typeof window !== 'undefined' && isInvalidSubtitle && savedSubtitle) {
+    try { localStorage.setItem('sams_custom_header_subtitle_v2', printHeaderSubtitle); } catch (e) {}
+  }
+
   const printHeaderContact = localStorage.getItem('sams_custom_header_contact_v2') || '';
   const printHeaderLogo = localStorage.getItem('sams_custom_app_logo_v2') || '';
+  const [logoImgError, setLogoImgError] = useState(false);
 
   const attPresent = attendance.filter(a => a.status === 'present').length;
   const attAbsent = attendance.filter(a => a.status === 'absent').length;
@@ -80,6 +103,240 @@ export default function StudentFullReport({ student, onClose }: Props) {
   const attRate = totalAtt > 0 ? Math.round(((attPresent + attExcused) / totalAtt) * 100) : 0;
 
   const totalFeesPaid = fees.reduce((sum, f) => sum + f.amount, 0);
+
+  // WhatsApp & PDF Report Dispatch States
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [whatsAppPhone, setWhatsAppPhone] = useState(student.parent_phone || student.phone || '');
+  const [whatsAppText, setWhatsAppText] = useState('');
+  const [copiedSuccess, setCopiedSuccess] = useState(false);
+  const [sendSuccessMsg, setSendSuccessMsg] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfResult, setPdfResult] = useState<GeneratedPdfResult | null>(null);
+  const [pdfError, setPdfError] = useState('');
+  const [showTextDetails, setShowTextDetails] = useState(false);
+
+  const generateReportMessage = () => {
+    const centerTitle = printHeaderTitle;
+    const signature = `#${printHeaderTitle.replace(/\s+/g, '_')}`;
+
+    const todayStr = new Date().toLocaleDateString('ar-EG');
+    const currentMonthName = new Date().toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
+
+    // 1. Attendance stats
+    const presentCount = attendance.filter(a => a.status === 'present').length;
+    const absentCount = attendance.filter(a => a.status === 'absent').length;
+    const excusedCount = attendance.filter(a => a.status === 'excused').length;
+    const totalCount = attendance.length;
+    const attendancePercentage = totalCount > 0 ? Math.round(((presentCount + excusedCount) / totalCount) * 100) : 0;
+
+    // 2. Financial calculation
+    const subOverview = calculateStudentSubscription(student, fees, 250);
+    const remainingText = subOverview.totalRemainingDebt > 0
+      ? `المبلغ المتبقي المستحق: ${subOverview.totalRemainingDebt} ج.م`
+      : 'تم سداد كافة المستحقات بالكامل';
+
+    // 3. Exam summary
+    let examsSummary = '';
+    if (examGrades.length > 0) {
+      const recentExams = examGrades.slice(0, 5);
+      examsSummary = recentExams.map(eg => {
+        const examDate = new Date(eg.exam.date).toLocaleDateString('ar-EG');
+        if (eg.absent) {
+          return `• ${eg.exam.name} (${examDate}): غائب عن الامتحان`;
+        }
+        return `• ${eg.exam.name} (${examDate}): ${eg.score} من ${eg.exam.max_score} درجة`;
+      }).join('\n');
+    } else {
+      examsSummary = '• لا توجد امتحانات مسجلة حتى الآن.';
+    }
+
+    // 4. Assignments summary
+    let assignmentsSummary = '';
+    if (assignmentGrades.length > 0) {
+      const completedCount = assignmentGrades.filter(a => a.completed).length;
+      const rate = Math.round((completedCount / assignmentGrades.length) * 100);
+      const recentAssignments = assignmentGrades.slice(0, 4);
+      assignmentsSummary = `نسبة إنجاز الواجبات: ${rate}%\n` + recentAssignments.map(ag => {
+        const statusText = ag.completed ? 'تم التسليم' : 'لم يسلم';
+        return `• ${ag.assignment.title}: ${statusText}`;
+      }).join('\n');
+    } else {
+      assignmentsSummary = '• لا توجد واجبات مسجلة.';
+    }
+
+    return `السلام عليكم ورحمة الله وبركاته
+السيد ولي أمر الطالب/ة: *${student.name}* (${student.parent_name || 'المحترم'})
+
+تحية طيبة وبعد من إدارة *${centerTitle}*
+
+التقرير الأكاديمي الشامل وكشف المتابعة:
+• اسم الطالب: ${student.name}
+• رقم القيد: ${student.registration_id}
+• المجموعة: ${classInfo ? `${classInfo.name} (${classInfo.education_type || 'عام'})` : student.class_id || '-'}
+• السنة الدراسية: ${student.grade_level}
+• تاريخ إصدار التقرير: ${todayStr}
+
+----------------------------------
+1. سجل الحضور والغياب (لشهر ${currentMonthName}):
+• نسبة الحضور: ${attendancePercentage}%
+• عدد أيام الحضور: ${presentCount} يوم
+• عدد أيام الغياب: ${absentCount} يوم
+• عدد أيام الاستئذان: ${excusedCount} يوم
+
+----------------------------------
+2. الموقف المالي والاشتراكات:
+• إجمالي المسدد: ${subOverview.totalPaid} ج.م
+• ${remainingText}
+• دورة الاشتراك الحالية: ${subOverview.currentCycle.label} (${subOverview.currentCycle.periodLabel})
+
+----------------------------------
+3. نتائج الامتحانات:
+${examsSummary}
+
+----------------------------------
+4. التكليفات والواجبات المنزلية:
+${assignmentsSummary}
+
+----------------------------------
+شاكرين لكم حسن تعاونكم ومتابعتكم المستمرة لمستوى الطالب.
+
+${signature}`;
+  };
+
+  // Ensure high-resolution PDF is generated and ready
+  const ensurePdfGenerated = async (force = false): Promise<GeneratedPdfResult | null> => {
+    if (pdfResult && !force) return pdfResult;
+    setIsGeneratingPdf(true);
+    setPdfError('');
+    try {
+      const res = await generateStudentReportPdf(student);
+      setPdfResult(res);
+      return res;
+    } catch (err: any) {
+      console.error('PDF Generation Error:', err);
+      setPdfError(err?.message || 'تعذر توليد ملف الـ PDF تلقائياً.');
+      return null;
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleOpenWhatsAppModal = () => {
+    const text = generateReportMessage();
+    setWhatsAppText(text);
+    setWhatsAppPhone(student.parent_phone || student.phone || '');
+    setPhoneError('');
+    setSendSuccessMsg('');
+    setPdfError('');
+    setCopiedSuccess(false);
+    setShowWhatsAppModal(true);
+    // Pre-generate PDF in background for immediate readiness
+    ensurePdfGenerated();
+  };
+
+  const handleCopyMessage = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(whatsAppText);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = whatsAppText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopiedSuccess(true);
+      setTimeout(() => setCopiedSuccess(false), 2500);
+    } catch (err) {
+      setCopiedSuccess(true);
+      setTimeout(() => setCopiedSuccess(false), 2500);
+    }
+  };
+
+  // 1. Direct PDF Download
+  const handleDownloadPdfOnly = async () => {
+    setPdfError('');
+    const res = await ensurePdfGenerated();
+    if (res) {
+      downloadPdfBlob(res.blob, res.filename);
+      setSendSuccessMsg(`تم تنزيل ملف (${res.filename}) على جهازك بنجاح.`);
+    }
+  };
+
+  // 2. Send / Share PDF via WhatsApp
+  const handleSendPdfToWhatsApp = async () => {
+    const rawPhone = whatsAppPhone.trim();
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    if (!rawPhone || rawPhone === 'لا يوجد' || rawPhone === 'غير متوفر' || digitsOnly.length < 8) {
+      setPhoneError('يرجى إدخال رقم هاتف صحيح لولي الأمر (11 رقم).');
+      return;
+    }
+    setPhoneError('');
+
+    const res = await ensurePdfGenerated();
+    if (!res) {
+      setPhoneError('تعذر تجهيز ملف الـ PDF. يرجى المحاولة ثانية.');
+      return;
+    }
+
+    const cleanPhone = formatEgyptianPhoneForWhatsApp(rawPhone);
+    const cleanStudentName = (student.name || 'طالب').trim();
+    const introText = `السلام عليكم ورحمة الله وبركاته،\nالسيد ولي أمر الطالب/ة: *${cleanStudentName}*\nمرفق لسيادتكم: *تقرير الطالب ${cleanStudentName}* (ملف PDF رسمي معتمد) الصادر بتاريخ ${new Date().toLocaleDateString('ar-EG')}.\n\n#${printHeaderTitle.replace(/\s+/g, '_')}`;
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(introText)}`;
+
+    // Log notification in system
+    samsDb.addNotification({
+      title: `إرسال تقرير PDF: ${student.name}`,
+      message: `تم تجهيز ملف التقرير PDF وإرساله لولي الأمر على الرقم (${rawPhone}).`,
+      category: 'sms',
+      recipient_type: 'specific',
+      recipient_id: student.id
+    }, { silent: true });
+
+    // Try native Web Share with file first (works on mobile phones with WhatsApp installed)
+    if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [res.file] })) {
+      try {
+        await navigator.share({
+          files: [res.file],
+          title: `تقرير الطالب: ${student.name} (PDF)`,
+          text: introText
+        });
+        setSendSuccessMsg('تمت مشاركة ملف التقرير PDF عبر واتساب بنجاح.');
+        return;
+      } catch (shareErr: any) {
+        if (shareErr.name === 'AbortError') {
+          return; // user cancelled share modal
+        }
+      }
+    }
+
+    // Fallback for desktop & browsers without native file sharing:
+    // 1. Download the PDF directly so it's ready in the user's downloads folder
+    downloadPdfBlob(res.blob, res.filename);
+
+    // 2. Open WhatsApp Web with the parent's chat
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+
+    setSendSuccessMsg(`تم تنزيل ملف التقرير (${res.filename}) على جهازك وفتح محادثة ولي الأمر على واتساب بنجاح! يمكنك الآن إرفاق ملف الـ PDF في المحادثة مباشرة.`);
+  };
+
+  // 3. Fallback: Send summary text message only
+  const handleSendTextOnly = () => {
+    const rawPhone = whatsAppPhone.trim();
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    if (!rawPhone || rawPhone === 'لا يوجد' || rawPhone === 'غير متوفر' || digitsOnly.length < 8) {
+      setPhoneError('يرجى إدخال رقم هاتف صحيح لولي الأمر (11 رقم).');
+      return;
+    }
+    setPhoneError('');
+    const cleanPhone = formatEgyptianPhoneForWhatsApp(rawPhone);
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsAppText)}`;
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setSendSuccessMsg('تم فتح محادثة واتساب بنجاح.');
+  };
 
   return (
     <motion.div
@@ -108,59 +365,98 @@ export default function StudentFullReport({ student, onClose }: Props) {
           </div>
         </div>
         
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <button onClick={handlePrint} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-700 font-bold text-sm transition-colors shadow-md">
-            <Printer className="w-4 h-4" />
-            طباعة التقرير / PDF
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <button 
+            type="button"
+            onClick={handleOpenWhatsAppModal}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95"
+            title="إرسال التقرير كـ PDF لولي الأمر عبر واتساب"
+          >
+            <MessageSquare className="w-4 h-4 shrink-0" />
+            <span>إرسال التقرير PDF (واتساب)</span>
+          </button>
+
+          <button 
+            type="button"
+            onClick={handleDownloadPdfOnly}
+            disabled={isGeneratingPdf}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-[#0D5C8C] hover:bg-[#0a486e] text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95 disabled:opacity-50"
+            title="تحميل ملف التقرير كـ PDF"
+          >
+            {isGeneratingPdf ? <Loader2 className="w-4 h-4 shrink-0 animate-spin" /> : <FileDown className="w-4 h-4 shrink-0" />}
+            <span>تحميل PDF</span>
+          </button>
+
+          <button 
+            type="button"
+            onClick={handlePrint} 
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer active:scale-95"
+            title="طباعة التقرير أو حفظه كـ PDF عبر المتصفح"
+          >
+            <Printer className="w-4 h-4 shrink-0" />
+            <span>طباعة / معاينة</span>
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div id="printable-group-roster" className="flex-1 p-4 sm:p-6 space-y-6 print:p-2 print:space-y-4 bg-white dark:bg-slate-800 print:bg-white text-slate-900 dark:text-slate-100 print:text-black">
+      <div id="printable-group-roster" className="flex-1 p-4 sm:p-6 space-y-6 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
           
           {/* Official Printable Header */}
-          <div className="border-b-2 border-slate-800 pb-3 mb-4 flex justify-between items-center print-avoid-break">
+          <div className="border-b-2 border-slate-300 dark:border-slate-700 pb-3 mb-4 flex justify-between items-center print-avoid-break">
             <div className="flex items-center gap-3.5">
-              {printHeaderLogo ? (
-                <img src={printHeaderLogo} alt="شعار السنتر" className="w-14 h-14 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 shrink-0" />
+              {printHeaderLogo && (printHeaderLogo.startsWith('data:image') || printHeaderLogo.startsWith('http') || printHeaderLogo.startsWith('/')) && !logoImgError ? (
+                <img 
+                  src={printHeaderLogo} 
+                  alt="شعار السنتر" 
+                  onError={() => setLogoImgError(true)}
+                  className="w-14 h-14 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 shrink-0" 
+                />
               ) : (
-                <div className="w-12 h-12 bg-amber-500/10 border-2 border-amber-600 rounded-xl flex items-center justify-center text-amber-800 dark:text-amber-300 font-extrabold text-xl shrink-0">
-                  {printHeaderTitle ? printHeaderTitle.charAt(0) : 'س'}
+                <div className={`w-13 h-13 rounded-2xl flex items-center justify-center shadow-md shrink-0 ring-2 ${
+                  isAlsafa ? 'bg-emerald-600 text-white ring-emerald-500/20' : 'bg-[#0D5C8C] text-white ring-[#0D5C8C]/20'
+                }`}>
+                  {printHeaderLogo && printHeaderLogo.length <= 4 ? (
+                    <span className="text-xl font-black font-sans">{printHeaderLogo}</span>
+                  ) : isAlsafa ? (
+                    <BookOpen className="w-7 h-7" />
+                  ) : (
+                    <GraduationCap className="w-7 h-7" />
+                  )}
                 </div>
               )}
               <div>
-                <h1 className="text-sm sm:text-base sm:text-lg font-extrabold text-slate-900 dark:text-slate-50 print:text-black leading-tight">{printHeaderTitle}</h1>
-                <p className="text-xs text-slate-600 dark:text-slate-300 print:text-slate-700 font-medium">{printHeaderSubtitle}</p>
-                {printHeaderContact && <p className="text-[10px] text-slate-500 dark:text-slate-400 print:text-slate-600 font-sans">{printHeaderContact}</p>}
+                <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-50 leading-tight">{printHeaderTitle}</h1>
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">{printHeaderSubtitle}</p>
+                {printHeaderContact && <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">{printHeaderContact}</p>}
               </div>
             </div>
 
-            <div className="text-center px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 print:bg-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl shrink-0">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 print:text-black block">تقرير طالب رسمي</span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 print:text-slate-700 font-mono">{new Date().toLocaleDateString('ar-EG')}</span>
+            <div className="text-center px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl shrink-0">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">تقرير طالب رسمي</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{new Date().toLocaleDateString('ar-EG')}</span>
             </div>
           </div>
           
           {/* Section 1: Personal Info & Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 gap-3 print:gap-2.5 print-section print-avoid-break">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 print:gap-2.5 print-section print-avoid-break">
             {/* Info Card */}
-            <div className="md:col-span-1 print:col-span-1 bg-white dark:bg-slate-800 print:bg-white border border-slate-200 dark:border-slate-700 print:border-slate-300 rounded-2xl p-3.5 sm:p-4 print:p-3 shadow-xs">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 print:text-black border-b border-slate-100 dark:border-slate-700 print:border-slate-200 pb-2 mb-3 flex items-center gap-2 text-xs sm:text-sm">
-                <Hash className="w-4 h-4 text-[#1A7FAA] dark:text-sky-400 print:text-[#1A7FAA]" />
+            <div className="md:col-span-1 bg-slate-50/70 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 sm:p-4 shadow-xs">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2 mb-3 flex items-center gap-2 text-xs sm:text-sm">
+                <Hash className="w-4 h-4 text-[#1A7FAA] dark:text-sky-400" />
                 البيانات الأساسية
               </h3>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center"><span className="text-slate-500 print:text-slate-600">اسم الطالب</span><span className="font-bold text-slate-900 print:text-black">{student.name}</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-500 print:text-slate-600">رقم القيد</span><span className="font-mono font-bold text-[#0D5C8C]">{student.registration_id}</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-500 print:text-slate-600">المجموعة</span><span className="font-bold text-[#1A7FAA] dark:text-sky-400">{classInfo ? `${classInfo.name} (${classInfo.education_type || 'عام'})` : '-'}</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-500 print:text-slate-600">السنة الدراسية</span><span className="font-bold text-slate-800 print:text-black">{student.grade_level}</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-500 print:text-slate-600">تاريخ التسجيل</span><span className="text-slate-700 print:text-slate-800">{new Date(student.created_at).toLocaleDateString('ar-EG')}</span></div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-slate-100 dark:border-slate-800 print:border-slate-200">
-                  <span className="text-slate-500 print:text-slate-600">ولي الأمر</span>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">اسم الطالب</span><span className="font-bold text-slate-900 dark:text-slate-100">{student.name}</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">رقم القيد</span><span className="font-mono font-bold text-[#0D5C8C] dark:text-sky-400">{student.registration_id}</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">المجموعة</span><span className="font-bold text-[#1A7FAA] dark:text-sky-400">{classInfo ? `${classInfo.name} (${classInfo.education_type || 'عام'})` : '-'}</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">السنة الدراسية</span><span className="font-bold text-slate-800 dark:text-slate-200">{student.grade_level}</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-500 dark:text-slate-400">تاريخ التسجيل</span><span className="text-slate-700 dark:text-slate-300">{new Date(student.created_at).toLocaleDateString('ar-EG')}</span></div>
+                <div className="flex justify-between items-center pt-1.5 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500 dark:text-slate-400">ولي الأمر</span>
                   <div className="text-left">
-                    <span className="font-bold text-slate-800 print:text-black block">{student.parent_name || 'غير مدون'}</span>
-                    <span className="font-mono text-slate-500 print:text-slate-600 flex items-center gap-1 justify-end mt-0.5"><Phone className="w-3 h-3"/> {student.parent_phone}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 block">{student.parent_name || 'غير مدون'}</span>
+                    <span className="font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1 justify-end mt-0.5"><Phone className="w-3 h-3"/> {student.parent_phone}</span>
                   </div>
                 </div>
               </div>
@@ -244,55 +540,55 @@ export default function StudentFullReport({ student, onClose }: Props) {
           <hr className="border-slate-100 dark:border-slate-700 print:border-slate-200" />
 
           {/* Section 3: Exams & Assignments */}
-          <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 print:gap-3 print-section print-avoid-break">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-3 print-section print-avoid-break">
             <div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 print:text-black mb-2.5 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-indigo-600 print:text-indigo-700" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mb-2.5 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span>سجل الامتحانات</span>
               </h3>
               {examGrades.length > 0 ? (
                 <div className="space-y-2">
                   {examGrades.map(eg => (
-                    <div key={eg.id} className="flex items-center justify-between p-2.5 print:p-2 bg-white dark:bg-slate-800 print:bg-white border border-slate-200 dark:border-slate-700 print:border-slate-300 rounded-xl shadow-2xs print-avoid-break">
+                    <div key={eg.id} className="flex items-center justify-between p-2.5 bg-slate-50/70 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs print-avoid-break">
                       <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-100 print:text-black text-xs">{eg.exam.name}</p>
-                        <p className="text-[9px] text-slate-500 dark:text-slate-400 print:text-slate-600">{new Date(eg.exam.date).toLocaleDateString('ar-EG')} • {eg.exam.type}</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-xs">{eg.exam.name}</p>
+                        <p className="text-[9px] text-slate-500 dark:text-slate-400">{new Date(eg.exam.date).toLocaleDateString('ar-EG')} • {eg.exam.type}</p>
                       </div>
                       <div className="text-left">
                         {eg.absent ? (
-                          <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">غائب</span>
+                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded-md">غائب</span>
                         ) : (
-                          <p className="font-black text-indigo-700 print:text-indigo-800 text-sm font-mono">{eg.score} <span className="text-[10px] text-slate-400 font-medium font-sans">/ {eg.exam.max_score}</span></p>
+                          <p className="font-black text-indigo-700 dark:text-indigo-400 text-sm font-mono">{eg.score} <span className="text-[10px] text-slate-400 font-medium font-sans">/ {eg.exam.max_score}</span></p>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-xl border border-slate-100">لا توجد درجات امتحانات.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">لا توجد درجات امتحانات.</p>
               )}
             </div>
 
             <div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 print:text-black mb-2.5 flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-sky-600 print:text-sky-700" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mb-2.5 flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>سجل التكليفات والواجبات</span>
               </h3>
               {assignmentGrades.length > 0 ? (
                 <div className="space-y-2">
                   {assignmentGrades.map(ag => (
-                    <div key={ag.id} className="flex items-center justify-between p-2.5 print:p-2 bg-white dark:bg-slate-800 print:bg-white border border-slate-200 dark:border-slate-700 print:border-slate-300 rounded-xl shadow-2xs print-avoid-break">
+                    <div key={ag.id} className="flex items-center justify-between p-2.5 bg-slate-50/70 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs print-avoid-break">
                       <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-100 print:text-black text-xs">{ag.assignment.title}</p>
-                        <p className="text-[9px] text-slate-500 dark:text-slate-400 print:text-slate-600">الاستلام: {new Date(ag.assignment.due_date).toLocaleDateString('ar-EG')}</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-xs">{ag.assignment.title}</p>
+                        <p className="text-[9px] text-slate-500 dark:text-slate-400">الاستلام: {new Date(ag.assignment.due_date).toLocaleDateString('ar-EG')}</p>
                       </div>
                       <div className="text-left">
                         {ag.completed ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
                             سلم
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded-md">
                             لم يسلم
                           </span>
                         )}
@@ -301,7 +597,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-xl border border-slate-100">لا توجد تكليفات مسجلة.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">لا توجد تكليفات مسجلة.</p>
               )}
             </div>
           </div>
@@ -514,26 +810,26 @@ export default function StudentFullReport({ student, onClose }: Props) {
                 {/* Desktop and Print Table View */}
                 <div className="hidden md:block print:block">
                   <table className="w-full text-xs text-right relative border-collapse print:text-[11px]">
-                    <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 dark:text-slate-100 print:text-black font-black border-b-2 border-slate-200 dark:border-slate-700 print:border-slate-400 shadow-xs">
+                    <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-black border-b-2 border-slate-200 dark:border-slate-700 shadow-xs">
                     <tr>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">التاريخ</th>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">المبلغ</th>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">النوع</th>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">البيان/الشهر</th>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">رقم الإيصال</th>
-                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 print:bg-slate-100 text-slate-800 print:text-black whitespace-nowrap">طريقة الدفع</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">التاريخ</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">المبلغ</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">النوع</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">البيان/الشهر</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">رقم الإيصال</th>
+                      <th className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 whitespace-nowrap">طريقة الدفع</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 print:divide-slate-200">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {fees.map(fee => (
                       <tr key={fee.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 print-avoid-break">
-                        <td className="px-3 py-1.5 font-mono text-[11px]">{new Date(fee.payment_date).toLocaleDateString('ar-EG')}</td>
-                        <td className="px-3 py-1.5 font-extrabold text-amber-700 print:text-amber-800">{fee.amount} ج.م</td>
-                        <td className="px-3 py-1.5 text-slate-700 print:text-black">اشتراك الشهر الدراسي</td>
-                        <td className="px-3 py-1.5 text-slate-700 print:text-black font-bold">{fee.month || '-'}</td>
-                        <td className="px-3 py-1.5 font-mono text-[11px] text-slate-500 print:text-slate-700">{fee.receipt_number || '-'}</td>
+                        <td className="px-3 py-1.5 font-mono text-[11px] text-slate-700 dark:text-slate-300">{new Date(fee.payment_date).toLocaleDateString('ar-EG')}</td>
+                        <td className="px-3 py-1.5 font-extrabold text-amber-700 dark:text-amber-400">{fee.amount} ج.م</td>
+                        <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300">اشتراك الشهر الدراسي</td>
+                        <td className="px-3 py-1.5 text-slate-700 dark:text-slate-200 font-bold">{fee.month || '-'}</td>
+                        <td className="px-3 py-1.5 font-mono text-[11px] text-slate-500 dark:text-slate-400">{fee.receipt_number || '-'}</td>
                         <td className="px-3 py-1.5">
-                          <span className="px-2 py-0.5 bg-slate-100 print:bg-slate-200 text-slate-700 print:text-black rounded text-[10px] font-bold">
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold">
                             {fee.payment_method === 'cash' ? 'نقدي' : fee.payment_method === 'card' ? 'فيزا' : 'تحويل'}
                           </span>
                         </td>
@@ -544,18 +840,293 @@ export default function StudentFullReport({ student, onClose }: Props) {
               </div>
             </div>
           ) : (
-              <p className="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-xl border border-slate-100">لا توجد مدفوعات مسجلة.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">لا توجد مدفوعات مسجلة.</p>
             )}
           </div>
 
           {/* Official Print Signatures & Footer */}
-          <div className="hidden print:flex justify-between items-center border-t-2 border-slate-800 pt-4 mt-6 text-xs font-bold text-slate-800 print-avoid-break" dir="rtl">
+          <div className="hidden print:flex justify-between items-center border-t-2 border-slate-300 dark:border-slate-700 pt-4 mt-6 text-xs font-bold text-slate-800 dark:text-slate-300 print-avoid-break" dir="rtl">
             <div>توقيع ولي الأمر: ..............................</div>
             <div>المشرف الأكاديمي: ..............................</div>
             <div>خاتم وإدارة المركز: ..............................</div>
           </div>
 
         </div>
+
+        {/* WhatsApp Send Modal */}
+        <AnimatePresence>
+          {showWhatsAppModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50 animate-fade-in print:hidden" dir="rtl">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-xl w-full flex flex-col max-h-[92vh] overflow-hidden text-right"
+              >
+                {/* Modal Header */}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <span>إرسال التقرير كـ PDF مطبوع لولي الأمر</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          ملف A4 رسمي
+                        </span>
+                      </h3>
+                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {student.name} · رقم القيد: {student.registration_id}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowWhatsAppModal(false)}
+                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 font-sans">
+                  {/* Success Alert */}
+                  {sendSuccessMsg && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                      <div className="leading-relaxed">
+                        {sendSuccessMsg}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Alert */}
+                  {pdfError && (
+                    <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs font-bold text-red-700 dark:text-red-300 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{pdfError}</span>
+                    </div>
+                  )}
+
+                  {/* 1. Official PDF Document Card */}
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/30 dark:border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-red-600/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                        <FileText className="w-6 h-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 font-sans truncate">
+                            {pdfResult?.filename || `تقرير الطالب ${student.name}.pdf`}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                            مستند PDF مطبوع
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                          {isGeneratingPdf ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
+                              <span>جاري إعداد وتنسيق ملف الـ PDF عالي الدقة...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
+                              <span>ملف PDF رسمي ملون جاهز للإرسال والطباعة فوراً</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Quick File Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={handleDownloadPdfOnly}
+                        disabled={isGeneratingPdf}
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        title="تحميل ملف الـ PDF مباشرة على جهازك"
+                      >
+                        {isGeneratingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5 text-[#0D5C8C]" />}
+                        <span>تحميل PDF</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handlePrint}
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        title="معاينة وطباعة"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
+                        <span>طباعة</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2. Recipient Phone */}
+                  <div className="space-y-1.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>رقم هاتف ولي الأمر (واتساب):</span>
+                      </label>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        {student.parent_phone && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWhatsAppPhone(student.parent_phone);
+                              setPhoneError('');
+                            }}
+                            className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
+                              whatsAppPhone === student.parent_phone
+                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            }`}
+                          >
+                            ولي الأمر ({student.parent_phone})
+                          </button>
+                        )}
+                        {student.phone && student.phone !== student.parent_phone && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWhatsAppPhone(student.phone);
+                              setPhoneError('');
+                            }}
+                            className={`px-2 py-0.5 rounded-md font-medium cursor-pointer transition-colors ${
+                              whatsAppPhone === student.phone
+                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            }`}
+                          >
+                            الطالب ({student.phone})
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <input
+                      type="tel"
+                      dir="ltr"
+                      value={whatsAppPhone}
+                      onChange={(e) => {
+                        setWhatsAppPhone(e.target.value);
+                        setPhoneError('');
+                      }}
+                      placeholder="مثال: 01012345678"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-mono text-center tracking-wider"
+                    />
+                    {phoneError && (
+                      <p className="text-[11px] font-bold text-red-600 dark:text-red-400 mt-1">
+                        {phoneError}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 3. Helpful Guidance Note */}
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="font-bold text-slate-800 dark:text-slate-200 mb-0.5">
+                      طريقة إرسال ملف الـ PDF عبر واتساب:
+                    </p>
+                    <p>
+                      عند الضغط على <strong className="text-emerald-600">إرسال التقرير كـ PDF عبر واتساب</strong>، يتم تجهيز ملف الـ PDF المطبوع ومشاركته مباشرة في واتساب (على الهواتف)، أو تنزيل ملف الـ PDF على جهازك وفتح محادثة ولي الأمر تلقائياً لتسليمه كمستند رسمي فوراً.
+                    </p>
+                  </div>
+
+                  {/* 4. Collapsible Text Summary (Optional) */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setShowTextDetails(!showTextDetails)}
+                      className="w-full p-2.5 bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
+                    >
+                      <span>عرض ملخص نص التقرير المرفق (اختياري)</span>
+                      {showTextDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+
+                    {showTextDetails && (
+                      <div className="p-3 bg-white dark:bg-slate-800 space-y-2 border-t border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                            معاينة النص التوضيحي المرفق مع التقرير:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleCopyMessage}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                          >
+                            {copiedSuccess ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                <span className="text-emerald-600">تم النسخ</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                <span>نسخ النص</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <textarea
+                          rows={6}
+                          value={whatsAppText}
+                          onChange={(e) => setWhatsAppText(e.target.value)}
+                          className="w-full p-2.5 text-xs leading-relaxed bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-emerald-500 font-sans resize-y"
+                          placeholder="نص التقرير..."
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Footer (Responsive) */}
+                <div className="p-3 sm:p-4 bg-slate-50/80 dark:bg-slate-900/70 border-t border-slate-100 dark:border-slate-700 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowWhatsAppModal(false)}
+                    className="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer transition-colors text-center"
+                  >
+                    إغلاق
+                  </button>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleDownloadPdfOnly}
+                      disabled={isGeneratingPdf}
+                      className="px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#0D5C8C]" />
+                      <span>تحميل ملف PDF</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSendPdfToWhatsApp}
+                      disabled={isGeneratingPdf}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {isGeneratingPdf ? (
+                        <>
+                          <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                          <span>جاري تجهيز الـ PDF...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 shrink-0" />
+                          <span>إرسال التقرير PDF لولي الأمر (واتساب)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </motion.div>
   );
 }

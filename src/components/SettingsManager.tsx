@@ -27,11 +27,28 @@ interface SettingsManagerProps {
 }
 
 function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userName, isDarkMode = false, onToggleDarkMode }: SettingsManagerProps) {
+  const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+  const defaultAppName = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
+  const defaultHeaderTitle = isAlsafa ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية';
+  const defaultHeaderSubtitle = isAlsafa ? 'المنظومة الأكاديمية للمواد الشرعية والعلوم الإسلامية' : 'التقرير الأكاديمي الشامل وكشف المتابعة المطبوع';
+
   // State variables for customization
-  const [appName, setAppName] = useState(localStorage.getItem('sams_custom_app_name_v2') || 'منصة الإدارة');
+  const [appName, setAppName] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('sams_custom_app_name_v2') : null;
+    if (!saved || saved.includes('منصة الإدارة') || saved.includes('المنصة التعليمية')) return defaultAppName;
+    return saved;
+  });
   const [appLogo, setAppLogo] = useState(localStorage.getItem('sams_custom_app_logo_v2') || 'م');
-  const [headerTitle, setHeaderTitle] = useState(localStorage.getItem('sams_custom_header_title_v2') || 'المنصة التعليمية المتكاملة للمعلم');
-  const [headerSubtitle, setHeaderSubtitle] = useState(localStorage.getItem('sams_custom_header_subtitle_v2') || 'بوابة التحكم الإدارية والحصص الأكاديمية');
+  const [headerTitle, setHeaderTitle] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('sams_custom_header_title_v2') : null;
+    if (!saved || saved.includes('منصة الإدارة') || saved.includes('المنصة التعليمية')) return defaultHeaderTitle;
+    return saved;
+  });
+  const [headerSubtitle, setHeaderSubtitle] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('sams_custom_header_subtitle_v2') : null;
+    if (!saved || saved.includes('بوابة التحكم')) return defaultHeaderSubtitle;
+    return saved;
+  });
 
   // Msg templates
   const [tPresent, setTPresent] = useState(localStorage.getItem('sams_msg_template_present') || 'عزيزي ولي الأمر ({اسم_ولي_الأمر})، بنبلغك إن الطالب/ة ({اسم_الطالب}) حضر النهاردة في السنتر. شكراً لمتابعتك.');
@@ -314,6 +331,12 @@ function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userNam
       });
     }
 
+    // Check any custom PIN stored
+    const customPin = localStorage.getItem('sams_security_pin') || localStorage.getItem('sams_admin_pin');
+    if (customPin && customPin.trim()) {
+      validPasscodes.add(customPin.trim());
+    }
+
     // Default system passcodes for active system
     if (isAlsafa) {
       validPasscodes.add('4444');
@@ -420,10 +443,11 @@ function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userNam
   };
 
   const confirmResetDefaults = () => {
-    setAppName('منصة الإدارة');
-    setAppLogo('S');
-    setHeaderTitle('المنصة التعليمية المتكاملة');
-    setHeaderSubtitle('بوابة التحكم الإدارية والحصص الأكاديمية');
+    const isAlsafaNow = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
+    setAppName(isAlsafaNow ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية');
+    setAppLogo('م');
+    setHeaderTitle(isAlsafaNow ? 'سيستم الصفا للمواد الشرعية' : 'الدكتور في اللغة العربية');
+    setHeaderSubtitle(isAlsafaNow ? 'المنظومة الأكاديمية للمواد الشرعية والعلوم الإسلامية' : 'التقرير الأكاديمي الشامل وكشف المتابعة المطبوع');
     setTAbsence('عزيزي ولي الأمر ({اسم_ولي_الأمر})، نحيطكم علماً بتغيب ابنكم ({اسم_الطالب}) عن السنتر اليوم. نرجو التواصل مع الإدارة لتوضيح السبب.');
     setTExcellent('خبر سار لولي الأمر ({اسم_ولي_الأمر})، أبدى الطالب/الطالبة ({اسم_الطالب}) اليوم تفوقاً دراسياً متميزاً ومشاركة رائعة في الحصة! ونال تشجيعاً خاصاً من الإدارة.');
     setTFees('تحية طيبة لولي الأمر ({اسم_ولي_الأمر})، نود تذكيركم بلطف بوجوب سداد الرسوم الدراسية المتبقية لملف الطالب ({اسم_الطالب}) لانتظام القيد المالي. شكراً لتعاونكم.');
@@ -907,24 +931,75 @@ function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userNam
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  placeholder="منصة الإدارة"
+                  placeholder="الدكتور في اللغة العربية"
                   className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-right outline-none focus:border-[#0D5C8C] shadow-3xs"
                   required
                 />
                 <span className="text-[10px] text-slate-400 block">(الاسم المعروض أعلى الشريط اليمين والجانبي)</span>
               </div>
 
-              <div className="space-y-1.5 col-span-1 md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">هوية وألوان المنصة المعتمدة:</label>
-                <div className="bg-emerald-50/70 border border-emerald-150 p-4 rounded-xl flex items-center gap-3 text-right">
-                  <div className="w-10 h-10 rounded-lg bg-[#0D5C8C] flex items-center justify-center text-white text-xs font-black shrink-0 shadow-sm font-sans select-none">
-                    ض
+              <div className="space-y-2 col-span-1 md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">شعار النظام واللوجو المعتمد (يظهر بالواجهة والتقارير المطبوعة):</label>
+                <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-right">
+                  <div className="flex items-center gap-3.5">
+                    {appLogo && appLogo.startsWith('data:image') ? (
+                      <img 
+                        src={appLogo} 
+                        alt="لوجو النظام" 
+                        className="w-14 h-14 object-contain rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 shrink-0 shadow-xs" 
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-tr from-[#0D5C8C] to-[#1A7FAA] flex items-center justify-center text-white text-base font-black shrink-0 shadow-sm font-sans select-none ring-2 ring-blue-500/20">
+                        {appLogo && appLogo.length <= 4 ? appLogo : 'ض'}
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                        {appLogo && appLogo.startsWith('data:image') ? 'تم تعيين شعار مخصص (صورة)' : `رمز الشعار الحالي: ${appLogo || 'ض'}`}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        يتم طباعة هذا الشعار واسم المنظومة أعلى كافة تقارير الطلاب وملفات الـ PDF.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 dark:text-slate-100 leading-none">شعار المنظومة مفعّل بنجاح</h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                      تم اعتماد الهوية الراقية: <strong className="text-[#0D5C8C]">الدكتور في اللغة العربية</strong> كعنوان وشعار أساسي بكل الواجهات.
-                    </p>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="px-3 py-1.5 bg-[#0D5C8C] hover:bg-[#0a4d75] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-xs">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>رفع صورة الشعار</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (re) => {
+                              const result = re.target?.result as string;
+                              if (result) {
+                                setAppLogo(result);
+                                localStorage.setItem('sams_custom_app_logo_v2', result);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {appLogo && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAppLogo('ض');
+                          localStorage.setItem('sams_custom_app_logo_v2', 'ض');
+                        }}
+                        className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        استعادة الرمز الافتراضي
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -935,7 +1010,7 @@ function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userNam
                   type="text"
                   value={headerTitle}
                   onChange={(e) => setHeaderTitle(e.target.value)}
-                  placeholder="المنصة التعليمية المتكاملة للمعلم"
+                  placeholder="الدكتور في اللغة العربية"
                   className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-right outline-none focus:border-[#0D5C8C] shadow-3xs"
                   required
                 />
@@ -947,7 +1022,7 @@ function SettingsManagerComponent({ onSettingsSaved, onLogout, userRole, userNam
                   type="text"
                   value={headerSubtitle}
                   onChange={(e) => setHeaderSubtitle(e.target.value)}
-                  placeholder="بوابة التحكم الإدارية والحصص الأكاديمية"
+                  placeholder="التقرير الأكاديمي الشامل وكشف المتابعة المطبوع"
                   className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-right outline-none focus:border-[#0D5C8C] shadow-3xs"
                   required
                 />

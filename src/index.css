@@ -450,9 +450,14 @@ html.dark body {
     print-color-adjust: exact !important;
   }
 
+  html.dark body, body.dark, html.dark #root {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+  }
+
   @page {
     size: A4 portrait;
-    margin: 8mm 8mm 8mm 8mm;
+    margin: 0;
   }
 
   /* Hide interactive & non-printable elements */

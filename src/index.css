@@ -533,6 +533,46 @@ html.dark body {
     page-break-inside: avoid !important;
   }
 
+  /* Mobile phone print normalization - forces crisp multi-column layout regardless of phone viewport */
+  #printable-group-roster {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 6mm 4mm !important;
+  }
+
+  #printable-group-roster .md\:grid-cols-3 {
+    display: grid !important;
+    grid-template-columns: 300px 1fr !important;
+    gap: 10px !important;
+  }
+
+  #printable-group-roster .md\:grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #printable-group-roster .print\:grid-cols-6,
+  #printable-group-roster .lg\:grid-cols-6 {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  #printable-group-roster .md\:hidden {
+    display: none !important;
+  }
+
+  #printable-group-roster .hidden.md\:block,
+  #printable-group-roster .hidden.print\:block {
+    display: block !important;
+  }
+
+  #printable-group-roster .hidden.print\:flex {
+    display: flex !important;
+  }
+
   /* Keep headings attached to subsequent content */
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid !important;
@@ -542,6 +582,10 @@ html.dark body {
   /* High fidelity print borders & backgrounds */
   .border, .border-2, .border-slate-200, .border-slate-300, .border-slate-400 {
     border-color: #cbd5e1 !important;
+  }
+
+  .dark .border, .dark .border-2, .dark .border-slate-700, .dark .border-slate-800 {
+    border-color: #334155 !important;
   }
 
   .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {

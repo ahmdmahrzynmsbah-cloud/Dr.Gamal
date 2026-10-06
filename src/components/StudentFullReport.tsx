@@ -300,10 +300,10 @@ ${signature}`;
       try {
         await navigator.share({
           files: [res.file],
-          title: `تقرير الطالب: ${student.name} (PDF)`,
+          title: `تقرير الطالب: ${student.name}`,
           text: introText
         });
-        setSendSuccessMsg('تمت مشاركة ملف التقرير PDF عبر واتساب بنجاح.');
+        setSendSuccessMsg('تمت مشاركة ملف التقرير PDF بنجاح.');
         return;
       } catch (shareErr: any) {
         if (shareErr.name === 'AbortError') {
@@ -316,13 +316,50 @@ ${signature}`;
     // 1. Download the PDF directly so it's ready in the user's downloads folder
     downloadPdfBlob(res.blob, res.filename);
 
-    // 2. Open WhatsApp Web with the parent's chat
+    // 2. Open WhatsApp Web / App with the parent's chat
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 
-    setSendSuccessMsg(`تم تنزيل ملف التقرير (${res.filename}) على جهازك وفتح محادثة ولي الأمر على واتساب بنجاح! يمكنك الآن إرفاق ملف الـ PDF في المحادثة مباشرة.`);
+    setSendSuccessMsg(`تم تنزيل ملف التقرير (${res.filename}) على جهازك وفتح محادثة ولي الأمر على واتساب بنجاح! يمكنك إرفاق ملف الـ PDF مباشرة.`);
   };
 
-  // 3. Fallback: Send summary text message only
+  // 3. Direct Native Share Sheet (For Mobile Phones)
+  const handleShareNative = async () => {
+    setPhoneError('');
+    setPdfError('');
+    const res = await ensurePdfGenerated();
+    if (!res) {
+      setPhoneError('تعذر تجهيز ملف الـ PDF.');
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [res.file] })) {
+          await navigator.share({
+            files: [res.file],
+            title: `تقرير الطالب: ${student.name}`,
+            text: `مرفق تقرير الطالب ${student.name} - ملف PDF رسمي`
+          });
+          setSendSuccessMsg('تمت مشاركة الملف بنجاح.');
+          return;
+        } else {
+          await navigator.share({
+            title: `تقرير الطالب: ${student.name}`,
+            text: whatsAppText || `تقرير الطالب ${student.name}`
+          });
+          return;
+        }
+      } catch (e: any) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback: download
+    downloadPdfBlob(res.blob, res.filename);
+    setSendSuccessMsg(`تم تنزيل ملف (${res.filename}) على هاتفك.`);
+  };
+
+  // 4. Fallback: Send summary text message only
   const handleSendTextOnly = () => {
     const rawPhone = whatsAppPhone.trim();
     const digitsOnly = rawPhone.replace(/\D/g, '');
@@ -1092,22 +1129,34 @@ ${signature}`;
                     إغلاق
                   </button>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="flex flex-wrap sm:flex-nowrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleShareNative}
+                      disabled={isGeneratingPdf}
+                      className="flex-1 sm:flex-none px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      title="مشاركة ملف الـ PDF عبر قائمة مشاركة الهاتف (واتساب، تليجرام، حفظ بالملفات)"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>مشاركة الملف</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={handleDownloadPdfOnly}
                       disabled={isGeneratingPdf}
-                      className="px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      className="flex-1 sm:flex-none px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl cursor-pointer transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      title="تنزيل ملف الـ PDF على جهازك"
                     >
                       <Download className="w-3.5 h-3.5 text-[#0D5C8C]" />
-                      <span>تحميل ملف PDF</span>
+                      <span>تحميل PDF</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={handleSendPdfToWhatsApp}
                       disabled={isGeneratingPdf}
-                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-black shadow-md cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isGeneratingPdf ? (
                         <>

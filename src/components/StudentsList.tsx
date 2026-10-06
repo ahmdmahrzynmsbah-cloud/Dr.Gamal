@@ -1277,7 +1277,7 @@ function StudentsListComponent() {
                 {(() => {
                   const stats = getStudentAttendanceStats(selectedProfile.id);
                   const payments = samsDb.getFees().filter(p => p.student_id === selectedProfile.id);
-                  const recentMonths = ['يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026'];
+                  const recentMonths = ['أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026'];
                   const currentMonth = 'أغسطس 2026';
 
                   return (

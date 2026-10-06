@@ -346,7 +346,7 @@ function ClassesManagerComponent() {
   // Calculate fee status for a student with detailed monthly breakdown
   const getStudentFeeStatus = (studentId: string) => {
     const payments = samsDb.getFees().filter(p => p.student_id === studentId);
-    const recentMonths = ['يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026'];
+    const recentMonths = ['أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026'];
     const currentMonth = 'أغسطس 2026';
     
     const monthlyStatus = recentMonths.map(m => {

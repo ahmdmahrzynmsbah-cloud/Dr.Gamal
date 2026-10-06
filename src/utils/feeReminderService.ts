@@ -7,9 +7,8 @@ import { Student, FeePayment, SystemNotification } from '../types';
 import { samsDb, addAuditLog } from './db';
 import { calculateStudentSubscription } from './subscriptionUtils';
 
-// List of months for academic year tracking
+// List of months for academic year tracking (Starting from August - Month 8)
 export const MONTHS_LIST = [
-  'يوليو 2026',
   'أغسطس 2026',
   'سبتمبر 2026',
   'أكتوبر 2026',
@@ -20,7 +19,8 @@ export const MONTHS_LIST = [
   'مارس 2027',
   'أبريل 2027',
   'مايو 2027',
-  'يونيو 2027'
+  'يونيو 2027',
+  'يوليو 2027'
 ];
 
 /**
@@ -135,8 +135,8 @@ export function checkFeeDueDatesBackgroundService(
     const existingNotifications = samsDb.getNotifications();
     const existingAdminNotis = samsDb.getAdminNotifications();
 
-    // Determine target month (default to current active month e.g., 'يوليو 2026' or saved active month)
-    const activeMonth = targetMonth || localStorage.getItem('sams_active_fee_month') || 'يوليو 2026';
+    // Determine target month (default to current active month e.g., 'أغسطس 2026' or saved active month)
+    const activeMonth = targetMonth || localStorage.getItem('sams_active_fee_month') || 'أغسطس 2026';
 
     // Get grade monthly fee map
     let gradeFeesMap: Record<string, number> = {

@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas-pro';
+import { toPng } from 'html-to-image';
 import { Student } from '../types';
 
 export interface GeneratedPdfResult {
@@ -11,148 +11,75 @@ export interface GeneratedPdfResult {
 }
 
 /**
- * Captures a DOM element to high-res PNG data URL safely.
- * Works seamlessly across Mobile phones (iOS / Android) and Desktop browsers.
- * Clones the element into a standardized A4 document viewport (1100px width)
- * so the output PDF is always an official, crisp, multi-column report card.
+ * Captures a DOM element to high-res PNG data URL with 100% original app colors,
+ * badges, borders, gradients, and Arabic Unicode typography.
+ * Uses browser-native SVG foreignObject rendering via html-to-image.
  */
 async function captureElementToPng(
   element: HTMLElement,
   isDark: boolean
 ): Promise<{ imgData: string; width: number; height: number }> {
   const bgColor = isDark ? '#0f172a' : '#ffffff';
-  const textColor = isDark ? '#f8fafc' : '#0f172a';
-  const borderColor = isDark ? '#334155' : '#cbd5e1';
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
+    const dataUrl = await toPng(element, {
+      quality: 0.98,
+      pixelRatio: 2,
       backgroundColor: bgColor,
-      windowWidth: 1200,
-      ignoreElements: (node) => {
+      cacheBust: true,
+      filter: (node) => {
         if (node instanceof HTMLElement) {
           if (
             node.classList.contains('print:hidden') &&
             !node.classList.contains('print:flex') &&
             !node.classList.contains('print:block')
           ) {
-            return true;
+            return false;
           }
         }
-        return false;
-      },
-      onclone: (clonedDoc) => {
-        try {
-          const targetEl =
-            clonedDoc.getElementById(element.id) ||
-            (clonedDoc.querySelector(`#${element.id}`) as HTMLElement);
-
-          if (targetEl) {
-            // Standardize report container to fixed executive A4 layout width
-            targetEl.style.width = '1080px';
-            targetEl.style.minWidth = '1080px';
-            targetEl.style.maxWidth = '1080px';
-            targetEl.style.boxSizing = 'border-box';
-            targetEl.style.margin = '0 auto';
-            targetEl.style.padding = '32px';
-            targetEl.style.backgroundColor = bgColor;
-            targetEl.style.color = textColor;
-
-            // Ensure desktop table is visible and mobile card list is hidden
-            const mobileCards = targetEl.querySelectorAll('.block.md\\:hidden, .md\\:hidden');
-            mobileCards.forEach((m) => {
-              (m as HTMLElement).style.setProperty('display', 'none', 'important');
-            });
-
-            const desktopTables = targetEl.querySelectorAll(
-              '.hidden.md\\:block, .hidden.print\\:block, .md\\:block'
-            );
-            desktopTables.forEach((d) => {
-              (d as HTMLElement).style.setProperty('display', 'block', 'important');
-            });
-
-            const printFlexes = targetEl.querySelectorAll('.hidden.print\\:flex');
-            printFlexes.forEach((pf) => {
-              (pf as HTMLElement).style.setProperty('display', 'flex', 'important');
-            });
-
-            // Standardize Grids for multi-column layout on both mobile and desktop
-            const allGrids = targetEl.querySelectorAll('.grid');
-            allGrids.forEach((g) => {
-              const gridEl = g as HTMLElement;
-              if (
-                gridEl.classList.contains('md:grid-cols-3') ||
-                gridEl.classList.contains('sm:grid-cols-3')
-              ) {
-                gridEl.style.display = 'grid';
-                gridEl.style.gridTemplateColumns = '320px 1fr';
-                gridEl.style.gap = '14px';
-              } else if (
-                gridEl.classList.contains('md:grid-cols-2') ||
-                gridEl.classList.contains('sm:grid-cols-2')
-              ) {
-                gridEl.style.display = 'grid';
-                gridEl.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
-                gridEl.style.gap = '14px';
-              } else if (gridEl.classList.contains('lg:grid-cols-6')) {
-                gridEl.style.display = 'grid';
-                gridEl.style.gridTemplateColumns = 'repeat(6, minmax(0, 1fr))';
-                gridEl.style.gap = '8px';
-              }
-            });
-
-            // Normalize computed colors to protect against Tailwind oklch parsing
-            const allChildren = targetEl.querySelectorAll('*');
-            allChildren.forEach((child) => {
-              const htmlChild = child as HTMLElement;
-              if (htmlChild.style) {
-                const comp = window.getComputedStyle(htmlChild);
-                if (comp.color && comp.color.includes('rgb')) {
-                  htmlChild.style.color = comp.color;
-                }
-                if (comp.backgroundColor && comp.backgroundColor.includes('rgb')) {
-                  htmlChild.style.backgroundColor = comp.backgroundColor;
-                }
-                if (comp.borderColor && comp.borderColor.includes('rgb')) {
-                  htmlChild.style.borderColor = comp.borderColor;
-                }
-              }
-            });
-          }
-        } catch (cloneErr) {
-          console.warn('onclone formatting error:', cloneErr);
-        }
+        return true;
       },
     });
 
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = (e) => reject(e);
+      img.src = dataUrl;
+    });
+
     return {
-      imgData: canvas.toDataURL('image/png'),
-      width: canvas.width,
-      height: canvas.height,
+      imgData: dataUrl,
+      width: img.naturalWidth || img.width || 1200,
+      height: img.naturalHeight || img.height || 1600,
     };
   } catch (err: any) {
-    console.warn('html2canvas primary capture failed, falling back to direct render:', err);
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
+    console.warn('html-to-image primary capture issue, retrying with relaxed options:', err);
+    
+    // Retry with relaxed options
+    const dataUrl = await toPng(element, {
+      quality: 0.95,
+      pixelRatio: 1.5,
       backgroundColor: bgColor,
     });
 
+    const img = new Image();
+    await new Promise<void>((resolve) => {
+      img.onload = () => resolve();
+      img.src = dataUrl;
+    });
+
     return {
-      imgData: canvas.toDataURL('image/png'),
-      width: canvas.width,
-      height: canvas.height,
+      imgData: dataUrl,
+      width: img.naturalWidth || 1200,
+      height: img.naturalHeight || 1600,
     };
   }
 }
 
 /**
  * Generates an official high-resolution printable PDF from a DOM element.
- * Works with 100% Arabic Unicode text fidelity on mobile phones and desktop.
- * Supports full Dark Mode / Light Mode with zero white margins.
+ * Preserves 100% of vibrant app colors, badges, and styling in both Light and Dark modes.
  */
 export async function generateStudentReportPdf(
   student: Student,
@@ -174,7 +101,7 @@ export async function generateStudentReportPdf(
   const cleanStudentName = rawStudentName.replace(/[/\\?%*:|"<>]/g, ' ').replace(/\s+/g, ' ');
   const filename = `تقرير الطالب ${cleanStudentName}.pdf`;
 
-  // Capture element to high-res image
+  // Capture high-res element snapshot with complete colors
   const { imgData, width, height } = await captureElementToPng(element, isDark);
 
   const pdf = new jsPDF({
@@ -187,7 +114,7 @@ export async function generateStudentReportPdf(
   // Set standard ASCII metadata to avoid viewer title bar corruption
   pdf.setProperties({
     title: `Student Report - ${student.registration_id || student.id}`,
-    subject: 'Academic Student Report',
+    subject: 'Official Academic Student Report',
     author: 'Academic Management System',
     creator: 'Academic Management System',
   });
@@ -204,12 +131,12 @@ export async function generateStudentReportPdf(
   const printHeight = (height * printWidth) / width;
 
   if (printHeight <= pageHeight) {
-    // Single page document - fill full background and render image
+    // Single page document
     pdf.setFillColor(bgR, bgG, bgB);
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
     pdf.addImage(imgData, 'PNG', 0, 0, printWidth, printHeight);
   } else {
-    // Multi-page document with zero white margins
+    // Multi-page document
     let heightLeft = printHeight;
     let position = 0;
 

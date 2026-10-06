@@ -102,7 +102,7 @@ function PrivacyPolicyComponent() {
         </div>
         <div className="flex items-center gap-2 bg-indigo-50/50 px-4 py-2 rounded-2xl border border-indigo-100 dark:border-indigo-800 self-start md:self-auto">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-[11px] font-black text-indigo-950 font-mono">آخر تحديث: يوليو 2026</span>
+          <span className="text-[11px] font-black text-indigo-950 dark:text-indigo-200 font-mono">آخر تحديث: أغسطس 2026</span>
         </div>
       </div>
 

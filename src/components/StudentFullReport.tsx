@@ -703,14 +703,14 @@ ${signature}`;
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 print:grid-cols-4 gap-2 print:gap-1.5">
                       {[
-                        'يوليو 2026', 'أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026',
+                        'أغسطس 2026', 'سبتمبر 2026', 'أكتوبر 2026',
                         'نوفمبر 2026', 'ديسمبر 2026', 'يناير 2027', 'فبراير 2027',
-                        'مارس 2027', 'أبريل 2027', 'مايو 2027', 'يونيو 2027'
+                        'مارس 2027', 'أبريل 2027', 'مايو 2027', 'يونيو 2027', 'يوليو 2027'
                       ].map((m, idx) => {
                         const payment = fees.find(f => f.month === m);
                         const isEnrolled = isStudentEnrolledInCalendarMonth(student, m);
                         const isCurrent = m === 'سبتمبر 2026';
-                        const isPast = idx < 2; // July, August
+                        const isPast = idx < 1; // August
 
                         if (payment) {
                           return (

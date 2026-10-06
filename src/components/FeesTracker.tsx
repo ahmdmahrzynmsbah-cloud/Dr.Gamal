@@ -57,7 +57,6 @@ import {
 
 
 const MONTHS_LIST = [
-  'يوليو 2026',
   'أغسطس 2026',
   'سبتمبر 2026',
   'أكتوبر 2026',
@@ -68,7 +67,8 @@ const MONTHS_LIST = [
   'مارس 2027',
   'أبريل 2027',
   'مايو 2027',
-  'يونيو 2027'
+  'يونيو 2027',
+  'يوليو 2027'
 ];
 
 const playSuccessBeep = () => {
@@ -211,7 +211,7 @@ function FeesTrackerComponent() {
     payment_method: 'cash' as FeePayment['payment_method'],
     category: 'tuition' as FeePayment['category'],
     term: 'first_term' as FeePayment['term'],
-    month: 'يوليو 2026'
+    month: 'أغسطس 2026'
   });
 
   // Edit payment modal states
@@ -220,7 +220,7 @@ function FeesTrackerComponent() {
   // Batch transfer fees between months modal states
   const [showBatchTransferModal, setShowBatchTransferModal] = useState<boolean>(false);
   const [transferFromMonth, setTransferFromMonth] = useState<string>('أغسطس 2026');
-  const [transferToMonth, setTransferToMonth] = useState<string>('يوليو 2026');
+  const [transferToMonth, setTransferToMonth] = useState<string>('سبتمبر 2026');
   const [transferDateAdjustment, setTransferDateAdjustment] = useState<boolean>(true);
 
   // Monthly group fees rate config
@@ -257,10 +257,13 @@ function FeesTrackerComponent() {
   });
 
   const loadData = () => {
+    // Auto-migrate any legacy July 2026 fees to August 2026 (Month 8 as requested)
+    samsDb.transferFeesMonth('يوليو 2026', 'أغسطس 2026');
+
     const allPayments = samsDb.getFees();
     const allStudents = samsDb.getVisibleStudents();
     const allClasses = samsDb.getVisibleClasses();
-    
+
     setPayments(allPayments);
     setStudents(allStudents);
     setClasses(allClasses);
@@ -2278,7 +2281,7 @@ function FeesTrackerComponent() {
                       الشهر المحسوب له الاشتراك:
                     </label>
                     <select
-                      value={editingPayment.month || 'يوليو 2026'}
+                      value={editingPayment.month || 'أغسطس 2026'}
                       onChange={(e) => setEditingPayment({ ...editingPayment, month: e.target.value })}
                       className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-[#0D5C8C]"
                     >

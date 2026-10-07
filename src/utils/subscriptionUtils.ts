@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Student, FeePayment } from '../types';
+import { Student, FeePayment, ClassRoom } from '../types';
+import { samsDb } from './db';
 
 export interface StudentCycle {
   cycleNumber: number; // 1, 2, 3...
@@ -385,4 +386,109 @@ export function calculateStudentSubscription(
     nextDueDate,
     nextDueDateFormatted
   };
+}
+
+/**
+ * Resolves the configured monthly fee for a student based on their grade and class.
+ * Checks class custom fee, grade fees map from db/localStorage, with intelligent Arabic grade aliases.
+ */
+export function getStudentMonthlyFee(
+  student: Student,
+  classInfo?: ClassRoom | null,
+  customGradeFees?: Record<string, number>
+): number {
+  // 1. Direct class-specific fee if configured
+  if (classInfo && typeof (classInfo as any).monthly_fee === 'number' && (classInfo as any).monthly_fee > 0) {
+    return (classInfo as any).monthly_fee;
+  }
+
+  // 2. Load grade fees map
+  let gradeFees = customGradeFees || samsDb.getGradeMonthlyFees();
+  if (!gradeFees || Object.keys(gradeFees).length === 0) {
+    gradeFees = {
+      'الأول الإبتدائي': 80,
+      'الثاني الإبتدائي': 80,
+      'الثالث الإبتدائي': 90,
+      'الرابع الإبتدائي': 100,
+      'الخامس الإبتدائي': 100,
+      'السادس الإبتدائي': 110,
+      'الأول الإعدادي': 120,
+      'الثاني الإعدادي': 130,
+      'الثالث الإعدادي': 150,
+      'الأول الثانوي': 200,
+      'الثاني الثانوي': 250,
+      'الثالث الثانوي': 300,
+    };
+  }
+
+  const rawGrade = (student.grade_level || classInfo?.grade_level || '').trim();
+  
+  // Direct key match
+  if (rawGrade && typeof gradeFees[rawGrade] === 'number' && gradeFees[rawGrade] > 0) {
+    return gradeFees[rawGrade];
+  }
+
+  // Normalized matching with common Arabic educational aliases
+  const cleanGrade = rawGrade.replace(/الصف|مجموعة|المرحلة|التعليم|عام|أزهر|[()]/g, '').trim();
+  
+  // 1st Prep (أولى إعدادي / الأول الإعدادي) - Configured to 120 EGP as requested
+  if ((cleanGrade.includes('أول') || cleanGrade.includes('اول') || cleanGrade.includes('1')) && (cleanGrade.includes('إعداد') || cleanGrade.includes('اعداد') || cleanGrade.includes('ع'))) {
+    return gradeFees['الأول الإعدادي'] || 120;
+  }
+  // 2nd Prep (ثانية إعدادي / الثاني الإعدادي)
+  if ((cleanGrade.includes('ثان') || cleanGrade.includes('2')) && (cleanGrade.includes('إعداد') || cleanGrade.includes('اعداد') || cleanGrade.includes('ع'))) {
+    return gradeFees['الثاني الإعدادي'] || 130;
+  }
+  // 3rd Prep (ثالثة إعدادي / الثالث الإعدادي)
+  if ((cleanGrade.includes('ثالث') || cleanGrade.includes('3')) && (cleanGrade.includes('إعداد') || cleanGrade.includes('اعداد') || cleanGrade.includes('ع'))) {
+    return gradeFees['الثالث الإعدادي'] || 150;
+  }
+  // 1st Secondary (أولى ثانوي / الأول الثانوي)
+  if ((cleanGrade.includes('أول') || cleanGrade.includes('اول') || cleanGrade.includes('1')) && (cleanGrade.includes('ثانو') || cleanGrade.includes('ث'))) {
+    return gradeFees['الأول الثانوي'] || 200;
+  }
+  // 2nd Secondary (ثانية ثانوي / الثاني الثانوي)
+  if ((cleanGrade.includes('ثان') || cleanGrade.includes('2')) && (cleanGrade.includes('ثانو') || cleanGrade.includes('ث'))) {
+    return gradeFees['الثاني الثانوي'] || 250;
+  }
+  // 3rd Secondary (ثالثة ثانوي / الثالث الثانوي)
+  if ((cleanGrade.includes('ثالث') || cleanGrade.includes('3')) && (cleanGrade.includes('ثانو') || cleanGrade.includes('ث'))) {
+    return gradeFees['الثالث الثانوي'] || 300;
+  }
+
+  // Primary stages
+  if (cleanGrade.includes('إبتد') || cleanGrade.includes('ابتد') || cleanGrade.includes('ب')) {
+    if (cleanGrade.includes('أول') || cleanGrade.includes('اول') || cleanGrade.includes('1')) return gradeFees['الأول الإبتدائي'] || 80;
+    if (cleanGrade.includes('ثان') || cleanGrade.includes('2')) return gradeFees['الثاني الإبتدائي'] || 80;
+    if (cleanGrade.includes('ثالث') || cleanGrade.includes('3')) return gradeFees['الثالث الإبتدائي'] || 90;
+    if (cleanGrade.includes('رابع') || cleanGrade.includes('4')) return gradeFees['الرابع الإبتدائي'] || 100;
+    if (cleanGrade.includes('خامس') || cleanGrade.includes('5')) return gradeFees['الخامس الإبتدائي'] || 100;
+    if (cleanGrade.includes('سادس') || cleanGrade.includes('6')) return gradeFees['السادس الإبتدائي'] || 110;
+  }
+
+  // Check class name if grade level was ambiguous
+  if (classInfo?.name) {
+    const className = classInfo.name;
+    if (className.includes('أولى إعدادي') || className.includes('اولي اعدادي') || className.includes('1/ع') || className.includes('1ع') || className.includes('أول إعدادي')) {
+      return gradeFees['الأول الإعدادي'] || 120;
+    }
+    if (className.includes('ثانية إعدادي') || className.includes('تانية اعدادي') || className.includes('2/ع') || className.includes('2ع') || className.includes('ثاني إعدادي')) {
+      return gradeFees['الثاني الإعدادي'] || 130;
+    }
+    if (className.includes('ثالثة إعدادي') || className.includes('تالتة اعدادي') || className.includes('3/ع') || className.includes('3ع') || className.includes('ثالث إعدادي')) {
+      return gradeFees['الثالث الإعدادي'] || 150;
+    }
+    if (className.includes('أولى ثانوي') || className.includes('اولي ثانوي') || className.includes('1/ث') || className.includes('1ث')) {
+      return gradeFees['الأول الثانوي'] || 200;
+    }
+    if (className.includes('ثانية ثانوي') || className.includes('تانية ثانوي') || className.includes('2/ث') || className.includes('2ث')) {
+      return gradeFees['الثاني الثانوي'] || 250;
+    }
+    if (className.includes('ثالثة ثانوي') || className.includes('تالتة ثانوي') || className.includes('3/ث') || className.includes('3ث')) {
+      return gradeFees['الثالث الثانوي'] || 300;
+    }
+  }
+
+  // Default fallback (1st prep fee = 120)
+  return gradeFees['الأول الإعدادي'] || 120;
 }

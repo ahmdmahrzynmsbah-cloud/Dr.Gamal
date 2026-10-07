@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { samsDb } from '../utils/db';
-import { calculateStudentSubscription } from '../utils/subscriptionUtils';
+import { calculateStudentSubscription, getStudentMonthlyFee } from '../utils/subscriptionUtils';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
 import { Users, UserCheck, BookOpen, CreditCard, Activity, AlertTriangle, TrendingUp, Calendar, ArrowUpRight } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -69,7 +69,8 @@ function DashboardComponent({ onNavigateToTab }: DashboardProps) {
   const gradeFees = samsDb.getGradeMonthlyFees();
   
   const pendingRevenue = activeStudentsList.reduce((sum, s) => {
-    const fee = gradeFees[s.grade_level] || 250;
+    const studentClass = classes.find(c => c.id === s.class_id);
+    const fee = getStudentMonthlyFee(s, studentClass, gradeFees);
     const sub = calculateStudentSubscription(s, fees, fee);
     return sum + (sub.totalRemainingDebt || 0);
   }, 0);

@@ -4,7 +4,7 @@ import { Student, Attendance, ExamGrade, Exam, AssignmentGrade, Assignment, FeeP
 import { samsDb } from '../utils/db';
 import { X, Printer, Download, User, Calendar, BookOpen, CreditCard, CheckCircle, AlertCircle, Award, Target, Hash, Phone, Clock, Coins, Check, MessageSquare, Copy, ExternalLink, Send, FileText, Share2, FileDown, Loader2, ChevronDown, ChevronUp, CheckCircle2, GraduationCap } from 'lucide-react';
 import { useSamsDbSync } from '../hooks/useSamsDbSync';
-import { calculateStudentSubscription, isStudentEnrolledInCalendarMonth, formatShortDateArabic } from '../utils/subscriptionUtils';
+import { calculateStudentSubscription, getStudentMonthlyFee, isStudentEnrolledInCalendarMonth, formatShortDateArabic } from '../utils/subscriptionUtils';
 import { formatEgyptianPhoneForWhatsApp } from '../utils/feeReminderService';
 import { generateStudentReportPdf, downloadPdfBlob, GeneratedPdfResult } from '../utils/pdfGenerator';
 
@@ -131,7 +131,8 @@ export default function StudentFullReport({ student, onClose }: Props) {
     const attendancePercentage = totalCount > 0 ? Math.round(((presentCount + excusedCount) / totalCount) * 100) : 0;
 
     // 2. Financial calculation
-    const subOverview = calculateStudentSubscription(student, fees, 250);
+    const studentMonthlyFee = getStudentMonthlyFee(student, classInfo);
+    const subOverview = calculateStudentSubscription(student, fees, studentMonthlyFee);
     const remainingText = subOverview.totalRemainingDebt > 0
       ? `المبلغ المتبقي المستحق: ${subOverview.totalRemainingDebt} ج.م`
       : 'تم سداد كافة المستحقات بالكامل';
@@ -186,6 +187,7 @@ export default function StudentFullReport({ student, onClose }: Props) {
 
 ----------------------------------
 2. الموقف المالي والاشتراكات:
+• قيمة الاشتراك الشهري: ${subOverview.monthlyFee} ج.م
 • إجمالي المسدد: ${subOverview.totalPaid} ج.م
 • ${remainingText}
 • دورة الاشتراك الحالية: ${subOverview.currentCycle.label} (${subOverview.currentCycle.periodLabel})
@@ -682,19 +684,23 @@ ${signature}`;
 
               {/* Section 1 & 2: Financial Overview & 12-Month Matrix */}
               {(() => {
-                const subOverview = calculateStudentSubscription(student, fees, 250);
+                const studentMonthlyFee = getStudentMonthlyFee(student, classInfo);
+                const subOverview = calculateStudentSubscription(student, fees, studentMonthlyFee);
                 return (
                   <div className="space-y-3 mb-3">
                     {/* Subscription Summary Banner */}
                     <div className="bg-gradient-to-l from-slate-50 to-sky-50/50 dark:from-slate-900/60 dark:to-sky-950/30 print:bg-slate-50 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 print:border-slate-300 flex flex-wrap items-center justify-between gap-2 text-xs print-avoid-break">
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-slate-900 dark:text-slate-100 print:text-black text-xs flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5 text-[#0D5C8C]" />
                             تاريخ بدء الاشتراك: {subOverview.startDateFormatted}
                           </span>
                           <span className="bg-sky-100 text-[#0D5C8C] px-2 py-0.2 rounded-full font-bold text-[10px]">
                             {subOverview.registrationText}
+                          </span>
+                          <span className="bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-2 py-0.2 rounded-md font-bold text-[10px]">
+                            قيمة اشتراك الشهر: {subOverview.monthlyFee} ج.م
                           </span>
                         </div>
                         <div className="text-slate-500 dark:text-slate-400 print:text-slate-600 text-[10px]">

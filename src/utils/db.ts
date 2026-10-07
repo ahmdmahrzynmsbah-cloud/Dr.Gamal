@@ -1079,18 +1079,32 @@ export const samsDb = {
 
   // GRADE MONTHLY FEES CRUD
   getGradeMonthlyFees(): Record<string, number> {
-    return loadFromStorage<Record<string, number>>('sams_grade_monthly_fees', {
-      'الأول الإعدادي': 200,
-      'الثاني الإعدادي': 200,
-      'الثالث الإعدادي': 220,
-      'الأول الثانوي': 250,
-      'الثاني الثانوي': 280,
-      'الثالث الثانوي': 350
-    });
+    const defaultFees: Record<string, number> = {
+      'الأول الإبتدائي': 80,
+      'الثاني الإبتدائي': 80,
+      'الثالث الإبتدائي': 90,
+      'الرابع الإبتدائي': 100,
+      'الخامس الإبتدائي': 100,
+      'السادس الإبتدائي': 110,
+      'الأول الإعدادي': 120,
+      'الثاني الإعدادي': 130,
+      'الثالث الإعدادي': 150,
+      'الأول الثانوي': 200,
+      'الثاني الثانوي': 250,
+      'الثالث الثانوي': 300
+    };
+    const loaded = loadFromStorage<Record<string, number>>('sams_grade_monthly_fees', defaultFees);
+    // If legacy default (300, 250, 200, or 150) was previously saved for 1st prep, auto-align with requested 120
+    if (loaded && (loaded['الأول الإعدادي'] === 300 || loaded['الأول الإعدادي'] === 250 || loaded['الأول الإعدادي'] === 200 || loaded['الأول الإعدادي'] === 150 || !loaded['الأول الإعدادي'])) {
+      loaded['الأول الإعدادي'] = 120;
+      saveToStorage('sams_grade_monthly_fees', loaded);
+    }
+    return { ...defaultFees, ...loaded };
   },
 
   saveGradeMonthlyFees(fees: Record<string, number>) {
     saveToStorage('sams_grade_monthly_fees', fees);
+    this.syncToFirebase('sams_grade_monthly_fees', fees);
   },
 
   // DATA RESET METHODS (Granular & Comprehensive)

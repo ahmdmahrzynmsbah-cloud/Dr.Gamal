@@ -5,7 +5,7 @@
 
 import { Student, FeePayment, SystemNotification } from '../types';
 import { samsDb, addAuditLog } from './db';
-import { calculateStudentSubscription } from './subscriptionUtils';
+import { calculateStudentSubscription, getStudentMonthlyFee } from './subscriptionUtils';
 
 // List of months for academic year tracking (Starting from August - Month 8)
 export const MONTHS_LIST = [
@@ -139,22 +139,7 @@ export function checkFeeDueDatesBackgroundService(
     const activeMonth = targetMonth || localStorage.getItem('sams_active_fee_month') || 'أغسطس 2026';
 
     // Get grade monthly fee map
-    let gradeFeesMap: Record<string, number> = {
-      'الأول الإعدادي': 150,
-      'الثاني الإعدادي': 150,
-      'الثالث الإعدادي': 150,
-      'الأول الثانوي': 200,
-      'الثاني الثانوي': 250,
-      'الثالث الثانوي': 300
-    };
-    const savedFees = localStorage.getItem('sams_grade_monthly_fees');
-    if (savedFees) {
-      try {
-        gradeFeesMap = { ...gradeFeesMap, ...JSON.parse(savedFees) };
-      } catch (e) {
-        // use fallback
-      }
-    }
+    const gradeFeesMap = samsDb.getGradeMonthlyFees();
 
     // Load persistent sent-reminders map to avoid repetitive cycles even if notifications array is trimmed
     let sentRemindersMap: Record<string, string> = {};
@@ -170,7 +155,7 @@ export function checkFeeDueDatesBackgroundService(
     let remindersUpdated = false;
 
     for (const student of students) {
-      const feeAmount = gradeFeesMap[student.grade_level] || 250;
+      const feeAmount = getStudentMonthlyFee(student, null, gradeFeesMap);
       const sub = calculateStudentSubscription(student, payments, feeAmount);
 
       // Student is due if and only if:

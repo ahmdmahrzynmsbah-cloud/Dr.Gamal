@@ -18,6 +18,7 @@ import { syncToFirebase } from '../utils/firebaseSync';
 import { appendSystemSignature } from '../utils/phoneUtils';
 import {
   calculateStudentSubscription,
+  getStudentMonthlyFee,
   StudentSubscriptionOverview,
   StudentCycle,
   formatShortDateArabic
@@ -223,24 +224,12 @@ function FeesTrackerComponent() {
   const [transferToMonth, setTransferToMonth] = useState<string>('سبتمبر 2026');
   const [transferDateAdjustment, setTransferDateAdjustment] = useState<boolean>(true);
 
+  // Grade Monthly Fees Manager Modal State
+  const [showGradeFeesModal, setShowGradeFeesModal] = useState<boolean>(false);
+
   // Monthly group fees rate config
   const [gradeFees, setGradeFees] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('sams_grade_monthly_fees');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return {
-      'الأول الإعدادي': 150,
-      'الثاني الإعدادي': 150,
-      'الثالث الإعدادي': 150,
-      'الأول الثانوي': 200,
-      'الثاني الثانوي': 250,
-      'الثالث الثانوي': 300
-    };
+    return samsDb.getGradeMonthlyFees();
   });
 
   // Feedback states
@@ -303,7 +292,8 @@ function FeesTrackerComponent() {
 
   // Open quick payment modal with precise cycle and remaining amount
   const openQuickPayForStudent = (student: Student, targetCycle?: StudentCycle, customAmount?: number) => {
-    const activeFee = gradeFees[student.grade_level] || gradeFees[selectedGrade] || 250;
+    const studentClass = classes.find(c => c.id === student.class_id);
+    const activeFee = getStudentMonthlyFee(student, studentClass, gradeFees);
     const sub = calculateStudentSubscription(student, payments, activeFee);
     const cycleToPay = targetCycle || sub.currentCycle;
     
@@ -323,7 +313,8 @@ function FeesTrackerComponent() {
 
   // Open WhatsApp reminder with detailed debt breakdown
   const openWhatsAppForStudent = (student: Student) => {
-    const activeFee = gradeFees[student.grade_level] || gradeFees[selectedGrade] || 250;
+    const studentClass = classes.find(c => c.id === student.class_id);
+    const activeFee = getStudentMonthlyFee(student, studentClass, gradeFees);
     const sub = calculateStudentSubscription(student, payments, activeFee);
     setWhatsAppStudent(student);
     const defaultMsg = generateWhatsAppReminderText(
@@ -345,7 +336,8 @@ function FeesTrackerComponent() {
 
   // Open WhatsApp confirmation receipt
   const openWhatsAppReceipt = (student: Student, payment: FeePayment) => {
-    const activeFee = gradeFees[student.grade_level] || gradeFees[selectedGrade] || 250;
+    const studentClass = classes.find(c => c.id === student.class_id);
+    const activeFee = getStudentMonthlyFee(student, studentClass, gradeFees);
     const sub = calculateStudentSubscription(student, payments, activeFee);
     setWhatsAppStudent(student);
     const isAlsafa = typeof window !== 'undefined' && localStorage.getItem('sams_active_system') === 'alsafa';
@@ -365,7 +357,8 @@ function FeesTrackerComponent() {
     e.preventDefault();
     if (!quickPayStudent) return;
 
-    const activeFee = gradeFees[quickPayStudent.grade_level] || gradeFees[selectedGrade] || 250;
+    const studentClass = classes.find(c => c.id === quickPayStudent.class_id);
+    const activeFee = getStudentMonthlyFee(quickPayStudent, studentClass, gradeFees);
     const sub = calculateStudentSubscription(quickPayStudent, payments, activeFee);
     const targetCycle = quickPayTargetCycle || sub.currentCycle;
     const amount = Number(quickPayAmount);
@@ -537,8 +530,19 @@ function FeesTrackerComponent() {
     setShowBatchTransferModal(false);
   };
 
+  // Available educational grades list
+  const availableGrades = useMemo(() => {
+    const baseGrades = [
+      'الأول الإعدادي', 'الثاني الإعدادي', 'الثالث الإعدادي',
+      'الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'
+    ];
+    const classGrades = classes.map(c => c.grade_level).filter(Boolean);
+    const studentGrades = students.map(s => s.grade_level).filter(Boolean);
+    return Array.from(new Set([...baseGrades, ...classGrades, ...studentGrades]));
+  }, [classes, students]);
+
   // Active monthly fee for selected grade
-  const activeGradeMonthlyFee = gradeFees[selectedGrade] || 250;
+  const activeGradeMonthlyFee = gradeFees[selectedGrade] || (selectedGrade.includes('أول') && selectedGrade.includes('إعداد') ? 120 : 150);
 
   // Students in selected class
   const classStudents = useMemo(() => {
@@ -553,11 +557,12 @@ function FeesTrackerComponent() {
   const studentSubMap = useMemo(() => {
     const map = new Map<string, StudentSubscriptionOverview>();
     classStudents.forEach(st => {
-      const fee = gradeFees[st.grade_level] || activeGradeMonthlyFee;
+      const studentClass = classes.find(c => c.id === st.class_id);
+      const fee = getStudentMonthlyFee(st, studentClass, gradeFees);
       map.set(st.id, calculateStudentSubscription(st, payments, fee));
     });
     return map;
-  }, [classStudents, payments, gradeFees, activeGradeMonthlyFee]);
+  }, [classStudents, classes, payments, gradeFees]);
 
   // Filter students based on search query AND subFilter tab
   const filteredClassStudents = useMemo(() => {
@@ -923,16 +928,27 @@ function FeesTrackerComponent() {
 
         <div className="flex gap-2">
           {activeTab === 'subscriptions' ? (
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 pr-1">قيمة اشتراك للصف المحدد:</span>
-              <input 
-                type="number" 
-                value={activeGradeMonthlyFee}
-                onChange={(e) => handleSaveGradeFee(selectedGrade, Number(e.target.value))}
-                className="w-16 text-center text-xs font-sans font-bold text-[#0D5C8C] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md py-1 px-1.5 focus:outline-hidden"
-                title="عدّل قيمة اشتراك الشهر لهذا الصف واحفظ لتتغير قيمة السداد التلقائية لكل الطلاب"
-              />
-              <span className="text-[10px] text-slate-400 font-bold pl-1">ج.م</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 pr-1">اشتراك ({selectedGrade || 'الصف'}):</span>
+                <input 
+                  type="number" 
+                  value={activeGradeMonthlyFee}
+                  onChange={(e) => handleSaveGradeFee(selectedGrade, Number(e.target.value))}
+                  className="w-16 text-center text-xs font-sans font-bold text-[#0D5C8C] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md py-1 px-1.5 focus:outline-hidden"
+                  title="عدّل قيمة اشتراك الشهر لهذا الصف واحفظ لتتغير قيمة السداد التلقائية لكل الطلاب"
+                />
+                <span className="text-[10px] text-slate-400 font-bold pl-1">ج.م</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGradeFeesModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-[#0D5C8C]/10 hover:bg-[#0D5C8C]/20 text-[#0D5C8C] dark:bg-sky-950/60 dark:text-sky-300 dark:hover:bg-sky-900/80 border border-[#0D5C8C]/20 dark:border-sky-800 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                title="تخصيص وإدارة أسعار الاشتراكات الشهرية لكافة الصفوف والمراحل الدراسية"
+              >
+                <Coins className="w-3.5 h-3.5 text-[#0D5C8C] dark:text-sky-400" />
+                <span>تسعير واشتراكات الصفوف</span>
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -1152,7 +1168,7 @@ function FeesTrackerComponent() {
                 }}
                 className="w-full min-w-0 max-w-full flex-1 text-xs font-sans font-semibold border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50/50 focus:bg-white dark:bg-slate-800 focus:outline-hidden"
               >
-                {["الأول الإعدادي","الثاني الإعدادي","الثالث الإعدادي","الأول الثانوي","الثاني الثانوي","الثالث الثانوي"].map(g => (
+                {availableGrades.map(g => (
                   <option key={g} value={g}>{g}</option>
                 ))}
               </select>
@@ -2655,6 +2671,123 @@ function FeesTrackerComponent() {
                     <span>فتح وتوجيه لواتساب المباشر</span>
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Grade Monthly Fees Manager Modal */}
+        {showGradeFeesModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+            >
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-[#0D5C8C]/10 text-[#0D5C8C] dark:bg-sky-950 dark:text-sky-400 rounded-xl">
+                    <Coins className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm">
+                      تسعير واشتراكات الصفوف الدراسية
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans">
+                      تحديد قيمة اشتراك الشهر لكل صف دراسي ليتم احتساب كل طالب وفق صفه بدقة
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowGradeFeesModal(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 max-h-[65vh] overflow-y-auto space-y-4">
+                <div className="bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-xl p-3 text-xs text-sky-800 dark:text-sky-300">
+                  <p className="font-bold flex items-center gap-1.5 mb-1">
+                    <AlertCircle className="w-4 h-4 text-sky-600 shrink-0" />
+                    <span>تطبيق فوري على كافة الحسابات والتقارير:</span>
+                  </p>
+                  <p className="text-[11px] leading-relaxed">
+                    تعديل قيمة أي صف يتم تطبيقه فوراً على جميع حسابات الطلاب، تقارير المتابعة، والـ PDF والإيصالات لضمان عدم وجود أي أخطاء في المبالغ المتبقية.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {availableGrades.map(grade => {
+                    const currentAmount = gradeFees[grade] ?? (grade.includes('أول') && grade.includes('إعداد') ? 120 : 150);
+                    return (
+                      <div
+                        key={grade}
+                        className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 hover:border-[#0D5C8C]/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#0D5C8C]" />
+                          <span className="font-bold text-xs text-slate-800 dark:text-slate-100">{grade}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min="0"
+                            step="10"
+                            value={currentAmount}
+                            onChange={(e) => {
+                              const val = Math.max(0, Number(e.target.value) || 0);
+                              handleSaveGradeFee(grade, val);
+                            }}
+                            className="w-24 text-center font-bold text-xs py-1.5 px-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-[#0D5C8C] dark:text-sky-400 focus:ring-2 focus:ring-[#0D5C8C] focus:outline-hidden"
+                          />
+                          <span className="text-[11px] font-bold text-slate-500">ج.م</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const defaultFees: Record<string, number> = {
+                      'الأول الإبتدائي': 80,
+                      'الثاني الإبتدائي': 80,
+                      'الثالث الإبتدائي': 90,
+                      'الرابع الإبتدائي': 100,
+                      'الخامس الإبتدائي': 100,
+                      'السادس الإبتدائي': 110,
+                      'الأول الإعدادي': 120,
+                      'الثاني الإعدادي': 130,
+                      'الثالث الإعدادي': 150,
+                      'الأول الثانوي': 200,
+                      'الثاني الثانوي': 250,
+                      'الثالث الثانوي': 300,
+                    };
+                    setGradeFees(defaultFees);
+                    samsDb.saveGradeMonthlyFees(defaultFees);
+                    setSuccessInfo('تمت استعادة أسعار الصفوف الافتراضية بنجاح (أولى إعدادي = 120 ج.م)');
+                    playSuccessBeep();
+                  }}
+                  className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-bold cursor-pointer"
+                >
+                  استعادة الافتراضي
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGradeFeesModal(false);
+                    setSuccessInfo('تم حفظ وتطبيق أسعار الاشتراكات الشهرية بنجاح!');
+                  }}
+                  className="px-4 py-2 bg-[#0D5C8C] hover:bg-[#1A7FAA] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+                >
+                  إغلاق وحفظ
+                </button>
               </div>
             </motion.div>
           </div>

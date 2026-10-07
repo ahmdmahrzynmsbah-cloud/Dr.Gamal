@@ -536,15 +536,24 @@ html.dark body {
   /* Discrete Full-Page Reports (Zero-Cut Architecture) */
   .report-page {
     width: 100% !important;
-    min-height: 275mm !important;
+    min-height: 280mm !important;
+    max-height: 280mm !important;
     box-sizing: border-box !important;
-    padding: 2mm 0 !important;
+    padding: 6mm 4mm !important;
     margin: 0 !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  html.dark .report-page,
+  body.dark .report-page {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
   }
 
   .report-page-1 {
@@ -557,12 +566,13 @@ html.dark body {
     page-break-before: always !important;
   }
 
-  /* Mobile phone print normalization - forces crisp multi-column layout regardless of phone viewport */
+  /* Paper print container normalization */
   #printable-group-roster {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
-    padding: 4mm 2mm !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   #printable-group-roster .md\:grid-cols-3 {

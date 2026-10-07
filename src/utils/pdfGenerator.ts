@@ -12,67 +12,104 @@ export interface GeneratedPdfResult {
 }
 
 /**
- * Captures a live DOM element to high-res PNG data URL safely with 100% original colors,
- * badges, borders, gradients, and Arabic Unicode typography.
+ * Captures a DOM element to high-res PNG data URL safely with 100% full-width A4 layout,
+ * true desktop multi-column proportions, and crisp Arabic Unicode typography.
  */
 async function captureElementToPng(
   element: HTMLElement,
   isDark: boolean
 ): Promise<{ imgData: string; width: number; height: number }> {
   const bgColor = isDark ? '#0f172a' : '#ffffff';
+  const targetWidth = 840; // Crisp executive A4 width in pixels
 
-  // Primary Renderer: html-to-image on the active visible DOM element
+  // Create an offscreen sandbox with standard desktop A4 document width
+  const sandbox = document.createElement('div');
+  sandbox.style.position = 'fixed';
+  sandbox.style.left = '-9999px';
+  sandbox.style.top = '0';
+  sandbox.style.width = `${targetWidth}px`;
+  sandbox.style.minWidth = `${targetWidth}px`;
+  sandbox.style.maxWidth = `${targetWidth}px`;
+  sandbox.style.backgroundColor = bgColor;
+  sandbox.style.zIndex = '-9999';
+  sandbox.style.visibility = 'visible';
+  sandbox.setAttribute('dir', 'rtl');
+
+  if (isDark) {
+    sandbox.classList.add('dark');
+  }
+
+  const clonedNode = element.cloneNode(true) as HTMLElement;
+  clonedNode.style.width = `${targetWidth}px`;
+  clonedNode.style.minWidth = `${targetWidth}px`;
+  clonedNode.style.maxWidth = `${targetWidth}px`;
+  clonedNode.style.boxSizing = 'border-box';
+  clonedNode.style.margin = '0';
+  clonedNode.style.backgroundColor = bgColor;
+
+  // Force desktop grid display on all responsive elements inside the cloned page
+  const gridElements = clonedNode.querySelectorAll<HTMLElement>('.grid, .md\\:grid-cols-3, .md\\:grid-cols-2, .md\\:grid-cols-6, .md\\:grid-cols-4');
+  gridElements.forEach((el) => {
+    el.style.display = 'grid';
+  });
+
+  const hiddenElements = clonedNode.querySelectorAll<HTMLElement>('.print\\:hidden');
+  hiddenElements.forEach((el) => {
+    el.style.display = 'none';
+  });
+
+  sandbox.appendChild(clonedNode);
+  document.body.appendChild(sandbox);
+
   try {
-    const dataUrl = await toPng(element, {
-      quality: 0.98,
-      pixelRatio: 2,
+    // Brief settle time for layout computation
+    await new Promise((r) => setTimeout(r, 70));
+
+    // Render using html2canvas with scale 2 for retina sharpness
+    const canvas = await html2canvas(clonedNode, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
       backgroundColor: bgColor,
-      cacheBust: true,
-      filter: (node) => {
-        if (node instanceof HTMLElement) {
-          if (
-            node.classList.contains('print:hidden') &&
-            !node.classList.contains('print:flex') &&
-            !node.classList.contains('print:block')
-          ) {
-            return false;
-          }
-        }
-        return true;
-      },
+      width: targetWidth,
+      windowWidth: 1200,
     });
 
-    if (dataUrl && dataUrl.length > 500) {
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    return {
+      imgData,
+      width: canvas.width,
+      height: canvas.height,
+    };
+  } catch (err) {
+    console.warn('Sandbox html2canvas error, falling back to toPng:', err);
+    try {
+      const dataUrl = await toPng(clonedNode, {
+        quality: 0.98,
+        pixelRatio: 2,
+        backgroundColor: bgColor,
+        width: targetWidth,
+      });
       const img = new Image();
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
         img.onerror = (e) => reject(e);
         img.src = dataUrl;
       });
-
       return {
         imgData: dataUrl,
-        width: img.naturalWidth || img.width || 1000,
-        height: img.naturalHeight || img.height || 1400,
+        width: img.naturalWidth || targetWidth * 2,
+        height: img.naturalHeight || 1200,
       };
+    } catch (fallbackErr) {
+      console.error('All capture methods failed:', fallbackErr);
+      throw fallbackErr;
     }
-  } catch (err) {
-    console.warn('html-to-image capture fallback to html2canvas:', err);
+  } finally {
+    if (sandbox.parentNode) {
+      sandbox.parentNode.removeChild(sandbox);
+    }
   }
-
-  // Fallback: html2canvas-pro on live element
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    backgroundColor: bgColor,
-  });
-
-  return {
-    imgData: canvas.toDataURL('image/png'),
-    width: canvas.width,
-    height: canvas.height,
-  };
 }
 
 /**

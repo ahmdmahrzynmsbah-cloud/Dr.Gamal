@@ -645,7 +645,6 @@ ${signature}`;
             {/* Page 1 Bottom Footer Bar */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-3 flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 print-avoid-break">
               <span>صفحة (1 من 2) • كشف الأداء والمتابعة الأكاديمية</span>
-              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{student.name} · {student.registration_id}</span>
               <span>{new Date().toLocaleDateString('ar-EG')}</span>
             </div>
 
@@ -911,7 +910,6 @@ ${signature}`;
             {/* Page 2 Bottom Footer Bar */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-2 mt-3 flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 print-avoid-break">
               <span>صفحة (2 من 2) • الموقف المالي وسجل السداد المعتمد</span>
-              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{student.name} · {student.registration_id}</span>
               <span>{new Date().toLocaleDateString('ar-EG')}</span>
             </div>
 

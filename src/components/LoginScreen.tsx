@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Key, User, ShieldCheck, GraduationCap, Building2, Layers } from 'lucide-react';
+import { Sparkles, Key, User, ShieldCheck, GraduationCap, Building2, Layers, Eye, EyeOff } from 'lucide-react';
 import { setActiveSystem, getActiveSystem, SystemContext } from '../utils/db';
 import ThemeToggle from './ThemeToggle';
 
@@ -14,6 +14,7 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
   const [role, setRole] = useState<'teacher' | 'secretary'>('teacher');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [users, setUsers] = useState<any[]>([]);
 
@@ -55,7 +56,7 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
     if (selectedSystem === 'alsafa') {
       const matchedUser = users.find(u => (finalName && u.name === finalName && u.password === trimmedPassword)) 
         || users.find(u => u.password === trimmedPassword)
-        || (trimmedPassword === '4444' ? { id: 'u-alsafa-admin', name: finalName || 'مدير سيستم الصفا', role: 'teacher' } : null);
+        || (users.length === 0 && trimmedPassword === '4444' ? { id: 'u-alsafa-admin', name: finalName || 'مدير سيستم الصفا', role: 'teacher' } : null);
 
       if (matchedUser) {
         setActiveSystem('alsafa');
@@ -68,14 +69,14 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
 
     // Doctor system login
     setActiveSystem('doctor');
-    const matchedUser = users.find(u => u.name === name && u.password === trimmedPassword) 
+    const matchedUser = users.find(u => u.name === finalName && u.password === trimmedPassword) 
       || users.find(u => u.role === role && u.password === trimmedPassword)
-      || (trimmedPassword === '123' ? { id: 'u-1', name: finalName || (role === 'teacher' ? 'المدير الأكاديمي' : 'السكرتيرة'), role } : null);
+      || (users.length === 0 && trimmedPassword === '123' ? { id: 'u-1', name: finalName || (role === 'teacher' ? 'المدير الأكاديمي' : 'السكرتيرة'), role } : null);
     
     if (matchedUser) {
       onLoginSuccess(role, finalName || matchedUser.name, matchedUser.id, 'doctor');
     } else {
-      setError('رمز الدخول غير صحيح! الرمز الافتراضي هو 123');
+      setError('رمز الدخول السري غير صحيح! يرجى التحقق والمحاولة مرة أخرى.');
     }
   };
 
@@ -146,6 +147,7 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
                 setRole('teacher'); 
                 setName(''); 
                 setPassword(''); 
+                setShowPassword(false);
                 setError(''); 
               }}
               className={`py-2 px-1 rounded-lg text-xs font-black transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 ${
@@ -167,6 +169,7 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
                 setRole('secretary'); 
                 setName(''); 
                 setPassword(''); 
+                setShowPassword(false);
                 setError(''); 
               }}
               className={`py-2 px-1 rounded-lg text-xs font-black transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 ${
@@ -188,6 +191,7 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
                 setRole('teacher'); 
                 setName('مدير سيستم الصفا'); 
                 setPassword(''); 
+                setShowPassword(false);
                 setError(''); 
               }}
               className={`py-2 px-1 rounded-lg text-xs font-black transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 ${
@@ -221,27 +225,27 @@ function LoginScreenComponent({ onLoginSuccess, isDarkMode = false, onToggleDark
 
             {/* Input Password */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">
-                  رمز الدخول السري:
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setPassword(selectedSystem === 'alsafa' ? '4444' : '123')}
-                  className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded-md border border-sky-200 dark:border-sky-800"
-                >
-                  رمز {selectedSystem === 'alsafa' ? 'الصفا' : (role === 'teacher' ? 'المدير' : 'السكرتيرة')}: {selectedSystem === 'alsafa' ? '4444' : '123'} (اضغط للتعبئة)
-                </button>
-              </div>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300">
+                رمز الدخول السري:
+              </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={selectedSystem === 'alsafa' ? '4444' : '123'}
-                  className="w-full pl-3 pr-4 py-2.5 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] dark:focus:border-emerald-500 shadow-3xs text-left tracking-widest font-mono text-sm"
+                  placeholder="أدخل رمز الدخول السري"
+                  autoComplete="current-password"
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-[#0D5C8C] dark:focus:border-emerald-500 shadow-3xs text-right tracking-widest font-mono placeholder:tracking-normal placeholder:font-sans placeholder:text-xs"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1"
+                  aria-label={showPassword ? 'إخفاء رمز الدخول' : 'إظهار رمز الدخول'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
